@@ -13,11 +13,12 @@ config_version=5
 config/name="pixelDraw"
 run/main_scene="res://Scenes/main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://Sprites/icon.svg"
 
 [autoload]
 
 Globals="*res://Scripts/globals.gd"
+Archipelago="*res://godot_ap/autoloads/archipelago.tscn"
 
 [global_group]
 

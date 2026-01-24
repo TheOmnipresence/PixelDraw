@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://m48g4c4mbb25"]
 
-[ext_resource type="MeshLibrary" uid="uid://cw5iubovh80b6" path="res://MeshLibrary.tres" id="1_jaw01"]
+[ext_resource type="MeshLibrary" uid="uid://cw5iubovh80b6" path="res://Sprites/MeshLibraries/MeshLibrary.tres" id="1_jaw01"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_jkjo0"]
 

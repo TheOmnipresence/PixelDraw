@@ -1,10 +1,10 @@
 [gd_scene load_steps=13 format=3 uid="uid://di7exlmaqr55s"]
 
-[ext_resource type="MeshLibrary" uid="uid://cw5iubovh80b6" path="res://MeshLibrary.tres" id="1_jjgbg"]
+[ext_resource type="MeshLibrary" uid="uid://cw5iubovh80b6" path="res://Sprites/MeshLibraries/MeshLibrary.tres" id="1_jjgbg"]
 [ext_resource type="Script" uid="uid://0mk076e6lmig" path="res://Scripts/random_generation.gd" id="2_8gbba"]
 [ext_resource type="Script" uid="uid://c6ttmplq8lo81" path="res://Scripts/player.gd" id="2_bo1nx"]
-[ext_resource type="MeshLibrary" uid="uid://du2245ubve5gw" path="res://OutlineMeshLibrary.tres" id="3_21xkr"]
-[ext_resource type="MeshLibrary" uid="uid://bbpkqqpgj5x3o" path="res://ScannerMeshLibrary.tres" id="4_6bp64"]
+[ext_resource type="MeshLibrary" uid="uid://du2245ubve5gw" path="res://Sprites/MeshLibraries/OutlineMeshLibrary.tres" id="3_21xkr"]
+[ext_resource type="MeshLibrary" uid="uid://bbpkqqpgj5x3o" path="res://Sprites/MeshLibraries/ScannerMeshLibrary.tres" id="4_6bp64"]
 [ext_resource type="Script" uid="uid://c7tdfafjs15ad" path="res://Scripts/camera.gd" id="4_jjvhh"]
 [ext_resource type="PackedScene" uid="uid://wjyhyg46r80y" path="res://Scenes/bar_panel.tscn" id="5_kry3j"]
 

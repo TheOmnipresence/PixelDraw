@@ -1,0 +1,34 @@
+[gd_scene load_steps=5 format=3 uid="uid://dxxkrpa2hfs66"]
+
+[ext_resource type="Script" uid="uid://bu6xgtm75vdvr" path="res://Scripts/red_pill.gd" id="1_0kdir"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_0kdir"]
+points = PackedVector3Array(0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5)
+
+[sub_resource type="PrismMesh" id="PrismMesh_3milv"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qqcpb"]
+size = Vector3(1.1, 1.1, 1.1)
+
+[node name="TRI_ENEMY" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_0kdir")
+knockbackMultiplier = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_0kdir")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PrismMesh_3milv")
+
+[node name="Area3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("BoxShape3D_qqcpb")
+
+[node name="AntigravityTimer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]

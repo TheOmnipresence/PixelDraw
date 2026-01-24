@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dwu1qfksltpd1"]
+
+[ext_resource type="PackedScene" uid="uid://wnf7uek3kag1" path="res://Scenes/StructureMaps/tut_map.tscn" id="1_y5vtp"]
+[ext_resource type="PackedScene" uid="uid://c6njwc2bwh8jc" path="res://Scenes/StructureMaps/tut_map_2.tscn" id="2_d0xdx"]
+
+[node name="MapVisualizer" type="Node3D"]
+
+[node name="TutMap" parent="." instance=ExtResource("1_y5vtp")]
+
+[node name="TutMap2" parent="." instance=ExtResource("2_d0xdx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, -5)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.9401507, -0.3394221, 0.030153697, 0.030153697, 0.1710101, 0.9848077, -0.3394221, -0.9249584, 0.1710101, 0, 0, 0)

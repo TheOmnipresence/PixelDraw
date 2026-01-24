@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://bo83hyyb6s2d0"]
+
+[ext_resource type="Script" uid="uid://pcdgwlb78m68" path="res://Scripts/grid_panel.gd" id="1_lb3ly"]
+
+[node name="ShapePanel" type="PanelContainer"]
+custom_minimum_size = Vector2(90, 60)
+script = ExtResource("1_lb3ly")
+isTool = false
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Node" type="Node2D" parent="."]
+visible = false
+z_index = 1
+
+[node name="DescriptionContainer" type="PanelContainer" parent="Node"]
+offset_left = -124.0
+offset_right = -4.0
+offset_bottom = 60.0
+
+[node name="MarginContainer" type="MarginContainer" parent="Node/DescriptionContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="Label" type="Label" parent="Node/DescriptionContainer/MarginContainer"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+theme_override_constants/line_spacing = 1
+theme_override_font_sizes/font_size = 8
+autowrap_mode = 3
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

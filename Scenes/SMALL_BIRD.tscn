@@ -1,0 +1,51 @@
+[gd_scene load_steps=7 format=3 uid="uid://c2k7ggjtsx705"]
+
+[ext_resource type="Script" uid="uid://bu6xgtm75vdvr" path="res://Scripts/red_pill.gd" id="1_p8gba"]
+[ext_resource type="ArrayMesh" uid="uid://ed6kruwcwit3" path="res://Sprites/Untitled.obj" id="2_bhse3"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qga6b"]
+radius = 0.25
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qga6b"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_a37m6"]
+material = SubResource("StandardMaterial3D_qga6b")
+radius = 0.25
+height = 0.5
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ktqm5"]
+radius = 0.3
+height = 0.6
+
+[node name="SMALL_BIRD" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_p8gba")
+isBird = true
+birdHeight = 5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_qga6b")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_a37m6")
+
+[node name="Area3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("CapsuleShape3D_ktqm5")
+
+[node name="AntigravityTimer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+visible = false
+mesh = ExtResource("2_bhse3")
+
+[node name="Skeleton3D" type="Skeleton3D" parent="."]
+visible = false
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]

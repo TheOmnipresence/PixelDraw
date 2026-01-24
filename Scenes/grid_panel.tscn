@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3 uid="uid://dheudufg4rvss"]
+
+[ext_resource type="Script" uid="uid://pcdgwlb78m68" path="res://Scripts/grid_panel.gd" id="1_ojnlr"]
+[ext_resource type="FontFile" uid="uid://beivumjeqnfni" path="res://Speeches/Fonts/Recursive-VariableFont_CASL,CRSV,MONO,slnt,wght.ttf" id="2_heit5"]
+
+[node name="GridPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(90, 60)
+script = ExtResource("1_ojnlr")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+mouse_behavior_recursive = 1
+mouse_default_cursor_shape = 2
+horizontal_alignment = 1
+
+[node name="Node" type="Node2D" parent="."]
+visible = false
+z_index = 1
+
+[node name="DescriptionContainer" type="PanelContainer" parent="Node"]
+offset_left = 95.0
+offset_right = 215.0
+offset_bottom = 60.0
+mouse_filter = 2
+mouse_behavior_recursive = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Node/DescriptionContainer"]
+layout_mode = 2
+mouse_filter = 2
+mouse_behavior_recursive = 1
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="Label" type="Label" parent="Node/DescriptionContainer/MarginContainer"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+mouse_behavior_recursive = 1
+theme_override_constants/line_spacing = 1
+theme_override_fonts/font = ExtResource("2_heit5")
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 3
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

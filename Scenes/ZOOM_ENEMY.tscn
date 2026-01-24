@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3 uid="uid://bvqwodmod3r1s"]
+
+[ext_resource type="Script" uid="uid://bu6xgtm75vdvr" path="res://Scripts/red_pill.gd" id="1_v18je"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v18je"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_px8fe"]
+albedo_color = Color(0, 1, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a63oq"]
+material = SubResource("StandardMaterial3D_px8fe")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_px8fe"]
+size = Vector3(1.1, 1.1, 1.1)
+
+[node name="ZOOM_ENEMY" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_v18je")
+knockbackMultiplier = 2
+JUMP_VELOCITY = 10.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_v18je")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_a63oq")
+
+[node name="Area3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("BoxShape3D_px8fe")
+
+[node name="AntigravityTimer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]

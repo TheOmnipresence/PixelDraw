@@ -1,24 +1,17 @@
-[gd_scene load_steps=13 format=3 uid="uid://di7exlmaqr55s"]
+[gd_scene load_steps=11 format=3 uid="uid://di7exlmaqr55s"]
 
 [ext_resource type="MeshLibrary" uid="uid://cw5iubovh80b6" path="res://Sprites/MeshLibraries/MeshLibrary.tres" id="1_jjgbg"]
 [ext_resource type="Script" uid="uid://0mk076e6lmig" path="res://Scripts/random_generation.gd" id="2_8gbba"]
-[ext_resource type="Script" uid="uid://c6ttmplq8lo81" path="res://Scripts/player.gd" id="2_bo1nx"]
-[ext_resource type="MeshLibrary" uid="uid://du2245ubve5gw" path="res://Sprites/MeshLibraries/OutlineMeshLibrary.tres" id="3_21xkr"]
+[ext_resource type="MeshLibrary" uid="uid://dww36yr5hltca" path="res://Sprites/MeshLibraries/OutlinerMeshLibrary.tres" id="3_21xkr"]
 [ext_resource type="MeshLibrary" uid="uid://bbpkqqpgj5x3o" path="res://Sprites/MeshLibraries/ScannerMeshLibrary.tres" id="4_6bp64"]
-[ext_resource type="Script" uid="uid://c7tdfafjs15ad" path="res://Scripts/camera.gd" id="4_jjvhh"]
-[ext_resource type="PackedScene" uid="uid://wjyhyg46r80y" path="res://Scenes/bar_panel.tscn" id="5_kry3j"]
+[ext_resource type="PackedScene" uid="uid://c7fdr4baalcs2" path="res://Scenes/player.tscn" id="5_21xkr"]
+[ext_resource type="PackedScene" uid="uid://b6xwkcre57k6h" path="res://Scenes/camera_3d.tscn" id="6_21xkr"]
+[ext_resource type="Script" uid="uid://eolpglqbp3ia" path="res://Scripts/bounds.gd" id="7_6bp64"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bo1nx"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_jjgbg"]
-size = Vector3(0.8, 0.9, 0.8)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_21xkr"]
-albedo_color = Color(1, 1, 0.5647059, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_6bp64"]
-material = SubResource("StandardMaterial3D_21xkr")
-size = Vector3(0.8, 0.9, 0.8)
+[sub_resource type="BoxShape3D" id="BoxShape3D_344ge"]
+size = Vector3(200, 1, 200)
 
 [sub_resource type="Environment" id="Environment_21xkr"]
 background_energy_multiplier = 0.4
@@ -32,7 +25,7 @@ cell_size = Vector3(1, 1, 1)
 collision_layer = 9
 collision_priority = 100.0
 data = {
-"cells": PackedInt32Array(65535, 0, 0, 0, 0, 0, 65535, 1, 0, 0, 1, 0, 65535, 65535, 0, 1, 65535, 1, 1, 1, 0, 1, 0, 1, 65535, 2, 1, 0, 2, 1, 1, 2, 0, 65535, 3, 0, 0, 3, 0, 0, 4, 0, 65535, 4, 0, 65535, 5, 0)
+"cells": PackedInt32Array(65535, 0, 1, 65535, 65535, 1, 65535, 65534, 1, 0, 0, 1, 0, 65535, 1, 1, 65535, 1, 1, 0, 0, 0, 65534, 0, 1, 65534, 0)
 }
 script = ExtResource("2_8gbba")
 
@@ -60,343 +53,12 @@ cell_size = Vector3(1, 1, 1)
 transform = Transform3D(0.9401507, -0.3394221, 0.030153697, 0.030153697, 0.1710101, 0.9848077, -0.3394221, -0.9249584, 0.1710101, 0, 0, 0)
 shadow_enabled = true
 
-[node name="Player" type="CharacterBody3D" parent="."]
+[node name="Player" parent="." instance=ExtResource("5_21xkr")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-collision_layer = 3
-script = ExtResource("2_bo1nx")
+collision_layer = 19
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-shape = SubResource("BoxShape3D_jjgbg")
-
-[node name="Camera3D" type="Camera3D" parent="Player"]
-process_mode = 3
+[node name="Camera3D" parent="Player" instance=ExtResource("6_21xkr")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.41409636, -0.3389409)
-script = ExtResource("4_jjvhh")
-
-[node name="HUD" type="Control" parent="Player/Camera3D"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="Player/Camera3D/HUD"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -549.0
-offset_top = -60.0
-offset_right = 387.0
-grow_horizontal = 2
-grow_vertical = 0
-alignment = 1
-
-[node name="PanelContainer" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer2" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer3" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer4" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer5" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer6" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer7" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer8" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer9" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer10" parent="Player/Camera3D/HUD/HBoxContainer" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="SetupTab" type="Control" parent="Player/Camera3D/HUD"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="ShapeBar" type="HBoxContainer" parent="Player/Camera3D/HUD/SetupTab"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -549.0
-offset_top = -133.0
-offset_right = 387.0
-offset_bottom = -63.0
-grow_horizontal = 2
-grow_vertical = 0
-alignment = 1
-
-[node name="PanelContainer" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer2" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer3" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer4" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer5" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer6" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer7" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer8" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer9" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer10" parent="Player/Camera3D/HUD/SetupTab/ShapeBar" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="ToolsGrid" type="GridContainer" parent="Player/Camera3D/HUD/SetupTab"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
-grow_horizontal = 2
-grow_vertical = 2
-columns = 5
-
-[node name="ScannerBox" type="VBoxContainer" parent="Player/Camera3D/HUD/SetupTab"]
-layout_mode = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 94.0
-offset_bottom = 128.0
-
-[node name="PanelContainer" parent="Player/Camera3D/HUD/SetupTab/ScannerBox" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="PanelContainer2" parent="Player/Camera3D/HUD/SetupTab/ScannerBox" instance=ExtResource("5_kry3j")]
-layout_mode = 2
-
-[node name="ShapesBox" type="GridContainer" parent="Player/Camera3D/HUD/SetupTab"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -40.0
-offset_top = -20.0
-offset_bottom = 20.0
-grow_horizontal = 0
-grow_vertical = 2
-columns = 2
-
-[node name="HelpLabels" type="Control" parent="Player/Camera3D/HUD/SetupTab"]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="FirstPause1" type="Label" parent="Player/Camera3D/HUD/SetupTab/HelpLabels"]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 472.5
-offset_top = 253.5
-offset_right = 639.5
-offset_bottom = 354.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "Press A Number Here
-
-
-"
-
-[node name="FirstPause2" type="Label" parent="Player/Camera3D/HUD/SetupTab/HelpLabels"]
-visible = false
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = 834.0
-offset_top = 175.5
-offset_right = 1112.0
-offset_bottom = 432.5
-grow_horizontal = 0
-grow_vertical = 2
-text = "
-
-
-
-
-
-
-Then Press The Same Number Here,
-
-Or Left Click"
-
-[node name="ToolsTab" type="Control" parent="Player/Camera3D/HUD"]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="ToolFindPanel" type="PanelContainer" parent="Player/Camera3D/HUD/ToolsTab"]
-layout_mode = 0
-offset_left = 846.0
-offset_top = 6.0
-offset_right = 1146.0
-offset_bottom = 306.0
-
-[node name="MarginContainer" type="MarginContainer" parent="Player/Camera3D/HUD/ToolsTab/ToolFindPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 3
-theme_override_constants/margin_top = 3
-theme_override_constants/margin_right = 3
-theme_override_constants/margin_bottom = 3
-
-[node name="TextureRect" type="TextureRect" parent="Player/Camera3D/HUD/ToolsTab/ToolFindPanel/MarginContainer"]
-texture_filter = 1
-layout_mode = 2
-stretch_mode = 4
-
-[node name="ShapesTab" type="Control" parent="Player/Camera3D/HUD"]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="ShapeFindPanel" type="PanelContainer" parent="Player/Camera3D/HUD/ShapesTab"]
-layout_mode = 0
-offset_left = 103.0
-offset_top = 49.0
-offset_right = 403.0
-offset_bottom = 349.0
-
-[node name="MarginContainer" type="MarginContainer" parent="Player/Camera3D/HUD/ShapesTab/ShapeFindPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 3
-theme_override_constants/margin_top = 3
-theme_override_constants/margin_right = 3
-theme_override_constants/margin_bottom = 3
-
-[node name="TextureRect" type="TextureRect" parent="Player/Camera3D/HUD/ShapesTab/ShapeFindPanel/MarginContainer"]
-texture_filter = 1
-layout_mode = 2
-stretch_mode = 4
-
-[node name="ActionsTab" type="Control" parent="Player/Camera3D/HUD"]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="ActionsGrid" type="GridContainer" parent="Player/Camera3D/HUD/ActionsTab"]
-layout_mode = 0
-offset_top = 49.0
-offset_right = 40.0
-offset_bottom = 89.0
-columns = 7
-
-[node name="MenuTab" type="Control" parent="Player/Camera3D/HUD"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Button" type="Button" parent="Player/Camera3D/HUD/MenuTab"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -4.0
-offset_top = -4.0
-offset_right = 4.0
-offset_bottom = 4.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "End Journey"
-
-[node name="TabBar" type="TabBar" parent="Player/Camera3D/HUD"]
-layout_mode = 0
-offset_left = 103.0
-offset_right = 531.0
-offset_bottom = 40.0
-current_tab = 0
-tab_count = 5
-tab_0/title = "Setup"
-tab_1/title = "Tools"
-tab_2/title = "Shapes"
-tab_3/title = "Actions"
-tab_4/title = "Menu"
-
-[node name="PopupBox" type="VBoxContainer" parent="Player/Camera3D/HUD"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -40.0
-offset_top = -40.0
-grow_horizontal = 0
-grow_vertical = 0
-alignment = 2
-
-[node name="OmniLight3D" type="OmniLight3D" parent="Player"]
-
-[node name="BoxSprite" type="MeshInstance3D" parent="Player"]
-mesh = SubResource("BoxMesh_6bp64")
-
-[node name="AntigravityTimer" type="Timer" parent="Player"]
-wait_time = 5.0
-one_shot = true
-
-[node name="OmniLight3D2" type="OmniLight3D" parent="Player"]
-light_energy = 6.0
-shadow_enabled = true
-omni_range = 12.0
-
-[node name="CeilRay" type="RayCast3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-target_position = Vector3(0, 0.9, 0)
-collision_mask = 8
 
 [node name="Biomes" type="Node3D" parent="."]
 
@@ -472,8 +134,19 @@ light_energy = 50.0
 spot_range = 100.0
 spot_attenuation = 0.0
 
+[node name="Bounds" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("7_6bp64")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Bounds"]
+shape = SubResource("BoxShape3D_344ge")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_21xkr")
 
-[connection signal="pressed" from="Player/Camera3D/HUD/MenuTab/Button" to="Player/Camera3D" method="_on_button_pressed"]
-[connection signal="tab_changed" from="Player/Camera3D/HUD/TabBar" to="Player/Camera3D" method="_on_tab_bar_tab_changed"]
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://c7fdr4baalcs2")
+spawn_path = NodePath("..")
+
+[connection signal="body_exited" from="Bounds" to="Bounds" method="_on_body_exited"]

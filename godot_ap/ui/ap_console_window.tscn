@@ -5,6 +5,7 @@
 
 [node name="Console" instance=ExtResource("1_0wxg5")]
 gui_embed_subwindows = true
+oversampling_override = 1.0
 title = "Archipelago Console"
 size = Vector2i(1152, 648)
 min_size = Vector2i(750, 400)

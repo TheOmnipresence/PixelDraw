@@ -1,6 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://bvqwodmod3r1s"]
+[gd_scene load_steps=8 format=3 uid="uid://bvqwodmod3r1s"]
 
 [ext_resource type="Script" uid="uid://bu6xgtm75vdvr" path="res://Scripts/red_pill.gd" id="1_v18je"]
+[ext_resource type="Script" uid="uid://dkar5k5ccx76v" path="res://Scripts/status_effect.gd" id="2_px8fe"]
+
+[sub_resource type="Resource" id="Resource_a63oq"]
+script = ExtResource("2_px8fe")
+initialTime = 10.0
+metadata/_custom_type_script = "uid://dkar5k5ccx76v"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_v18je"]
 
@@ -17,6 +23,7 @@ size = Vector3(1.1, 1.1, 1.1)
 script = ExtResource("1_v18je")
 knockbackMultiplier = 2
 JUMP_VELOCITY = 10.0
+statusReward = SubResource("Resource_a63oq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_v18je")

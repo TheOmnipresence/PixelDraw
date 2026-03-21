@@ -2,6 +2,7 @@
 
 [node name="PanelContainer" type="PanelContainer"]
 custom_minimum_size = Vector2(90, 60)
+mouse_filter = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 visible = false
@@ -28,5 +29,6 @@ color = Color(0, 0, 0, 1)
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 2
+mouse_filter = 1
 text = "NONE"
 horizontal_alignment = 1

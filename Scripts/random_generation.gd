@@ -1,43 +1,21 @@
 extends GridMap
 
+@export var popupTime:=2
+const popupColors = {
+	scanTypes.TOOL:Color(1.0, 0.0, 0.0, 1.0),
+	scanTypes.SHAPE:Color(0.0, 0.0, 1.0, 1.0),
+	scanTypes.ACTION:Color(0.0, 1.0, 0.0, 1.0),
+	scanTypes.OTHER:Color(0.2,0.2,0.2),
+	scanTypes.ARCHIPELAGO_SEND:Color(1,0.735,0,1),
+	scanTypes.ARCHIPELAGO_DEATHLINK: Color(1.0, 1.0, 0.0, 1.0),
+	scanTypes.STATUS_EFFECT:Color(0.735,0,1,1)
+}
+
 var lastScanned = []
 
-enum scanTypes {TOOL,SHAPE,ACTION,OTHER}
-
-const maxHeight = 70
+enum scanTypes {TOOL,SHAPE,ACTION,OTHER,ARCHIPELAGO_SEND,ARCHIPELAGO_DEATHLINK,STATUS_EFFECT}
 
 func _ready() -> void:
-	for x in range(-100,100):
-		for z in range(-100,100):
-			set_cell_item(Vector3i(x,0,z),randi_range(0,1))
-	for x in range(-200,200):
-		for z in range(-200,200):
-			if abs(x) > 130 or abs(z) > 130:
-				set_cell_item(Vector3i(x,0,z),randi_range(0,1))
-	for dist in range(-130,130):
-		set_cell_item(Vector3i(dist,0,130),1)
-		set_cell_item(Vector3i(dist,0,-130),1)
-		set_cell_item(Vector3i(130,0,dist),1)
-		set_cell_item(Vector3i(-130,0,dist),1)
-	var index = 0
-	for dist in range(-131,131):
-		set_cell_item(Vector3i(dist,0,131),index)
-		set_cell_item(Vector3i(dist,0,-131),index)
-		set_cell_item(Vector3i(131,0,dist),index)
-		set_cell_item(Vector3i(-131,0,dist),index)
-		if index == 0: index = 1
-		else: index = 0
-	for dist in range(-132,132):
-		set_cell_item(Vector3i(dist,0,132),1)
-		set_cell_item(Vector3i(dist,0,-132),1)
-		set_cell_item(Vector3i(132,0,dist),1)
-		set_cell_item(Vector3i(-132,0,dist),1)
-	for dirMultiplier in [[1,true],[-1,true],[-1,false],[1,false]]:
-		for x in range(-100,100):
-			for z in range(200,300):
-				set_cell_item(Vector3i(x if dirMultiplier[1] else z * dirMultiplier[0],0,z * dirMultiplier[0] if dirMultiplier[1] else x),randi_range(0,1))
-	
-	
 	var duplicatedShapes = Globals.shapes.duplicate(true)
 	
 	for i in duplicatedShapes:
@@ -55,20 +33,30 @@ func _ready() -> void:
 			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,e.y))))
 			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(e.x,-e.y))))
 			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
+	
+	Globals.gridRef = self
+	#Globals.testShapes()
 
 var bulbCells = {}
+
+var planeOrigin = Vector3i.ZERO
 
 func _process(_delta: float) -> void:
 	if Input.is_action_just_released("mouse1") or Input.is_action_just_released("mouse3"):
 		$"../GridMapOutline".clear()
-	if Input.is_action_pressed("mouse3"):
-		$"../GridMapOutline".clear()
-		for i in getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool]):
-			$"../GridMapOutline".set_cell_item(Vector3i(i.x,0,i.y),0)
-	elif Input.is_action_pressed("mouse1"):
-		$"../GridMapOutline".clear()
-		for i in getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.baseShape):
-			$"../GridMapOutline".set_cell_item(Vector3i(i.x,0,i.y),0)
+	if Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z) != planeOrigin or Input.is_action_pressed("mouse3") or Input.is_action_pressed("mouse1"):
+		planeOrigin = Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z)
+		
+		if Input.is_action_pressed("mouse3"):
+			$"../GridMapOutline".clear()
+			for i in heighestVisibleCells(getShape(planeOrigin,Globals.toolShapes[Globals.currentTool])):
+				i.y += 1
+				$"../GridMapOutline".set_cell_item(i,Globals.currentTool)
+		elif Input.is_action_pressed("mouse1"):
+			$"../GridMapOutline".clear()
+			for i in heighestVisibleCells(getShape(planeOrigin,Globals.baseShape)):
+				i.y += 1
+				$"../GridMapOutline".set_cell_item(i,0)
 	
 	if $BulbTimer.is_stopped():
 		for cell in bulbCells:
@@ -76,7 +64,7 @@ func _process(_delta: float) -> void:
 	
 	
 	#(get_cell_item())
-	#(Vector3(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z))
+	#(Vector3(local_to_map(Globals.playerRef.positionx,0,lo).cal_to_map(Globals.playerRef.position).z))
 	if Input.is_action_just_released("mouse3"):
 		match Globals.currentTool:
 			Globals.tools.VOIDER:
@@ -128,7 +116,7 @@ func _process(_delta: float) -> void:
 			Globals.tools.STOPPER:
 				for i in getShape(Vector3i(local_to_map(Globals.playerRef.position).x + (5 if Globals.playerRef.velocity.x >= 10 else (-5 if Globals.playerRef.velocity.x <= -10 else 0)),0,local_to_map(Globals.playerRef.position).z + (5 if Globals.playerRef.velocity.z >= 10 else (-5 if Globals.playerRef.velocity.z <= -10 else 0))),Globals.toolShapes[Globals.currentTool]):
 					if get_cell_item(Vector3i(i.x,0,i.y)) == 1:
-						set_cell_item(Vector3i(i.x,clamp(local_to_map(Vector3(0,ceil(Globals.playerRef.position.y)-1,0)).y,0,maxHeight),i.y),1)
+						set_cell_item(Vector3i(i.x,clamp(local_to_map(Vector3(0,ceil(Globals.playerRef.position.y)-1,0)).y,0,Globals.maxHeight),i.y),1)
 			Globals.tools.BULB:
 				for i in getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool]):
 					bulbCells[Vector3i(i.x,0,i.y)] = get_cell_item(Vector3i(i.x,0,i.y))
@@ -185,16 +173,24 @@ func _process(_delta: float) -> void:
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
 					if cells.has(local_to_map(enemy.position)): 
 						enemy.get_node("AntigravityTimer").start()
-				Globals.playerRef.get_node("AntigravityTimer").start()
+				multiplyAttribute("gravity",["*",-1],5)
 			Globals.tools.SUMMON:
 				var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool])
-				#cells = cells.map(func(e): return Vector3i(e.x,2,e.y))
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
 					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
 						enemy.position.y = 1
 			Globals.tools.TERRAIN:
 				var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool])
 				heightGeneration(cells)
+			Globals.tools.PARALYZER:
+				var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool])
+				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
+					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
+						enemy.paralyze(3)
+			Globals.tools.PLATFORMS:
+				var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool])
+				for cell in cells:
+					set_cell_item(Vector3i(cell.x,0,cell.y),randi_range(0,1))
 	
 	if Input.is_action_just_released("mouse1"):
 		var result = {}
@@ -209,6 +205,49 @@ func _process(_delta: float) -> void:
 			runShape(i,Vector2i(0,0))
 		Globals.mcToolLevel = "NETHERITE"
 		#print(getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),"3_DIAG"))
+
+func heighestVisibleCells(list:Array) -> Array:
+	list = list.map(func(e): return vector2to3(e,getHeighestCell(e,Globals.playerRef.position.y -1)))
+	#list = list.map(func(e): e.y = clamp(e.y,0,Globals.playerRef.position.y -1); return e)
+	
+	return list
+
+func startCells():
+	var grid := GridMap.new()
+	grid.mesh_library = preload("res://Sprites/MeshLibraries/MeshLibrary.tres")
+	for x in range(-100,100):
+		for z in range(-100,100):
+			grid.set_cell_item(Vector3i(x,0,z),randi_range(0,1))
+	
+	buildCells(grid.get_used_cells(),Vector3.ZERO,true,grid)
+	if Globals.isMultiplayer: rpc("buildCells",Vector3.ZERO,true,grid)
+	
+	#for x in range(-200,200):
+		#for z in range(-200,200):
+			#if abs(x) > 130 or abs(z) > 130:
+				#set_cell_item(Vector3i(x,0,z),randi_range(0,1))
+	#for dist in range(-130,130):
+		#set_cell_item(Vector3i(dist,0,130),1)
+		#set_cell_item(Vector3i(dist,0,-130),1)
+		#set_cell_item(Vector3i(130,0,dist),1)
+		#set_cell_item(Vector3i(-130,0,dist),1)
+	#var index = 0
+	#for dist in range(-131,131):
+		#set_cell_item(Vector3i(dist,0,131),index)
+		#set_cell_item(Vector3i(dist,0,-131),index)
+		#set_cell_item(Vector3i(131,0,dist),index)
+		#set_cell_item(Vector3i(-131,0,dist),index)
+		#if index == 0: index = 1
+		#else: index = 0
+	#for dist in range(-132,132):
+		#set_cell_item(Vector3i(dist,0,132),1)
+		#set_cell_item(Vector3i(dist,0,-132),1)
+		#set_cell_item(Vector3i(132,0,dist),1)
+		#set_cell_item(Vector3i(-132,0,dist),1)
+	#for dirMultiplier in [[1,true],[-1,true],[-1,false],[1,false]]:
+		#for x in range(-100,100):
+			#for z in range(200,300):
+				#set_cell_item(Vector3i(x if dirMultiplier[1] else z * dirMultiplier[0],0,z * dirMultiplier[0] if dirMultiplier[1] else x),randi_range(0,1))
 
 func removeExtras(input:Dictionary):
 	lastScanned = []
@@ -241,53 +280,83 @@ func removeExtras(input:Dictionary):
 	return groups
 
 func checkForShapes(groups:Dictionary):
+	var result = []
+	var hasShape = []
 	for group in groups.values().duplicate_deep():
 		if group.is_empty(): continue
 		for shape in Globals.shapes:
-			if Globals.shapes[shape].has(group):
+			if Globals.shapes[shape].has(group) and groups.values().has(group):
 				scanShape(groups.find_key(group),shape,group)
-				groups.erase(groups.find_key(group))
+				#groups.erase(groups.find_key(group))
+				hasShape.append(group)
+				result.append(shape)
+		if hasShape.has(group): groups.erase(groups.find_key(group))
+	if not groups.values().is_empty():
+		for i in groups.values():
+			result.append(i)
+		printerr(groups.values())
+	return result
+
+func vector2to3(vector,yPos=0):
+	if typeof(vector) == TYPE_VECTOR2:
+		return Vector3(vector.x,float(yPos),vector.y)
+	else:
+		return Vector3i(vector.x,yPos,vector.y)
 
 func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
-	await lightShape(group.map(func(e): return e + pos),0)
+	group = group.map(func(e): return vector2to3(e + pos,0))# clamp(getHeighestCell(e + pos),0,int(Globals.playerRef.position.y+1))))
+	await lightShape(group,0,false)
 	runShape(shape,pos)
 	await get_tree().create_timer(0.2).timeout
-	await lightShape(group.map(func(e): return e + pos),-1,false)
+	await lightShape(group,-1,false)
 
 func lightShape(cells,value:int,wait:=true) -> void:
 	if wait: await get_tree().create_timer(randf_range(0.3,0.9)).timeout
 	
 	for i in cells:
-		$"../ActivationGridMap".set_cell_item(Vector3i(i.x,0,i.y),value)
+		$"../ActivationGridMap".set_cell_item(i,value)
 
-func runShape(shape:String,center:Vector2i):
+func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=false,archipelagoInfo:NetworkItem=NetworkItem.new()):
 	print(shape)
 	if Globals.tools.keys().has(shape):
-		if not Globals.availibleTools.has(Globals.tools.keys().find(shape) as Globals.tools):
-			Globals.availibleTools.append(Globals.tools.keys().find(shape) as Globals.tools)
-			Globals.toolShapes[(Globals.tools.keys().find(shape) as Globals.tools)] = "NONE"
-			var gridPanel = preload("res://Scenes/grid_panel.tscn").instantiate()
-			gridPanel.get_child(0).text = shape
-			Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
-			
-			triggerPopup("New Tool: " + shape,scanTypes.TOOL)
+		if Globals.isArchipelago and not calledFromArchipelago:
+			sendArchipelagoItem(Globals.toolsCompatibility.keys().find(shape),shape)
+		else:
+			if not Globals.availibleTools.has(Globals.tools.keys().find(shape) as Globals.tools):
+				Globals.availibleTools.append(Globals.tools.keys().find(shape) as Globals.tools)
+				Globals.toolShapes[(Globals.tools.keys().find(shape) as Globals.tools)] = "NONE"
+				var gridPanel = preload("res://Scenes/grid_panel.tscn").instantiate()
+				gridPanel.get_child(0).text = shape
+				Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
+				
+				triggerPopup("New Tool: " + shape + ("" if not Globals.isArchipelago else " From: " + Archipelago.conn.get_player_name(archipelagoInfo.src_player_id)),scanTypes.TOOL)
 	elif Globals.allToolShapes.has(shape):
-		if not Globals.availibleShapes.has(shape):
-			Globals.availibleShapes.append(shape)
-			triggerPopup("New Shape: " + shape,scanTypes.SHAPE)
+		if Globals.isArchipelago and not calledFromArchipelago:
+			sendArchipelagoItem(Globals.allToolShapes.keys().find(shape) + 1000,shape)
+		else:
+			if not Globals.availibleShapes.has(shape):
+				Globals.availibleShapes.append(shape)
+				triggerPopup("New Shape: " + shape + ("" if not Globals.isArchipelago else " From: " + Archipelago.conn.get_player_name(archipelagoInfo.src_player_id)),scanTypes.SHAPE)
 	elif Globals.enemySpawnShapes.has(shape):
 		if not Globals.actionsScanned.has(shape):
 			Globals.actionsScanned.append(shape)
+			if Globals.isArchipelago: if len(Globals.actionsScanned) == len(Globals.getActions()): finishArchipelago()
 			triggerPopup("New Action Triggered: SPAWNED_" + shape,scanTypes.ACTION)
-		var enemy = load("res://Scenes/"+shape+".tscn").instantiate()
-		enemy.position = map_to_local(local_to_map(Globals.playerRef.position))
-		await get_tree().create_timer(2).timeout
-		get_parent().add_child(enemy)
+		
+		var pos = map_to_local(local_to_map(Globals.playerRef.position))
+		summonEnemy(pos,shape)
+		if Globals.isMultiplayer:
+			rpc("summonEnemy",pos,shape)
 	elif Globals.structureShapes.keys().has(shape):
 		
 		match shape:
 			"RANDOM_GENERATION":
-				heightGeneration(getShape(Vector3i.ZERO,"200_SQR"))
+				var cells = await heightGeneration(getShape(Vector3i.ZERO,"200_SQR"))
+				buildCells(cells,Vector3(0,0,0),false,null,true)
+				if Globals.isMultiplayer:
+					rpc("buildCells",cells,Vector3(0,0,0),false,null,true)
+			"START":
+				startCells()
 			_:
 				var cells = Globals.structureShapes[shape].duplicate()
 				
@@ -312,10 +381,13 @@ func runShape(shape:String,center:Vector2i):
 						pos = map_to_local(pos)
 						i.position += pos
 				
-				buildCells(cells,playerPos,isComplexStructure,structureGrid)
+				buildCells(cells,playerPos,isComplexStructure,shape)
+				if Globals.isMultiplayer:
+					rpc("buildCells",cells,playerPos,isComplexStructure,shape)
 		
 		if not Globals.actionsScanned.has(shape):
 			Globals.actionsScanned.append(shape)
+			if Globals.isArchipelago: if len(Globals.actionsScanned) == len(Globals.getActions()): finishArchipelago()
 			triggerPopup("New Action Triggered: BUILT_" + shape,scanTypes.ACTION)
 	elif Globals.colorShapes.has(shape):
 		setColor(shape)
@@ -323,11 +395,12 @@ func runShape(shape:String,center:Vector2i):
 	else:
 		if not Globals.actionsScanned.has(shape):
 			Globals.actionsScanned.append(shape)
+			if Globals.isArchipelago: if len(Globals.actionsScanned) == len(Globals.getActions()): finishArchipelago()
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
 			panel.get_child(0).text = shape
 			panel.custom_minimum_size = Vector2(140,60)
-			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).add_child(panel)
+			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
 			triggerPopup("New Action Triggered: " + shape,scanTypes.ACTION)
 		else:
 			triggerPopup("Action Triggered: " + shape,scanTypes.OTHER)
@@ -376,31 +449,23 @@ func runShape(shape:String,center:Vector2i):
 			"DIAMOND":
 				if Globals.mcToolLevel == "GOLD" or Globals.mcToolLevel == "IRON":
 					Globals.mcToolLevel = "DIAMOND"
+				addCurrency("DIAMONDS",1.0)
 			"NETHERITE":
 				if Globals.mcToolLevel == "DIAMOND":
 					Globals.mcToolLevel = "NETHERITE"
 			"SMALL_SPEED":
-				Globals.playerRef.speedMultipliers.append(["+",2])
-				$SmallSpeed.start()
-				await $SmallSpeed.timeout
-				Globals.playerRef.speedMultipliers.erase(["+",2])
+				multiplyAttribute("speed",["+",2],10)
 			"NO":
 				Globals.playerRef.position.y = -1
 			"THUMB":
 				if randi_range(0,1) == 0:
-					Globals.playerRef.speedMultipliers.append(["/",3])
-					await get_tree().create_timer(4).timeout
-					Globals.playerRef.speedMultipliers.erase(["/",3])
+					multiplyAttribute("speed",["/",3],4)
 				else:
-					Globals.playerRef.speedMultipliers.append(["*",3])
-					await get_tree().create_timer(4).timeout
-					Globals.playerRef.speedMultipliers.erase(["*",3])
+					multiplyAttribute("speed",["*",3],4)
 			"DOT":
 				if not Globals.playerRef.get_node("CeilRay").is_colliding(): Globals.playerRef.position.y += 1
 			"L_HA":
-				Globals.playerRef.speedMultipliers.append(["/",4])
-				await get_tree().create_timer(6).timeout
-				Globals.playerRef.speedMultipliers.erase(["/",4])
+				multiplyAttribute("speed",["/",4],6)
 			"CHAIR":
 				Globals.playerRef.sitting = not Globals.playerRef.sitting
 			"CROWN":
@@ -412,21 +477,52 @@ func runShape(shape:String,center:Vector2i):
 					i.position.y = 1
 			"WALKING_PERSON":
 				Globals.playerRef.strength += 0.25
-				Globals.playerRef.speedMultipliers.append(["*",1.5])
-				await get_tree().create_timer(8).timeout
-				Globals.playerRef.speedMultipliers.erase(["*",1.5])
+				multiplyAttribute("speed",["*",1.5],8)
 			"TEA":
 				Globals.playerRef.strength += 5
 			"FLOAT":
-				Globals.playerRef.floating = true
-				await get_tree().create_timer(10).timeout
-				Globals.playerRef.floating = false
+				multiplyAttribute("gravity",["/",4],10)
+			"BOUNCE":
+				Globals.playerRef.velocity *= -1
+			"UNDERSIDE":
+				Globals.playerRef.position.y *= -1
+				multiplyAttribute("gravity",["*",-1],12)
+			"MULTIGRAVITY":
+				multiplyAttribute("gravity",["*",2],9)
+			"SCALE_UP":
+				multiplyAttribute("scale",["*",2],12)
+			"SCALE_DOWN":
+				multiplyAttribute("scale",["/",2],12)
+			"MED_SPEED":
+				multiplyAttribute("speed",["+",5],10)
+			"RANDOM_ACTION":
+				while true:
+					var action = Globals.shapes.keys().pick_random()
+					if not (Globals.tools.keys().has(shape) or Globals.allToolShapes.has(shape)):
+						runShape(action,Vector2i.ZERO,true)
+						break
+			"CURRENCY_CUBICS":
+				addCurrency("CUBICS",1)
+			"CURRENCY_AGNI":
+				addCurrency("AGNI",20)
 
+@rpc("any_peer","call_remote")
+func summonEnemy(pos:Vector3,shape:String):
+	var enemy = load("res://Scenes/"+shape+".tscn").instantiate()
+	enemy.position = pos
+	await get_tree().create_timer(2).timeout
+	get_parent().add_child(enemy)
+
+@rpc("any_peer","call_remote")
 func buildCells(cells:Array,onPosition:Vector3,isComplexStructure:=false,structureGrid=null,matchGround:=false) -> void:
+	if typeof(structureGrid) == TYPE_STRING and isComplexStructure: structureGrid = load(Globals.complexStructures[structureGrid]).instantiate()
 	var structureSize = len(cells)
 	var floatingCells = []
 	var usedFloatingCells = false
 	var repeatAmount = ceil(structureSize / 100.0) if structureSize < 5000 else 200
+	
+	if structureSize > 3000:
+		usedFloatingCells = true
 	
 	while not cells.is_empty():
 		for i in range(repeatAmount):
@@ -471,11 +567,15 @@ func triggerPopup(text:String,type:scanTypes) -> void:
 	label.label_settings.font_size = 30
 	label.text = text
 	var panel = PanelContainer.new()
-	panel.modulate = {scanTypes.TOOL:Color(1.0, 0.0, 0.0, 1.0),scanTypes.SHAPE:Color(0.0, 0.0, 1.0, 1.0),scanTypes.ACTION:Color(0.0, 1.0, 0.0, 1.0),scanTypes.OTHER:Color(0.2,0.2,0.2)}[type]
+	panel.modulate = popupColors[type]
 	panel.add_child(label)
 	panel.name = text
 	Globals.cameraRef.get_child(0).get_node("PopupBox").add_child(panel)
-	await get_tree().create_timer(2).timeout
+	
+	Globals.allPopups.append(text)
+	print_rich("[color="+popupColors[type].to_html(false)+"]"+text+"[/color]")
+	
+	await get_tree().create_timer(popupTime).timeout
 	if is_instance_valid(panel):
 		panel.queue_free()
 
@@ -495,7 +595,7 @@ func setColor(colorName:String) -> void:
 	for meshIndex:int in Array(mesh_library.get_item_list()):
 		mesh_library.get_item_mesh(meshIndex).material.albedo_color = Globals.colorShapes[colorName][meshIndex]
 
-func getShape(center:Vector3i,shape) -> Array:
+static func getShape(center:Vector3i,shape) -> Array:
 	if typeof(shape) == TYPE_STRING:
 		shape = Globals.allToolShapes[shape]
 	if shape == {}: return []
@@ -528,20 +628,28 @@ func getShape(center:Vector3i,shape) -> Array:
 					if x > y: continue
 					if not result.has(Vector2i(x + center.x,y + center.z)):
 						result.append(Vector2i(x + center.x,y + center.z))
+		Globals.types.LOOP:
+			result = rectPoints(shape.x,shape.y,Vector2(center.x-(floor(shape.x/2)),center.z-(floor(shape.y/2))))
+			for i in rectPoints(shape.x-2,shape.y-2,Vector2(center.x-(floor(shape.x/2))+shape.w,center.z-(floor(shape.y/2))+shape.w)): result.erase(i)
+		Globals.types.CIRCLE:
+			result = rectPoints(shape.d+1,shape.d+1,Vector2(center.x-(floor(shape.d/2)),center.z-(floor(shape.d/2))))
+			for i in (result.duplicate_deep()):
+				if abs(pow((i.x - center.x + floor(shape.d/2.0)) - floor(shape.d/2),2) + pow((i.y - center.z - floor(shape.d/2.0)) + floor(shape.d/2),2)) > pow(floor(shape.d/2),2):
+					result.erase(i)
 	return result
 
-func rectPoints(x:int,y:int,tl:Vector2i):
+static func rectPoints(x:int,y:int,tl:Vector2i):
 	var result = []
 	for xRan in range(0,x):
 		for yRan in range(0,y):
 			result.append(Vector2i(xRan,yRan) + tl)
 	return result
 
-func sorted(array:Array) -> Array:
+static func sorted(array:Array) -> Array:
 	array.sort()
 	return array
 
-func makeStandard(list:Array) -> Array:
+static func makeStandard(list:Array) -> Array:
 	if list.is_empty(): return []
 	var mins = list[0]
 	for i in list:
@@ -586,7 +694,7 @@ func mode(array:Array):
 			result[i] = 1
 	return result.find_key(result.values().max())
 
-func heightGeneration(shapeCells:Array):
+func heightGeneration(shapeCells:Array) -> Array:
 	var cells = []
 	var cellsToYVals = {}
 	
@@ -595,7 +703,7 @@ func heightGeneration(shapeCells:Array):
 		cellsToYVals[i] = 0
 	
 	var grid = GridMap.new()
-	grid.mesh_library = load("res://MeshLibrary.tres")
+	grid.mesh_library = load("res://Sprites/MeshLibraries/MeshLibrary.tres")
 	grid.cell_size = Vector3(1,1,1)
 	
 	var leftCells = cellsToYVals.keys().duplicate(true)
@@ -633,7 +741,7 @@ func heightGeneration(shapeCells:Array):
 				yVal = mode(surroundingYVals)
 		else:
 			yVal += heightMap.pick_random()
-		yVal = clamp(yVal,1,maxHeight)
+		yVal = clamp(yVal,1,Globals.maxHeight)
 		
 		cellsToYVals[currentCell] = yVal
 		
@@ -659,15 +767,7 @@ func heightGeneration(shapeCells:Array):
 						3:
 							heightMap.append(2)
 		
-		var possibleNextCells = []
-		for x in range(currentCell.x - 1,currentCell.x + 2):
-			for y in range(currentCell.y - 1,currentCell.y + 2):
-				possibleNextCells.append(Vector2i(x,y))
-		possibleNextCells = possibleNextCells.filter(func(e): return leftCells.has(e))
-		if not possibleNextCells.is_empty():
-			nextCell = possibleNextCells.pick_random()
-		else:
-			nextCell = null
+		nextCell = pickNextCell(currentCell,leftCells)
 		
 		if len(leftCells) % 20 == 0:
 			await get_tree().process_frame
@@ -691,7 +791,7 @@ func heightGeneration(shapeCells:Array):
 				yVal = mode(surroundingYVals)
 			elif len(surroundingYVals.filter(func(e): return e > yVal)) > 6:
 				yVal += 1
-		yVal = clamp(yVal,1,maxHeight)
+		yVal = clamp(yVal,1,Globals.maxHeight)
 		
 		cellsToYVals[currentCell] = yVal
 		
@@ -715,24 +815,43 @@ func heightGeneration(shapeCells:Array):
 					if value != 0: surroundingYVals.append(value)
 		
 		for y in range(surroundingYVals.min(), i.y - 1):
-			cells.append(Vector3i(i.x,clamp(y + 1,1,maxHeight),i.z))
+			cells.append(Vector3i(i.x,clamp(y + 1,1,Globals.maxHeight),i.z))
 	
-	buildCells(addStructures(cells),Vector3(0,0,0),false,null,true)
+	return addStructures(cells)
+
+func pickNextCell(currentCell:Vector2i,leftCells:Array):
+	var result = null
+	var distance = 1
+	
+	while result == null:
+		var possibleNextCells = []
+		for x in range(currentCell.x - distance,currentCell.x + distance + 1):
+			for y in range(currentCell.y - distance,currentCell.y + distance + 1):
+				possibleNextCells.append(Vector2i(x,y))
+		possibleNextCells = possibleNextCells.filter(func(e): return leftCells.has(e))
+		if not possibleNextCells.is_empty():
+			result = possibleNextCells.pick_random()
+		elif randi_range(0,53) == 0:
+			return null
+		distance += 1
+	
+	return result
 
 func addStructures(cells:Array) -> Array:
-	var structureOrigins = []
-	@warning_ignore("static_called_on_instance")
-	var structures = {"FOUNTAIN":Globals.loadVoxels("res://Scenes/StructureMaps/tut_map.tscn")}
-	for i in range(randi_range(2,30)):
-		var origin = cells.pick_random()
-		if structureOrigins.filter(func(e:Vector3i): return e.distance_to(origin) < 20).is_empty():
-			structureOrigins.append(origin)
-			
-			cells += structures.values().pick_random()
-	
 	return cells
+	#var structureOrigins = []
+	#@warning_ignore("static_called_on_instance")
+	#var structures = {"FOUNTAIN":Globals.loadVoxels("res://Scenes/StructureMaps/tut_map.tscn")}
+	#for i in range(randi_range(2,30)):
+		#var origin = cells.pick_random()
+		#if structureOrigins.filter(func(e:Vector3i): return e.distance_to(origin) < 20).is_empty():
+			#structureOrigins.append(origin)
+			#
+			#cells += structures.values().pick_random()
+	#
+	#return cells
 
-func getHeighestCell(pos:Vector2i) -> int:
+func getHeighestCell(pos:Vector2i,maxHeight:int=Globals.maxHeight) -> int:
 	var result = 0
 	var currentIndex = maxHeight
 	while result == 0 and currentIndex > 0:
@@ -742,3 +861,50 @@ func getHeighestCell(pos:Vector2i) -> int:
 			currentIndex -= 1
 	
 	return result
+
+@rpc("any_peer","call_remote")
+func sendMap() -> void:
+	var result = {}
+	for i in get_used_cells():
+		result[i] = get_cell_item(i)
+	rpc_id(multiplayer.get_remote_sender_id(),"resetMap",result)
+
+@rpc("authority","call_remote")
+func resetMap(mapInfo:Dictionary) -> void:
+	clear()
+	for i in mapInfo:
+		set_cell_item(i,mapInfo[i])
+
+func multiplyAttribute(attribute:String,value:Array,time:float):
+	Globals.playerRef.multipliers[attribute].changes.append(value)
+	Globals.playerRef.updateMultipliers()
+	await get_tree().create_timer(time).timeout
+	Globals.playerRef.multipliers[attribute].changes.erase(value)
+	Globals.playerRef.updateMultipliers()
+
+func addCurrency(type:String,amount:float) -> void:
+	if Globals.currencies.has(type):
+		Globals.currencies[type] += amount
+	else:
+		Globals.currencies[type] = amount
+	
+	var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
+	panel.selectable = false
+	panel.get_child(0).text = type + ": " + str(Globals.currencies[type])
+	panel.custom_minimum_size = Vector2(140,60)
+	
+	Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer")
+
+func sendArchipelagoItem(id:int,shape:String) -> void:
+	if not Globals.archipelagoLocationsFound.has(shape):
+		Globals.archipelagoLocationsFound.append(shape)
+		Archipelago.collect_location(id)
+		Archipelago.conn.scout(id,0,archipelagoPopup)
+
+func archipelagoPopup(info:NetworkItem) -> void:
+	var playerName = Archipelago.conn.get_player_name(info.src_player_id)
+	var itemName = info.get_name()
+	triggerPopup("Archipelago Item: " + playerName + "'s " + itemName,scanTypes.ARCHIPELAGO_SEND)
+
+func finishArchipelago() -> void:
+	Archipelago.set_client_status(AP.ClientStatus.CLIENT_GOAL)

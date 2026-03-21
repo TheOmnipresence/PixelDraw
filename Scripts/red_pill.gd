@@ -8,6 +8,9 @@ extends CharacterBody3D
 @export var isBird = false
 @export var birdHeight = 0
 
+@export var statusReward : StatusEffect
+
+var paralyzed = false
 var i_frames = 0.0
 
 var savedVelocity : Vector3
@@ -19,8 +22,9 @@ func _physics_process(delta: float) -> void:
 		if isBird: gravity /= 10
 		velocity += (gravity if $AntigravityTimer.is_stopped() else -gravity) * delta
 	
-	velocity += savedVelocity
-	savedVelocity = Vector3(0,0,0)
+	if not paralyzed:
+		velocity += savedVelocity
+		savedVelocity = Vector3(0,0,0)
 	
 	if i_frames <= 0:
 		i_frames = 0
@@ -42,15 +46,23 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0, SPEED / 60)
 	
 	
-	
 	if position.y < -200:
+		if statusReward != null:
+			Globals.playerRef.addStatus(statusReward.status,statusReward.initialTime)
 		queue_free()
 	
+	if paralyzed: velocity = Vector3.ZERO
 	move_and_slide()
 
 
 func _on_area_3d_body_entered(_body: Node3D) -> void:
 	if i_frames > 0: return
 	i_frames = 3.0
-	Globals.playerRef.savedVelocity = - ((Globals.playerRef.position - (Globals.respawnPoint)).normalized() * 20 * knockbackMultiplier)
-	Globals.playerRef.savedVelocity.y *= -1
+	Globals.playerRef.takeKnockback(knockbackMultiplier)
+
+func paralyze(time:float) -> void:
+	paralyzed = true
+	var vel = velocity
+	await get_tree().create_timer(time).timeout
+	paralyzed = false
+	velocity = vel

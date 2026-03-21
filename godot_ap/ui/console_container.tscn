@@ -46,6 +46,7 @@ focus_next = NodePath("../../../../../TypingBar")
 focus_previous = NodePath("../../../../../TypingBar")
 
 [node name="TypingBar" parent="." instance=ExtResource("3_e1fkb")]
+custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
 keep_editing_on_text_submit = true
 caret_blink = true

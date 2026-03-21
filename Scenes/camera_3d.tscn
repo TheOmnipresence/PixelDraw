@@ -1,0 +1,540 @@
+[gd_scene load_steps=6 format=3 uid="uid://b6xwkcre57k6h"]
+
+[ext_resource type="Script" uid="uid://c7tdfafjs15ad" path="res://Scripts/camera.gd" id="1_qxdsw"]
+[ext_resource type="PackedScene" uid="uid://wjyhyg46r80y" path="res://Scenes/bar_panel.tscn" id="2_fxq6n"]
+[ext_resource type="Script" uid="uid://cg3mkk8gg42s4" path="res://Scripts/console_tab.gd" id="3_jvsei"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_fxq6n"]
+font_size = 21
+shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_qxdsw"]
+line_spacing = 1.0
+font_color = Color(0.47058824, 0.47058824, 0.47058824, 1)
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+
+[node name="Camera3D" type="Camera3D"]
+process_mode = 3
+script = ExtResource("1_qxdsw")
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="PopupBox" type="VBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+alignment = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -549.0
+offset_top = -60.0
+offset_right = 387.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+alignment = 1
+
+[node name="PanelContainer" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer2" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer3" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer4" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer5" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer6" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer7" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer8" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer9" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer10" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 103
+theme_override_constants/margin_right = 5
+metadata/_edit_lock_ = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+
+[node name="TabBar" type="TabBar" parent="HUD/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+current_tab = 0
+tab_count = 10
+tab_0/title = "Setup"
+tab_1/title = "Tools"
+tab_2/title = "Shapes"
+tab_3/title = "Actions"
+tab_4/title = "Menu"
+tab_5/title = "Archipelago"
+tab_6/title = "Console"
+tab_7/title = "Multiplayer"
+tab_8/title = "Money"
+tab_9/title = "Saves"
+
+[node name="CompassLabel" type="Label" parent="HUD/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "N"
+label_settings = SubResource("LabelSettings_fxq6n")
+
+[node name="SetupTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="ShapeBar" type="HBoxContainer" parent="HUD/SetupTab"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -549.0
+offset_top = -133.0
+offset_right = 387.0
+offset_bottom = -63.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+alignment = 1
+
+[node name="PanelContainer" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer2" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer3" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer4" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer5" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer6" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer7" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer8" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer9" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer10" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="ToolsGrid" type="GridContainer" parent="HUD/SetupTab"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+columns = 5
+
+[node name="ScannerBox" type="VBoxContainer" parent="HUD/SetupTab"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 94.0
+offset_bottom = 128.0
+mouse_filter = 2
+
+[node name="PanelContainer" parent="HUD/SetupTab/ScannerBox" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="PanelContainer2" parent="HUD/SetupTab/ScannerBox" instance=ExtResource("2_fxq6n")]
+layout_mode = 2
+
+[node name="ShapesBox" type="GridContainer" parent="HUD/SetupTab"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -20.0
+offset_bottom = 20.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+columns = 2
+
+[node name="ToolsTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_bottom = 300.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/margin_top = 50
+
+[node name="ToolFindPanel" type="PanelContainer" parent="HUD/ToolsTab/MarginContainer"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/MarginContainer"]
+texture_filter = 1
+layout_mode = 2
+stretch_mode = 4
+
+[node name="ShapesTab" type="Control" parent="HUD"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab"]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/margin_left = 103
+theme_override_constants/margin_top = 50
+
+[node name="ShapeFindPanel" type="PanelContainer" parent="HUD/ShapesTab/MarginContainer"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/MarginContainer"]
+texture_filter = 1
+layout_mode = 2
+stretch_mode = 4
+
+[node name="ActionsTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/ActionsTab"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.076000005
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -0.24800491
+metadata/_edit_lock_ = true
+
+[node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer"]
+layout_mode = 2
+mouse_filter = 2
+columns = 7
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_bottom = 300.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/margin_top = 50
+metadata/_edit_lock_ = true
+
+[node name="ActionFindPanel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/MarginContainer"]
+texture_filter = 1
+layout_mode = 2
+stretch_mode = 4
+
+[node name="MenuTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="Button" type="Button" parent="HUD/MenuTab"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -4.0
+offset_top = -4.0
+offset_right = 4.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+text = "End Journey"
+
+[node name="ArchipelagoTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="Console" type="Control" parent="HUD/ArchipelagoTab"]
+layout_mode = 1
+anchor_top = 0.069000006
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.28799438
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="Positioner" type="Control" parent="HUD/ArchipelagoTab/Console"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="ConsoleTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_jvsei")
+metadata/_edit_lock_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ConsoleTab"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -58.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="HUD/ConsoleTab/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_qxdsw")
+
+[node name="LineEdit" type="LineEdit" parent="HUD/ConsoleTab/VBoxContainer"]
+z_index = 1
+layout_mode = 2
+keep_editing_on_text_submit = true
+
+[node name="MultiplayerTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/MultiplayerTab"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -176.0
+offset_bottom = 116.0
+grow_horizontal = 0
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 5
+metadata/_edit_lock_ = true
+
+[node name="PanelContainer" type="PanelContainer" parent="HUD/MultiplayerTab/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Host" type="Button" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Host Game"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Join" type="Button" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Join with IP:"
+
+[node name="Code" type="LineEdit" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(192, 0)
+layout_mode = 2
+
+[node name="IPLabel" type="Label" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 2
+mouse_filter = 0
+horizontal_alignment = 1
+
+[node name="MoneyTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="CurrencyContainer" type="GridContainer" parent="HUD/MoneyTab"]
+layout_mode = 0
+offset_top = 49.0
+offset_right = 40.0
+offset_bottom = 89.0
+mouse_filter = 2
+columns = 7
+
+[node name="SavesTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SavesTab"]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 45
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SavesTab/MarginContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+alignment = 1
+
+[connection signal="tab_changed" from="HUD/MarginContainer/HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
+[connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/Host" to="." method="hostMultiplayer"]
+[connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Join" to="." method="joinMultiplayer"]
+[connection signal="text_submitted" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Code" to="." method="joinMultiplayer"]

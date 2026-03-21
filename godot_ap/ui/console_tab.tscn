@@ -7,9 +7,9 @@
 [ext_resource type="FontVariation" uid="uid://by743jyixqnxb" path="res://godot_ap/ui/themes/symbols_font.tres" id="4_t718y"]
 [ext_resource type="Script" uid="uid://cety6nqnci3n6" path="res://godot_ap/ui/updown_lineedit.gd" id="5_dfvvx"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ksdsn"]
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1cnti"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ksdsn"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_8fs71"]
 font_size = 20
@@ -139,8 +139,8 @@ layout_mode = 2
 
 [node name="ShowPwd" type="CheckBox" parent="ConnectBox/Row/Box/Margins/VBox/Content/HBox"]
 layout_mode = 2
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_ksdsn")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_1cnti")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ksdsn")
 
 [node name="Label4" type="Label" parent="ConnectBox/Row/Box/Margins/VBox/Content/HBox"]
 layout_mode = 2
@@ -179,9 +179,5 @@ size_flags_horizontal = 3
 disabled = true
 text = "Disconnect"
 
-[connection signal="text_submitted" from="ConnectBox/Row/Box/Margins/VBox/Content/IP_Box" to="ConnectBox/Row/Box/Margins/VBox/Content" method="try_connection" unbinds=1]
-[connection signal="text_submitted" from="ConnectBox/Row/Box/Margins/VBox/Content/Port_Box" to="ConnectBox/Row/Box/Margins/VBox/Content" method="try_connection" unbinds=1]
-[connection signal="text_submitted" from="ConnectBox/Row/Box/Margins/VBox/Content/Slot_Box" to="ConnectBox/Row/Box/Margins/VBox/Content" method="try_connection" unbinds=1]
-[connection signal="text_submitted" from="ConnectBox/Row/Box/Margins/VBox/Content/Pwd_Box" to="ConnectBox/Row/Box/Margins/VBox/Content" method="try_connection" unbinds=1]
 [connection signal="pressed" from="ConnectBox/Row/Box/Margins/VBox/ButtonRow/ConnectBtn" to="ConnectBox/Row/Box/Margins/VBox/Content" method="try_connection"]
 [connection signal="pressed" from="ConnectBox/Row/Box/Margins/VBox/ButtonRow/DisconnectBtn" to="ConnectBox/Row/Box/Margins/VBox/Content" method="kill_connection"]

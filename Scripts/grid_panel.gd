@@ -11,7 +11,7 @@ func _ready() -> void:
 		$Node/DescriptionContainer.position.x += 50
 
 func _input(event: InputEvent) -> void:
-	if selectable:
+	if selectable and get_tree().paused:
 		if event is InputEventKey:
 			if hovering and event.is_pressed():
 				if (OS.get_keycode_string(event.keycode)).left(1) == str(int((OS.get_keycode_string(event.keycode)))).left(1):
@@ -19,6 +19,8 @@ func _input(event: InputEvent) -> void:
 						Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1] = Globals.tools.keys().find($Label.text) as Globals.tools
 						Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ShapeBar").get_child(int(OS.get_keycode_string(event.keycode)) - 1).get_child(-1).text = "NONE"
 						Globals.toolShapes[Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1]] = "NONE"
+						
+						Globals.cameraRef.updateBar()
 					else:
 						if Globals.toolsCompatibility[Globals.tools.keys()[(Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1])]].has($Label.text):
 							Globals.toolShapes[Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1]] = $Label.text
@@ -29,6 +31,8 @@ func _input(event: InputEvent) -> void:
 							Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ShapeBar").get_child(int(OS.get_keycode_string(event.keycode)) - 1).get_child(-1).text = $Label.text
 							if Globals.baseShape == Globals.allToolShapes[$Label.text]:
 								Globals.baseShape = {}
+							
+							Globals.cameraRef.updateBar()
 		if event.is_action("mouse1"):
 			if hovering and event.is_pressed():
 				if not isTool:

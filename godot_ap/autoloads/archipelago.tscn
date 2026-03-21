@@ -5,6 +5,8 @@
 
 [sub_resource type="Resource" id="Resource_pmgvy"]
 script = ExtResource("2_2e7gq")
+major = 1
+build = 3
 
 [sub_resource type="Resource" id="Resource_m1v20"]
 script = ExtResource("2_2e7gq")
@@ -12,6 +14,7 @@ minor = 5
 
 [node name="AP" type="Node"]
 script = ExtResource("1_41ph8")
+AP_GAME_NAME = "PixelDraw"
 AP_CLIENT_VERSION = SubResource("Resource_pmgvy")
 AP_VERSION = SubResource("Resource_m1v20")
 

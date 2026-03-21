@@ -2,45 +2,85 @@ extends Node
 
 var firstPause = true
 
+@warning_ignore("unused_signal")
+signal player_ready
 var playerRef
 var cameraRef
+var gridRef:GridMap
+var cheatsOn = false
+var allPopups = []
 var mcToolLevel := "WOOD"
 var mcBlocks = 0
-var actionsScanned = []
+const VARS_TO_SAVE = [
+	"actionsScanned",
+	"availibleTools",
+	"availibleShapes",
+	"mcToolLevel",
+	"mcBlocks",
+	"currencies",
+	"respawnPoint",
+	"archipelagoLocationsFound",
+]
+var actionsScanned = []:
+	set(value):
+		for shape in value:
+			if isArchipelago: if len(actionsScanned) == len(getActions()): gridRef.finishArchipelago()
+			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
+			panel.selectable = false
+			panel.get_child(0).text = shape
+			panel.custom_minimum_size = Vector2(140,60)
+			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
+		actionsScanned = value
+var currencies = {}
 var respawnPoint := Vector3(0,2,0)
 var hoveringTool = "NONE"
 var hoveringShape = "NONE"
 var barLayout = [tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE]
 var barIndex = 0
-var availibleTools = [tools.NONE]
-enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE}
+var availibleTools = [tools.NONE]:
+	set(value):
+		if typeof(value[0]) == TYPE_FLOAT or typeof(value[0]) == TYPE_INT:
+			availibleTools = value.map(func(e): return int(e) as tools)
+		toolShapes.clear()
+		for i in cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").get_children(): i.queue_free()
+		
+		for i in availibleTools:
+			toolShapes[i] = "NONE"
+			var gridPanel = preload("res://Scenes/grid_panel.tscn").instantiate()
+			gridPanel.get_child(0).text = tools.keys()[i]
+			cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
+enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE,LOOP,CIRCLE}
 var baseShape = {"type":types.RECT,"x":3,"y":3}
-enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN}
-var toolsCompatibility = {
+enum allStatuses {NONE,SPEED}
+const maxHeight = 300
+enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS}
+const toolsCompatibility = {
 	"NONE":[],
 	"VOIDER":[],
 	"ERASER":[],
-	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																						],
-	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																	],
-	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI"								],
-	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR"																																						],
-	"SHUFFLER":[	"NONE",						"5_SQR"																																									],
-	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																				],
-	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN"																								],
-	"MC_PICK":[		"NONE",																										"7_LINE"																				],
-	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC"																	],
-	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"										],
-	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN"																								],
-	"STAMPER":[		"NONE",									"6_SQR"																																						],
-	"GRAVITATE":[	"NONE",																																							"5_TRI"								],
-	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR"													],
-	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",	],
+	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																									],
+	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																				],
+	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI"											],
+	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR"																																									],
+	"SHUFFLER":[	"NONE",						"5_SQR"																																												],
+	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																							],
+	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN"																											],
+	"MC_PICK":[		"NONE",																										"7_LINE"																							],
+	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC"																				],
+	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"													],
+	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN"																											],
+	"STAMPER":[		"NONE",									"6_SQR"																																									],
+	"GRAVITATE":[	"NONE",																																							"5_TRI"											],
+	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR"																],
+	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",				],
+	"PARALYZER":[	"NONE",																																																"7_SQC",	],
+	"PLATFORMS":[	"NONE",																																										"50_SQR",				"7_SQC",	],
 }
 var currentTool = tools.NONE
-var enemySpawnShapes = ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"]
+const enemySpawnShapes = ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"]
 var toolShapes = {tools.NONE:"BASE_RECT"}
 var availibleShapes = ["NONE","BASE_RECT"]
-var allToolShapes = {
+const allToolShapes = {
 	"NONE":{},
 	"BASE_RECT":{"type":types.RECT,"x":3,"y":3},
 	"5_SQR":{"type":types.RECT,"x":5,"y":5},
@@ -57,6 +97,9 @@ var allToolShapes = {
 	"5_TRI":{"type":types.TRIANGLE,"x":5,"y":5},
 	"50_SQR":{"type":types.RECT,"x":50,"y":50},
 	"200_SQR":{"type":types.RECT,"x":200,"y":200},
+	"7_LOOP":{"type":types.LOOP,"x":7,"y":7,"w":1},
+	"7_SQC":{"type":types.SQUIRCLE,"x":7,"y":7},
+	"8_CIR":{"type":types.CIRCLE,"d":8},
 }
 var structureShapes = {
 	"TOWER":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0),Vector3i(0,4,0),Vector3i(1,1,0),Vector3i(1,2,0),Vector3i(1,3,0),Vector3i(1,4,0),Vector3i(1,1,1),Vector3i(1,2,1),Vector3i(1,3,1),Vector3i(1,4,1),Vector3i(0,1,1),Vector3i(0,2,1),Vector3i(0,3,1),Vector3i(0,4,1)                ,Vector3i(-1,1,0),Vector3i(-1,2,0),Vector3i(-1,3,0),Vector3i(-1,4,0),Vector3i(-1,1,-1),Vector3i(-1,2,-1),Vector3i(-1,3,-1),Vector3i(-1,4,-1),Vector3i(0,1,-1),Vector3i(0,2,-1),Vector3i(0,3,-1),Vector3i(0,4,-1)],
@@ -66,16 +109,25 @@ var structureShapes = {
 	"TUT_AREA":loadVoxels("res://Scenes/StructureMaps/tut_map.tscn"),
 	"TUT_AREA_2":loadVoxels("res://Scenes/StructureMaps/tut_map_2.tscn"),
 	"TUT_AREA_3":loadVoxels("res://Scenes/StructureMaps/tut_map_3.tscn"),
-	"RANDOM_GENERATION":[]
+	"RANDOM_GENERATION":[],
+	"START":[]
 }
 const complexStructures = {
 	"TUT_AREA":"res://Scenes/StructureMaps/tut_map.tscn",
 	"TUT_AREA_2":"res://Scenes/StructureMaps/tut_map_2.tscn",
 	"TUT_AREA_3":"res://Scenes/StructureMaps/tut_map_3.tscn"
 }
-var colorShapes = {
+const colorShapes = {
 	"NORMAL_COLOR":[Color.BLACK,Color.WHITE,Color(0.57,0.57,0.57),Color(0.04,0.04,0.04)],
 	"C_GOL_COLOR":[Color(0.0, 0.0, 0.0, 1.0),Color(1.0, 1.0, 0.0, 1.0),Color(1,1,1),Color(1,1,1)]
+}
+var currencyExchangeRates = { # To cubics
+	"CUBICS":1.0,
+	"USD":100.0,
+	"DIAMONDS":(6.7027791 * pow(10,-8)),
+	"GEO":(100.0/0.225),
+	"ROSARIES":(100.0/0.45),
+	"AGNI":(100.0/0.225)*(1.0/35)
 }
 var shapes = {
 	"NONE":[
@@ -107,8 +159,7 @@ var shapes = {
 		[Vector2i(0,2),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3),Vector2i(2,4),Vector2i(3,1),Vector2i(3,2),Vector2i(3,3),Vector2i(4,2)]
 	],
 	"DUSTER":[
-		[Vector2i(0,0),Vector2i(1,1)],
-		[Vector2i(0,1),Vector2i(1,0)]
+		[Vector2i(0,0),Vector2i(1,1)]
 	],
 	"SHUFFLER":[
 		[Vector2i(0,0),Vector2i(0,1),Vector2i(1,1),Vector2i(1,2),Vector2i(2,1)]
@@ -280,7 +331,7 @@ var shapes = {
 		[Vector2i(0,0),Vector2i(1,1),Vector2i(2,1),Vector2i(2,2)],
 		[Vector2i(0,1),Vector2i(1,0),Vector2i(2,0),Vector2i(2,1)]
 	],
-	"TUT_AREA":[
+	"START":[
 		[Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(2,0),Vector2i(2,1)]
 	],
 	"TUT_AREA_2":[
@@ -304,7 +355,53 @@ var shapes = {
 	"C_GOL_COLOR":[
 		[Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,2),Vector2i(2,1),Vector2i(2,2)]
 	],
+	"CAR":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,1),Vector2i(2,1),Vector2i(2,2)]
+	],
+	"7_LOOP":[
+		loadShape({"type":types.LOOP,"x":5,"y":5,"w":1})
+	],
+	"BOUNCE":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,1),Vector2i(1,2),Vector2i(2,0)]
+	],
+	"UNDERSIDE":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,2),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2)]
+	],
+	"MULTIGRAVITY":[
+		[Vector2i(0,0),Vector2i(1,1),Vector2i(1,2),Vector2i(2,1),Vector2i(2,2)]
+	],
+	"SCALE_UP":[
+		[Vector2i(0,2),Vector2i(1,1),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2)]
+	],
+	"SCALE_DOWN":[
+		[Vector2i(0,0),Vector2i(1,1),Vector2i(2,0),Vector2i(2,2)]
+	],
+	"MED_SPEED":[
+		[Vector2i(0,0),Vector2i(0,2),Vector2i(1,1),Vector2i(2,1)]
+	],
+	"PARALYZER":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,1),Vector2i(2,0),Vector2i(2,2)]
+	],
+	"7_SQC":[
+		[Vector2i(0,1),Vector2i(1,0),Vector2i(1,2),Vector2i(2,1)]
+	],
+	"PLATFORMS":[
+		[Vector2i(0,0),Vector2i(1,1),Vector2i(1,2),Vector2i(2,0),Vector2i(2,2),Vector2i(2,4),Vector2i(3,2),Vector2i(3,3),Vector2i(4,4)]
+	],
+	"200_SQR":[
+		loadShape(allToolShapes["50_SQR"])
+	],
+	"8_CIR":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(0,3),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3),Vector2i(3,3)]
+	],
+	"CURRENCY_CUBICS":[
+		[Vector2i(0,2),Vector2i(1,1),Vector2i(1,2),Vector2i(2,1),Vector2i(3,0),Vector2i(3,1),Vector2i(4,1)]
+	],
+	"CURRENCY_AGNI":[
+		loadPixels("res://Sprites/agni.png")
+	]
 }
+
 static func loadPixels(imagePath:String):
 	var image:Image = load(imagePath).get_image()
 	var result = []
@@ -318,11 +415,9 @@ static func loadVoxels(scenePath:String):
 	var gridmap:GridMap = load(scenePath).instantiate()
 	return gridmap.get_used_cells()
 
-func getUnusedValues(width:int,height:int) -> Array:
-	for x in range(width):
-		for y in range(height):
-			pass
-	return []
+static func loadShape(shape:Dictionary) -> Array:
+	var loader = preload("res://Scripts/random_generation.gd")
+	return loader.makeStandard(loader.getShape(Vector3i.ZERO,shape))
 
 var descriptions = {
 	"NONE":{"name":"Nothing","text":"Really. Nothing."},
@@ -344,6 +439,8 @@ var descriptions = {
 	"GRAVITATE":{"name":"Antigravity Tool","text":"Don't know how this works, but it does. Makes everyone in the area have reversed gravity.","type":"tool"},
 	"SUMMON":{"name":"Summoner","text":"Bring them down! USE ME!!! I WILL BRING YOUR ENEMIES DOWN IF YOU WON'T!!!","type":"tool"},
 	"TERRAIN":{"name":"Terrain","text":"The power of creationism. Create terrain in the area.","type":"tool"},
+	"PARALYZER":{"name":"Paralyzer","text":"I don't know if that's spelled right. Freezes enemies in place.","type":"tool"},
+	"PLATFORMS":{"name":"Platforms","text":"More land!! Yay!","type":"tool"},
 	
 	# "":{"name":"","text":"","type":"tool"},
 	
@@ -361,6 +458,11 @@ var descriptions = {
 	"5_DIAG":{"name":"5 - Diagonal","text":"Spiky","type":"shape"},
 	"16_SQR":{"name":"16 - Square","text":"That's a really big square, too bad it only works with the scanner lol.","type":"shape"},
 	"5_TRI":{"name":"5 - Triangle","text":"It's a triangle yay, we love triangles here","type":"shape"},
+	"50_SQR":{"name":"50 - Square","text":"The penultimate shape.","type":"shape"},
+	"7_LOOP":{"name":"7 - Loop","text":"Not a round loop, that would be a ring.","type":"shape"},
+	"7_SQC":{"name":"7 - Squircle","text":"A bigger squircle! What are these anyways...","type":"shape"},
+	"200_SQR":{"name":"200 - Square","text":"The ultimate shape.","type":"shape"},
+	"8_CIR":{"name":"8 - Circle","text":"A circle in a square world.","type":"shape"},
 	
 	# "":{"name":"","text":"","type":"shape"},
 	
@@ -380,7 +482,7 @@ var descriptions = {
 	"GOLD":{"name":"Gold","text":"A rather cubic (and fragile) resource, even for here. Upgrades tools to gold.","type":"action"},
 	"DIAMOND":{"name":"Diamond","text":"A rather cubic resource, even for here. Upgrades tools to diamond.","type":"action"},
 	"NETHERITE":{"name":"Netherite","text":"A rather cubic resource, even for here. Upgrades tools to netherite.","type":"action"},
-	"SMALL_SPEED":{"name":"Small Speed Boost","text":"Is it a drug? Whatever, we go faster now.","type":"action"},
+	"SMALL_SPEED":{"name":"Small Speed Boost","text":"We go faster now.","type":"action"},
 	"NO":{"name":"No","text":"Passive agressive. Sends you underground.","type":"action"},
 	"THUMB":{"name":"Thumb","text":"Basically flipping a coin. Changes your movement, either in a good way or bad.","type":"action"},
 	"DOT":{"name":"Dot","text":"Very simplistic. Gives you slightly more elevation.","type":"action"},
@@ -392,6 +494,17 @@ var descriptions = {
 	"WALKING_PERSON":{"name":"Walking Person","text":"Gives you strength and speed, just like a person that would walk places and touch grass!!!","type":"action"},
 	"TEA":{"name":"Tea","text":"Pinkies out. BRITISH POWER.","type":"action"},
 	"FLOAT":{"name":"Float","text":"Defy gravitational force.","type":"action"},
+	"NORMAL_COLOR":{"name":"Normal Color Scheme","text":"A very boring palette, just use something else lol","type":"action"},
+	"C_GOL_COLOR":{"name":"Conway's Game of Life Color Scheme","text":"Now this looks cool.","type":"action"},
+	"CAR":{},
+	"BOUNCE":{"name":"Bounce","text":"*bouncy noises*","type":"action"},
+	"UNDERSIDE":{"name":"Underside","text":"Flips your world upside down, kinda","type":"action"},
+	"MULTIGRAVITY":{"name":"Multigravity","text":"Increases your gravity. So helpful.","type":"action"},
+	"SCALE_UP":{"name":"Scale Up","text":"Bigger","type":"action"},
+	"SCALE_DOWN":{"name":"Scale Down","text":"Smaller","type":"action"},
+	"MED_SPEED":{"name":"Medium Speed","text":"We go even faster now.","type":"action"},
+	"CURRENCY_CUBICS":{"name":"Cubics","text":"Suspiciously expensive cubes","type":"action"},
+	"CURRENCY_AGNI":{"name":"Agni","text":"Firey stones from a fallen kingdom.","type":"action"},
 	
 	# "":{"name":"","text":"","type":"action"},
 }
@@ -441,3 +554,169 @@ func visualize(pattern:Array) -> String:
 	return result
 
 var isMultiplayer = false
+var isArchipelago = false
+var archipelagoLocationsFound = []
+const deathlinkMessages = [
+	"\"boop\" - %s",
+	"%s couldn't think of a pop culture refrence to put here",
+	"%s poked at the wrong guy",
+	"%s fought for Aiur",
+	"That's the wrong action, %s",
+	"Oh no, %s lost all their [insert currency here]",
+	"%s's home bed was missing or obstructed",
+	"*sad giraffe noises* - %s",
+	"\"%s has been cubified, sir\"",
+	"%s broke through the shiny wall",
+	"%s's world is looking a little too pixelated",
+	"baba is not %s",
+	"%s fell off of the space platform",
+	"%s walked past elderbug",
+	"The zombies ate %s's brains",
+	"GLaDOS is dissapointed in %s",
+	"%s IS a potato",
+	"%s really wants to turn keep inventory on right now",
+	"%s needs Shakra to help for this fight (apperently)",
+	"What's the point of this wall being here if %s is just gonna breeze right through??",
+	"%s was bonked by an apricot-flavored popsicle",
+	"\"death.fell.accident.water\" - %s",
+	"%s died? Interesting... very Interesting",
+	"%s didn't think that mantis shrimps are cool",
+	"%s didn't think that would do two masks",
+	"%s overreacted",
+]
+
+func testShapes() -> void:
+	var amounts = {}
+	var bitGrid = getBits(16)
+	bitGrid = bitGrid.map(toCells)
+	
+	for i in bitGrid:
+		for shape in gridRef.checkForShapes(gridRef.removeExtras(i)):
+			if amounts.has(shape):
+				amounts[shape] += 1
+			else:
+				amounts[shape] = 1
+	
+	print(amounts)
+	print(len(amounts))
+
+func getBits(length:int) -> Array:
+	if length <= 1: return [[false],[true]]
+	
+	var result = []
+	for i in getBits(length - 1):
+		result.append(i + [false])
+		result.append(i + [true])
+	return result
+
+func toCells(list:Array) -> Dictionary:
+	var result = []
+	var gridSize := ceili(sqrt(len(list)))
+	
+	for x in range(gridSize):
+		if len(list) == len(result): break
+		for y in range(gridSize):
+			if len(list) == len(result): break
+			result.append(Vector2i(x,y))
+	
+	var dictionaryResult = {}
+	for i in result:
+		dictionaryResult[i] = 1 if list[result.find(i)] else 0
+	
+	return dictionaryResult
+
+func checkForErrors() -> void:
+	for i in shapes:
+		if not descriptions.has(i) and not structureShapes.has(i) and not enemySpawnShapes.has(i):
+			printerr("No description for " + i)
+
+func getActions() -> Array:
+	return shapes.keys().filter(func(e): return not allToolShapes.has(e) and not toolsCompatibility.has(e))
+
+func _ready() -> void:
+	Archipelago.connect("connected",(func(_arg,_arg2):
+		isArchipelago = true
+		Archipelago.conn.deathlink.connect(recieveDeathlink)
+		Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,true,e)))
+		Archipelago.conn.force_scout_all()
+		#print(Archipelago.conn.slot_data)
+		Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
+		))
+	Archipelago.connect("disconnected",(func():isArchipelago = true))
+	
+	checkForErrors()
+
+func archipelagoName() -> String:
+	return Archipelago.conn.get_player().get_name()
+
+func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_overlapping_bodies().has(playerRef)),fromDeathlink:=false) -> void:
+	if trueDeath:
+		var deathCause = deathlinkMessages.pick_random() % archipelagoName()
+		gridRef.clear()
+		for x in range(3):
+			for y in range(3):
+				gridRef.set_cell_item(Vector3i(x,0,y),0)
+		for i in shapes["START"][0]:
+			gridRef.set_cell_item(Vector3i(i.x,0,i.y),1)
+		if isArchipelago and not fromDeathlink and Archipelago.is_deathlink(): Archipelago.conn.send_deathlink(deathCause)
+	playerRef.position = Globals.respawnPoint
+	playerRef.velocity = Vector3(0,0,0)
+	playerRef.strength = 0.0
+
+func recieveDeathlink(source:String,cause:String,json:Dictionary) -> void:
+	reset(true,true)
+	#await player_ready
+	gridRef.triggerPopup("Archipelago Deathlink: " + cause,gridRef.scanTypes.ARCHIPELAGO_DEATHLINK)
+	print(source)
+	print(cause)
+	print(json)
+
+func maxLength(list:Array) -> int:
+	var result = list[0].x
+	for i in list:
+		if i.x > result: result = i.x
+		if i.y > result: result = i.y
+	return result
+
+var currentSlot := 0
+
+func saveSlot(slot:int=currentSlot) -> void:
+	if slot == -1:
+		slot = Array(DirAccess.open("user://Data/").get_files()).filter(func(e): return str(e).contains("save")).map(func(e): return int(str(e).replace("save","").replace(".dat",""))).max() + 1
+	
+	if not DirAccess.dir_exists_absolute("user://Data/"): DirAccess.make_dir_absolute("user://Data/")
+	if not FileAccess.file_exists("user://Data/save"+str(slot)+".dat"): FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.WRITE)
+	
+	var file = FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.WRITE)
+	var data = {
+		"actionsScanned":actionsScanned,
+		"availibleTools":availibleTools,
+		"availibleShapes":availibleShapes,
+		"mcToolLevel":mcToolLevel,
+		"mcBlocks":mcBlocks,
+		"currencies":currencies,
+		"respawnPoint":respawnPoint,
+		"archipelagoLocationsFound":archipelagoLocationsFound,
+	}
+	data = toDictionary((func(e): return get(e)),VARS_TO_SAVE)
+	file.store_line(JSON.stringify(data))
+	
+	cameraRef.updateSaves()
+
+func loadSlot(slot:int) -> void:
+	if not DirAccess.dir_exists_absolute("user://Data/"): DirAccess.make_dir_absolute("user://Data/")
+	if not FileAccess.file_exists("user://Data/save"+str(slot)+".dat"): FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.WRITE)
+	var file = FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.READ)
+	var data = JSON.parse_string(file.get_as_text())
+	for i in data:
+		if i in self:
+			set(i,data[i])
+	currentSlot = slot
+	
+	cameraRef.updateSaves()
+
+func toDictionary(function:Callable,list:Array) -> Dictionary:
+	var result = {}
+	for i in list:
+		result[i] = function.call(i)
+	return result

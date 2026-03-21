@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2a0ilk53wfmq"]
+
+[ext_resource type="PackedScene" uid="uid://1ce108r37bjh" path="res://agd/speed-particle.blend" id="1_7b55t"]
+
+[node name="speed-particle" instance=ExtResource("1_7b55t")]

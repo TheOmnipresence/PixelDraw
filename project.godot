@@ -15,6 +15,9 @@ config/version="1.0.0"
 run/main_scene="res://Scenes/main.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/use_filter=false
+boot_splash/image="uid://dejtfu2ulnpmx"
 config/icon="uid://rfngk7m3vyoo"
 
 [autoload]

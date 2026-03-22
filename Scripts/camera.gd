@@ -20,12 +20,11 @@ func _ready() -> void:
 	Archipelago.load_console(console,false)
 	$HUD/ArchipelagoTab/Console/Positioner.add_child(console)
 	
-	updateSaves()
+	for i in [$HUD/ToolsTab/MarginContainer/ToolFindPanel,$HUD/ShapesTab/MarginContainer/ShapeFindPanel,$HUD/ActionsTab/MarginContainer/ActionFindPanel]:
+		i.get_child(0).get_node("HBoxContainer").get_node("Copy").pressed.connect(func(): copyShape(i.get_child(0).get_node("Label").get_meta("data")))
+		i.get_child(0).get_node("HBoxContainer").get_node("Pin").pressed.connect(func(): pinShape(i.get_child(0).get_node("Label").get_meta("data")))
 	
-	#var saveButton := Button.new()
-	#saveButton.text = "Save"
-	#saveButton.pressed.connect(Globals.saveSlot)
-	#$HUD/SavesTab/MarginContainer/VBoxContainer.add_child(saveButton)
+	updateSaves()
 	
 	updateTabs()
 
@@ -56,9 +55,19 @@ func _process(_delta: float) -> void:
 	$HUD/ActionsTab/ScrollContainer/ActionsGrid.columns = (floor(get_viewport().get_visible_rect().size.x / 143) - 2)
 	
 	if Input.is_action_just_pressed("mouse3") and get_tree().paused:
-		$HUD/ToolsTab/MarginContainer/ToolFindPanel/MarginContainer/TextureRect.texture = setRandomHint(Globals.tools.keys().filter(func(e): return (not Globals.availibleTools.has(Globals.tools.keys().find(e)) if not Globals.isArchipelago else not Globals.archipelagoLocationsFound.has(e))))
-		$HUD/ShapesTab/MarginContainer/ShapeFindPanel/MarginContainer/TextureRect.texture = setRandomHint(Globals.allToolShapes.keys().filter(func(e): return (not Globals.availibleShapes.has(e) if not Globals.isArchipelago else not Globals.archipelagoLocationsFound.has(e))))
-		$HUD/ActionsTab/MarginContainer/ActionFindPanel/MarginContainer/TextureRect.texture = setRandomHint(Globals.getActions().filter(func(e): return not Globals.actionsScanned.has(e)))
+		var hintPanelData = {
+			$HUD/ToolsTab/MarginContainer/ToolFindPanel:(Globals.tools.keys().filter(func(e): return (not Globals.availibleTools.has(Globals.tools.keys().find(e)) if not Globals.isArchipelago else not Globals.archipelagoLocationsFound.has(e)))),
+			$HUD/ShapesTab/MarginContainer/ShapeFindPanel:(Globals.allToolShapes.keys().filter(func(e): return (not Globals.availibleShapes.has(e) if not Globals.isArchipelago else not Globals.archipelagoLocationsFound.has(e)))),
+			$HUD/ActionsTab/MarginContainer/ActionFindPanel:(Globals.getActions().filter(func(e): return not Globals.actionsScanned.has(e)))
+		}
+		for i in hintPanelData:
+			var hintRes = setRandomHint(hintPanelData[i])
+			i.get_child(0).get_node("MarginContainer").get_node("TextureRect").texture = hintRes.image
+			i.get_child(0).get_node("Label").text = hintRes.shape
+			i.get_child(0).get_node("Label").visible = Globals.isArchipelago
+			i.get_child(0).get_node("Label").set_meta(&"data",hintRes.data)
+		
+		#$HUD/ActionsTab/MarginContainer/ActionFindPanel/MarginContainer/TextureRect.texture = setRandomHint(Globals.getActions().filter(func(e): return not Globals.actionsScanned.has(e)))
 	
 	if Input.is_action_just_pressed("plr_tab_up") and %TabBar.current_tab > 0:
 		%TabBar.current_tab -= 1
@@ -67,24 +76,20 @@ func _process(_delta: float) -> void:
 	
 	$HUD/MarginContainer/HBoxContainer/CompassLabel.text = {0:"N",-1:"E",-2:"S",2:"S",1:"W"}[roundi(get_parent().rotation_degrees.y/90)]
 
-func setRandomHint(sourceList:Array,iteration:int=0) -> ImageTexture:
-	if iteration >= 30: return ImageTexture.new()
+func setRandomHint(sourceList:Array,iteration:int=0) -> Dictionary:
+	if iteration >= 30: return {"image":ImageTexture.new(),"shape":"","data":""}
 	if not sourceList.is_empty():
 		var shape = sourceList.pick_random()
 		if Globals.shapes.keys().has(shape):
-			shape = Globals.shapes[shape].pick_random()
-			if not shape.is_empty():
-				var maxVector = Vector2i(shape.map(func(e): return e.x).max() + 1,shape.map(func(e): return e.y).max() + 1)
-				
-				var image := Image.create_empty(maxVector.x,maxVector.y,false,Image.Format.FORMAT_RGBA8)
-				
-				for i in shape:
-					image.set_pixelv(i,Color.WHITE)
-				return ImageTexture.create_from_image(image)
+			var shapePoints:Array[Vector2i] = []
+			var untypedPoints = Globals.shapes[shape].pick_random()
+			shapePoints.assign(untypedPoints)
+			if not shapePoints.is_empty():
+				return {"image":Globals.Shape.getImageFromList(shapePoints),"shape":shape,"data":Globals.Shape.shapeToBinary(shapePoints)}
 		else:
 			sourceList.erase(shape)
 	else:
-		return ImageTexture.new()
+		return {"image":ImageTexture.new(),"shape":"","data":""}
 	return setRandomHint(sourceList,iteration + 1)
 
 func updateTabs() -> void:
@@ -115,6 +120,9 @@ func updateTabs() -> void:
 			tabs.MONEY:
 				for i in $HUD/MoneyTab.get_children():
 					i.visible = true
+	
+	$HUD/SetupTab/MarginContainer.visible = ($HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Button.text == "Hide" and not get_tree().paused) or (get_tree().paused and (%TabBar.current_tab as tabs == tabs.SETUP))
+	$HUD/SetupTab/MinimapContainer.visible = ($HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapToggle.text == "Hide Minimap") and not get_tree().paused
 
 func updateSaves() -> void:
 	for i in $HUD/SavesTab/MarginContainer/VBoxContainer.get_children(): i.queue_free()
@@ -197,7 +205,7 @@ func _on_tab_bar_tab_changed(tab: int) -> void:
 	updateTabs()
 
 func _on_end_journey_button_pressed() -> void:
-	pass # Replace with function body.
+	pass
 
 func hostMultiplayer() -> void:
 	ip = MultiplayerSetup.host()
@@ -205,3 +213,54 @@ func hostMultiplayer() -> void:
 func joinMultiplayer(text=$HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Code.text) -> void:
 	multiplayer.connected_to_server.connect(func():Globals.gridRef.rpc_id(1,"sendMap"))
 	MultiplayerSetup.join(text)
+
+var palletShape = ""
+var internalClipboard = ""
+
+func _on_pallet_button_pressed() -> void:
+	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Button
+	button.text = {"Show":"Hide","Hide":"Show"}[button.text]
+
+func _on_copy_pressed() -> void:
+	DisplayServer.clipboard_set(palletShape)
+	internalClipboard = palletShape
+
+func _on_paste_pressed() -> void:
+	pinShape(DisplayServer.clipboard_get())
+
+func pinShape(data:String) -> void:
+	palletShape = data
+	
+	var shapeClass = Globals.Shape.new([])
+	shapeClass.binary_format = data
+	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(shapeClass.universal_format)
+
+func copyShape(data:String) -> void:
+	DisplayServer.clipboard_set(data)
+
+func _on_minimap_toggle_pressed() -> void:
+	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapToggle
+	button.text = {"Show Minimap":"Hide Minimap","Hide Minimap":"Show Minimap"}[button.text]
+	
+	if button.text == "Hide Minimap":
+		updateMinimap(Vector2i(roundi(get_parent().position.x),roundi(get_parent().position.z)))
+
+var minimapRadius = 2:
+	set(value):
+		minimapRadius = clampi(value,0,10)
+
+func updateMinimap(playerPos:Vector2i) -> void:
+	if $HUD/SetupTab/MinimapContainer.visible:
+		var positionsToCheck = []
+		var resultPoints = []
+		for x in range((2 * minimapRadius) + 1):
+			for y in range((2 * minimapRadius) + 1):
+				positionsToCheck.append(Vector2i(x,y))
+		
+		for i in positionsToCheck:
+			var cellItem = Globals.gridRef.get_cell_item(Globals.gridRef.vector2to3((i-Vector2i(minimapRadius,minimapRadius))+playerPos,0))
+			if cellItem == 1:
+				resultPoints.append(i)
+		
+		if not resultPoints.is_empty():
+			$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(resultPoints)

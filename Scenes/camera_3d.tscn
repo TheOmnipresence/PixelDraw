@@ -226,6 +226,95 @@ grow_vertical = 2
 mouse_filter = 2
 columns = 2
 
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 136
+
+[node name="PinPanel" type="PanelContainer" parent="HUD/SetupTab/MarginContainer"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer"]
+texture_filter = 1
+custom_minimum_size = Vector2(297, 297)
+layout_mode = 2
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+metadata/data = ""
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Button" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Show"
+
+[node name="Copy" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy
+"
+
+[node name="Paste" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Paste
+"
+
+[node name="MinimapToggle" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+layout_mode = 2
+text = "Show Minimap"
+
+[node name="MinimapContainer" type="MarginContainer" parent="HUD/SetupTab"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+theme_override_constants/margin_top = 100
+
+[node name="MinimapPanel" type="PanelContainer" parent="HUD/SetupTab/MinimapContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer"]
+texture_filter = 1
+custom_minimum_size = Vector2(297, 297)
+layout_mode = 2
+stretch_mode = 4
+
 [node name="ToolsTab" type="Control" parent="HUD"]
 layout_mode = 1
 anchors_preset = 15
@@ -252,17 +341,41 @@ custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/MarginContainer"]
 texture_filter = 1
+custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 stretch_mode = 4
+
+[node name="Label" type="Label" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+metadata/data = ""
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Copy" type="Button" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy
+"
+
+[node name="Pin" type="Button" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pin
+"
 
 [node name="ShapesTab" type="Control" parent="HUD"]
 anchors_preset = 0
@@ -284,17 +397,41 @@ custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/MarginContainer"]
 texture_filter = 1
+custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 stretch_mode = 4
+
+[node name="Label" type="Label" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+metadata/data = ""
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Copy" type="Button" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy
+"
+
+[node name="Pin" type="Button" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pin
+"
 
 [node name="ActionsTab" type="Control" parent="HUD"]
 layout_mode = 1
@@ -337,17 +474,41 @@ custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer/MarginContainer"]
 texture_filter = 1
+custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 stretch_mode = 4
+
+[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+metadata/data = ""
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Copy" type="Button" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy
+"
+
+[node name="Pin" type="Button" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pin
+"
 
 [node name="MenuTab" type="Control" parent="HUD"]
 layout_mode = 1
@@ -535,6 +696,10 @@ layout_mode = 2
 alignment = 1
 
 [connection signal="tab_changed" from="HUD/MarginContainer/HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Button" to="." method="_on_pallet_button_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Copy" to="." method="_on_copy_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Paste" to="." method="_on_paste_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapToggle" to="." method="_on_minimap_toggle_pressed"]
 [connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/Host" to="." method="hostMultiplayer"]
 [connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Join" to="." method="joinMultiplayer"]
 [connection signal="text_submitted" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Code" to="." method="joinMultiplayer"]

@@ -20,6 +20,8 @@ const JUMP_VELOCITY = 4.5
 
 var savedVelocity : Vector3
 
+var previousPos:Vector3
+
 func _enter_tree() -> void:
 	if Globals.isMultiplayer:
 		set_multiplayer_authority(str(name).to_int())
@@ -54,6 +56,9 @@ func _physics_process(delta: float) -> void:
 	
 	velocity += savedVelocity
 	savedVelocity = Vector3(0,0,0)
+	
+	if round(position) != round(previousPos) and position.y < 3:
+		Globals.cameraRef.updateMinimap(Vector2i(roundi(position.x),roundi(position.z)))
 	
 	var joystick_axis = Input.get_vector("look_left", "look_right", "look_up", "look_down") * 0.02
 	if joystick_axis.length() > 0:
@@ -91,6 +96,8 @@ func _physics_process(delta: float) -> void:
 	
 	if Input.is_action_just_pressed("unstuck"):
 		position.y = Globals.maxHeight + 10
+	
+	previousPos = position
 	
 	move_and_slide()
 

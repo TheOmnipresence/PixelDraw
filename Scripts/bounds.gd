@@ -5,10 +5,13 @@ func _ready() -> void:
 
 func _on_body_exited(body: Node3D) -> void:
 	#print(abs(body.velocity.x) + abs(body.velocity.z))
-	if abs(body.velocity.x) + abs(body.velocity.z) > 90: return
-	body.velocity.y += 10
-	var resultPoint = closestPoint(vector3to2(Globals.playerRef.position),[Vector2(0,200),Vector2(200,0),Vector2(0,-200),Vector2(-200,0)])
-	body.velocity *= replaceZeros(vector2to3(abs(resultPoint)/-200))
+	if abs(body.velocity.x) + abs(body.velocity.z) > 90:
+		if body != Globals.playerRef:
+			body.outside = true
+	else:
+		body.velocity.y += 10
+		var resultPoint = closestPoint(vector3to2(Globals.playerRef.position),[Vector2(0,200),Vector2(200,0),Vector2(0,-200),Vector2(-200,0)])
+		body.velocity *= replaceZeros(vector2to3(abs(resultPoint)/-200))
 
 func replaceZeros(vector:Vector3) -> Vector3:
 	if vector.x == 0: vector.x = 1

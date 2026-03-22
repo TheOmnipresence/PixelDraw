@@ -10,6 +10,7 @@ extends CharacterBody3D
 
 @export var statusReward : StatusEffect
 
+var outside = false
 var paralyzed = false
 var i_frames = 0.0
 
@@ -19,7 +20,7 @@ func _physics_process(delta: float) -> void:
 	# Add the gravity.
 	if not is_on_floor():
 		var gravity = get_gravity()
-		if isBird: gravity /= 10
+		if isBird and not outside: gravity /= 10
 		velocity += (gravity if $AntigravityTimer.is_stopped() else -gravity) * delta
 	
 	if not paralyzed:
@@ -33,7 +34,7 @@ func _physics_process(delta: float) -> void:
 	
 	
 	
-	if randi_range(0,5) == 3 and (is_on_floor() or (isBird and position.y < birdHeight)):
+	if randi_range(0,5) == 3 and (is_on_floor() or (isBird and position.y < birdHeight)) and not outside:
 		velocity.y = JUMP_VELOCITY
 	
 	var input_dir := Vector2(randf_range(-1,1),randf_range(-1,1))
@@ -49,6 +50,9 @@ func _physics_process(delta: float) -> void:
 	if position.y < -200:
 		if statusReward != null:
 			Globals.playerRef.addStatus(statusReward.status,statusReward.initialTime)
+		
+		Globals.gridRef.runShape("DEFEAT_"+str(name))
+		
 		queue_free()
 	
 	if paralyzed: velocity = Vector3.ZERO

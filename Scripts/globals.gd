@@ -1,16 +1,17 @@
 extends Node
 
-var firstPause = true
+var firstPause:= true
 
 @warning_ignore("unused_signal")
 signal player_ready
-var playerRef
-var cameraRef
+var playerRef:CharacterBody3D
+var cameraRef:Camera3D
 var gridRef:GridMap
 var cheatsOn = false
-var allPopups = []
+var allPopups:Array[String] = []
 var mcToolLevel := "WOOD"
-var mcBlocks = 0
+var mcBlocks := 0
+var currentSlot := 0
 const VARS_TO_SAVE = [
 	"actionsScanned",
 	"availibleTools",
@@ -24,23 +25,25 @@ const VARS_TO_SAVE = [
 var actionsScanned = []:
 	set(value):
 		for shape in value:
-			if isArchipelago: if len(actionsScanned) == len(getActions()): gridRef.finishArchipelago()
+			if isArchipelago: if len(actionsScanned) == int(Archipelago.conn.slot_data["actions_needed"]): gridRef.finishArchipelago()
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
 			panel.get_child(0).text = shape
 			panel.custom_minimum_size = Vector2(140,60)
 			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
-		actionsScanned = value
-var currencies = {}
+		actionsScanned = []
+		actionsScanned.assign(value)
+var currencies := {}
 var respawnPoint := Vector3(0,2,0)
-var hoveringTool = "NONE"
-var hoveringShape = "NONE"
-var barLayout = [tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE]
-var barIndex = 0
-var availibleTools = [tools.NONE]:
+var hoveringTool := "NONE"
+var hoveringShape := "NONE"
+var barLayout:Array[tools] = [tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE]
+var barIndex := 0
+var availibleTools := [tools.NONE]:
 	set(value):
 		if typeof(value[0]) == TYPE_FLOAT or typeof(value[0]) == TYPE_INT:
-			availibleTools = value.map(func(e): return int(e) as tools)
+			availibleTools = []
+			availibleTools.assign(value.map(func(e): return int(e) as tools))
 		toolShapes.clear()
 		for i in cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").get_children(): i.queue_free()
 		
@@ -50,7 +53,7 @@ var availibleTools = [tools.NONE]:
 			gridPanel.get_child(0).text = tools.keys()[i]
 			cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
 enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE,LOOP,CIRCLE}
-var baseShape = {"type":types.RECT,"x":3,"y":3}
+var baseShape := {"type":types.RECT,"x":3,"y":3}
 enum allStatuses {NONE,SPEED}
 const maxHeight = 300
 enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS}
@@ -76,10 +79,13 @@ const toolsCompatibility = {
 	"PARALYZER":[	"NONE",																																																"7_SQC",	],
 	"PLATFORMS":[	"NONE",																																										"50_SQR",				"7_SQC",	],
 }
-var currentTool = tools.NONE
+var currentTool:tools = tools.NONE
 const enemySpawnShapes = ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"]
-var toolShapes = {tools.NONE:"BASE_RECT"}
-var availibleShapes = ["NONE","BASE_RECT"]
+var toolShapes:Dictionary[tools,String] = {tools.NONE:"BASE_RECT"}
+var availibleShapes: = ["NONE","BASE_RECT"]:
+	set(value):
+		availibleShapes = []
+		availibleShapes.assign(value)
 const allToolShapes = {
 	"NONE":{},
 	"BASE_RECT":{"type":types.RECT,"x":3,"y":3},
@@ -101,7 +107,7 @@ const allToolShapes = {
 	"7_SQC":{"type":types.SQUIRCLE,"x":7,"y":7},
 	"8_CIR":{"type":types.CIRCLE,"d":8},
 }
-var structureShapes = {
+var structureShapes:Dictionary[String,Array] = {
 	"TOWER":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0),Vector3i(0,4,0),Vector3i(1,1,0),Vector3i(1,2,0),Vector3i(1,3,0),Vector3i(1,4,0),Vector3i(1,1,1),Vector3i(1,2,1),Vector3i(1,3,1),Vector3i(1,4,1),Vector3i(0,1,1),Vector3i(0,2,1),Vector3i(0,3,1),Vector3i(0,4,1)                ,Vector3i(-1,1,0),Vector3i(-1,2,0),Vector3i(-1,3,0),Vector3i(-1,4,0),Vector3i(-1,1,-1),Vector3i(-1,2,-1),Vector3i(-1,3,-1),Vector3i(-1,4,-1),Vector3i(0,1,-1),Vector3i(0,2,-1),Vector3i(0,3,-1),Vector3i(0,4,-1)],
 	"CUBE":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0)],
 	"TORCH":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0),Vector3i(1,3,0),Vector3i(-1,3,0),Vector3i(0,3,1),Vector3i(0,3,-1),Vector3i(1,4,0),Vector3i(-1,4,0),Vector3i(0,4,1),Vector3i(0,4,-1)],
@@ -119,9 +125,10 @@ const complexStructures = {
 }
 const colorShapes = {
 	"NORMAL_COLOR":[Color.BLACK,Color.WHITE,Color(0.57,0.57,0.57),Color(0.04,0.04,0.04)],
-	"C_GOL_COLOR":[Color(0.0, 0.0, 0.0, 1.0),Color(1.0, 1.0, 0.0, 1.0),Color(1,1,1),Color(1,1,1)]
+	"C_GOL_COLOR":[Color(0.0, 0.0, 0.0, 1.0),Color(1.0, 1.0, 0.0, 1.0),Color(1,1,1),Color(1,1,1)],
+	"GODOT_COLOR":[Color("242424"),Color(0.24, 0.59, 0.83),Color.WHITE,Color.WHITE],
 }
-var currencyExchangeRates = { # To cubics
+var currencyExchangeRates:Dictionary[String,float] = { # To cubics
 	"CUBICS":1.0,
 	"USD":100.0,
 	"DIAMONDS":(6.7027791 * pow(10,-8)),
@@ -399,6 +406,12 @@ var shapes = {
 	],
 	"CURRENCY_AGNI":[
 		loadPixels("res://Sprites/agni.png")
+	],
+	"GODOT_COLOR":[
+		loadPixels("res://Sprites/godot.png")
+	],
+	"TUT_AREA":[
+		[Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(1,4),Vector2i(2,1),Vector2i(2,2)]
 	]
 }
 
@@ -452,7 +465,7 @@ var descriptions = {
 	"5_PLUS":{"name":"5 - Plus","text":"Reminds you of Switzerland, doesen't it?","type":"shape"},
 	"3_DIAG":{"name":"3 - Diagonal","text":"A diagonal line with a length of 3.","type":"shape"},
 	"3_DIAG_IN":{"name":"3 - Diagonal (Inverted)","text":"Just read the other one.","type":"shape"},
-	"7_LINE":{"name":"7 - Horizontal","text":"A line with a length of 7. Line. With 7 length. Really not that complicated. You can stop reading this now. Please stop. How long will I have to keep going? Do I have to show off to get you to stop? I can spell hippopotomonstrosesquippedaliophobia. I was hoping that would be longer so you would lose interest (haha reference) but it seems to not have worked so I'm just going to make this a really long run-on sentance (did I spell that right?) you problably won't see the compatibilities, so they're: " + ", ".join(toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has("7_LINE"))) + " just in case you needed that. This is problably where you'll not be able to read any further, so goodbye to you if so. This is a reminder that this is a line that is 7 tiles long, in case you forgot. The end. \n\n\n\n\n /j lol get trolled and rickrolled never gonna give you up never gonna let you down, that's all. [INSERT SECRET HERE] blah blah bl blah blah, blah bl blah bl blah, blah blah bl blah, blah blah bl blah","type":"shape"},
+	"7_LINE":{"name":"7 - Horizontal","text":"A line with a length of 7. Line. With 7 length. Really not that complicated. You can stop reading this now. Please stop. How long will I have to keep going? Do I have to show off to get you to stop? I can spell hippopotomonstrosesquippedaliophobia. I was hoping that would be longer so you would lose interest (haha reference) but it seems to not have worked so I'm just going to make this a really long run-on sentance (did I spell that right?) you problably won't see the compatibilities, so they're: " + ", ".join(toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has("7_LINE"))) + " just in case you needed that. This is problably where you'll not be able to read any further, so goodbye to you if so. This is a reminder that this is a line that is 7 tiles long, in case you forgot. The end. \n\n\n\n\n\n\n\n /j lol get trolled and rickrolled never gonna give you up never gonna let you down, that's all. [INSERT SECRET HERE] blah blah bl blah blah, blah bl blah bl blah, blah blah bl blah, blah blah bl blah","type":"shape"},
 	"5_SQC":{"name":"5 - Squircle","text":"Hey look a squircle, that sounds fun.","type":"shape"},
 	"10_SQR":{"name":"10 - Square","text":"Wow that's a big square.","type":"shape"},
 	"5_DIAG":{"name":"5 - Diagonal","text":"Spiky","type":"shape"},
@@ -467,7 +480,7 @@ var descriptions = {
 	# "":{"name":"","text":"","type":"shape"},
 	
 	# Actions
-	"CREEPER":{"name":"","text":"","type":"action"},
+	"CREEPER":{"name":"Creeper","text":"","type":"action"},
 	"RESPAWN":{"name":"Respawn Point","text":"Makes a futuristic sound. Sets the point you return to.","type":"action"},
 	"W":{"name":"W","text":"A huge W. Launches you high into the air.","type":"action"},
 	"L":{"name":"L","text":"Not a W. Sends you down.","type":"action"},
@@ -505,6 +518,20 @@ var descriptions = {
 	"MED_SPEED":{"name":"Medium Speed","text":"We go even faster now.","type":"action"},
 	"CURRENCY_CUBICS":{"name":"Cubics","text":"Suspiciously expensive cubes","type":"action"},
 	"CURRENCY_AGNI":{"name":"Agni","text":"Firey stones from a fallen kingdom.","type":"action"},
+	"GODOT_COLOR":{"name":"Godot Color Scheme","text":"This is a bit familiar","type":"action"},
+	"RED_PILL":{"name":"Spawned Red Pill","text":"A very basic enemy","type":"action"},
+	"TRI_ENEMY":{"name":"Spawned Triangle Enemy","text":"Actually, a triangular prism...","type":"action"},
+	"ZOOM_ENEMY":{"name":"Spawned Zoom Enemy","text":"It jumps much","type":"action"},
+	"SMALL_BIRD":{"name":"Spawned Small Bird","text":"It flies much","type":"action"},
+	"TOWER":{"name":"Tower","text":"Not very formidable","type":"action"},
+	"CUBE":{"name":"Cube","text":"It's cubey","type":"action"},
+	"TORCH":{"name":"Torch","text":"There is no light coming from this","type":"action"},
+	"DIA_TOWER":{"name":"Diamond Tower","text":"Still not formidable","type":"action"},
+	"TUT_AREA":{"name":"Tutorial Area","text":"","type":"action"},
+	"TUT_AREA_2":{"name":"Tutorial Area Two","text":"","type":"action"},
+	"TUT_AREA_3":{"name":"Tutorial Area Three","text":"","type":"action"},
+	"RANDOM_GENERATION":{"name":"Random Generation","text":"Cool mountains","type":"action"},
+	"START":{"name":"Start","text":"The start of a journey","type":"action"},
 	
 	# "":{"name":"","text":"","type":"action"},
 }
@@ -538,7 +565,7 @@ func getDescriptionText(key:String) -> String:
 	result = result.right(-2)
 	return result
 
-func visualize(pattern:Array) -> String:
+static func visualize(pattern:Array) -> String:
 	var result = ""
 	var length = pattern.map(func(e): return e.x).max()
 	var height = pattern.map(func(e): return e.y).max()
@@ -588,7 +615,7 @@ const deathlinkMessages = [
 func testShapes() -> void:
 	var amounts = {}
 	var bitGrid = getBits(16)
-	bitGrid = bitGrid.map(toCells)
+	bitGrid = bitGrid.map(Shape.toCells)
 	
 	for i in bitGrid:
 		for shape in gridRef.checkForShapes(gridRef.removeExtras(i)):
@@ -600,7 +627,7 @@ func testShapes() -> void:
 	print(amounts)
 	print(len(amounts))
 
-func getBits(length:int) -> Array:
+static func getBits(length:int) -> Array:
 	if length <= 1: return [[false],[true]]
 	
 	var result = []
@@ -609,21 +636,109 @@ func getBits(length:int) -> Array:
 		result.append(i + [true])
 	return result
 
-func toCells(list:Array) -> Dictionary:
-	var result = []
-	var gridSize := ceili(sqrt(len(list)))
+class Shape extends Resource:
 	
-	for x in range(gridSize):
-		if len(list) == len(result): break
-		for y in range(gridSize):
+	var universal_format:Array[Vector2i]
+	var binary_format:String:
+		set(value):
+			universal_format = []
+			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
+		get():
+			return shapeToBinary(universal_format)
+	var hexadecimal_format:String:
+		set(value):
+			universal_format = []
+			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
+		get():
+			return binaryToHex(shapeToBinary(universal_format))
+	
+	
+	func _init(value:Array[Vector2i]) -> void:
+		universal_format = value
+	
+	static func makeStandard(list:Array[Vector2i]) -> Array[Vector2i]:
+		if list.is_empty(): return []
+		var mins = list[0]
+		for i in list:
+			if i.x < mins.x:
+				mins.x = i.x
+			if i.y < mins.y:
+				mins.y = i.y
+		
+		var modified:Array[Vector2i] = []
+		modified.assign(list.map(func(e): return e - mins))
+		modified.sort()
+		return modified
+	
+	static func shapeToBinary(shape:Array) -> String:
+		var result = ""
+		
+		shape = makeStandard(shape)
+		
+		var maxVector = Vector2i(
+			shape.map(func(e): return e.x).max() + 1,
+			shape.map(func(e): return e.y).max() + 1
+		)
+		
+		for x in range([maxVector.x,maxVector.y].max()):
+			for y in range([maxVector.x,maxVector.y].max()):
+				result += "1" if shape.has(Vector2i(x,y)) else "0"
+		
+		return result
+	
+	static func binaryToHex(binary:String) -> String:
+		return "0x" + String.num_int64(binary.bin_to_int(),16)
+	
+	static func binaryOrHexToBooleanList(string:String) -> Array[bool]:
+		var result:Array[bool] = []
+		
+		if string.left(2) == "0x":
+			for hex in string.right(-2).split(""):
+				for i in str(String.num_int64(hex.hex_to_int(),2)).split(""):
+					result.append(i == "1")
+		else:
+			for i in string.split(""):
+				result.append(i == "1")
+		
+		return result
+	
+	static func fromBooleanList(list:Array[bool]) -> Array[Vector2i]:
+		var cellsResult = toCells(list)
+		var result:Array[Vector2i]
+		result.assign(cellsResult.keys().filter(func(e): return cellsResult[e] == 1))
+		return result
+	
+	static func toCells(list:Array[bool]) -> Dictionary:
+		var result = []
+		var gridSize := ceili(sqrt(len(list)))
+		
+		for x in range(gridSize):
 			if len(list) == len(result): break
-			result.append(Vector2i(x,y))
+			for y in range(gridSize):
+				if len(list) == len(result): break
+				result.append(Vector2i(x,y))
+		
+		var dictionaryResult = {}
+		for i in result:
+			dictionaryResult[i] = 1 if list[result.find(i)] else 0
+		
+		return dictionaryResult
 	
-	var dictionaryResult = {}
-	for i in result:
-		dictionaryResult[i] = 1 if list[result.find(i)] else 0
-	
-	return dictionaryResult
+	static func getImageFromList(shapePoints:Array[Vector2i]) -> ImageTexture:
+		if shapePoints.is_empty(): return ImageTexture.new()
+		var maxVector = Vector2i(shapePoints.map(func(e): return e.x).max() + 1,shapePoints.map(func(e): return e.y).max() + 1)
+		
+		var image := Image.create_empty(maxVector.x*10,maxVector.y*10,false,Image.Format.FORMAT_RGBA8)
+		
+		for i in shapePoints:
+			for x in range(10):
+				for y in range(10):
+					image.set_pixelv(Vector2i(i*10)+Vector2i(x,y),Color.WHITE if (x < 9) and (y < 9) else Color.DARK_GRAY)
+		
+		return ImageTexture.create_from_image(image)
+
+func size(shape:Array) -> int:
+	return [shape.map(func(e): return e.x).max(),shape.map(func(e): return e.y).max()].max() + 1
 
 func checkForErrors() -> void:
 	for i in shapes:
@@ -631,7 +746,10 @@ func checkForErrors() -> void:
 			printerr("No description for " + i)
 
 func getActions() -> Array:
-	return shapes.keys().filter(func(e): return not allToolShapes.has(e) and not toolsCompatibility.has(e))
+	return descriptions.keys().filter(
+		func(e): 
+			if descriptions[e].has("type"): return descriptions[e].type == "action"
+			else: return e == "CAR")
 
 func _ready() -> void:
 	Archipelago.connect("connected",(func(_arg,_arg2):
@@ -639,7 +757,6 @@ func _ready() -> void:
 		Archipelago.conn.deathlink.connect(recieveDeathlink)
 		Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,true,e)))
 		Archipelago.conn.force_scout_all()
-		#print(Archipelago.conn.slot_data)
 		Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
 		))
 	Archipelago.connect("disconnected",(func():isArchipelago = true))
@@ -647,7 +764,7 @@ func _ready() -> void:
 	checkForErrors()
 
 func archipelagoName() -> String:
-	return Archipelago.conn.get_player().get_name()
+	return Archipelago.conn.get_player().get_name() if Globals.isArchipelago else ""
 
 func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_overlapping_bodies().has(playerRef)),fromDeathlink:=false) -> void:
 	if trueDeath:
@@ -663,13 +780,9 @@ func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_ove
 	playerRef.velocity = Vector3(0,0,0)
 	playerRef.strength = 0.0
 
-func recieveDeathlink(source:String,cause:String,json:Dictionary) -> void:
+func recieveDeathlink(_source:String,cause:String,_json:Dictionary) -> void:
 	reset(true,true)
-	#await player_ready
 	gridRef.triggerPopup("Archipelago Deathlink: " + cause,gridRef.scanTypes.ARCHIPELAGO_DEATHLINK)
-	print(source)
-	print(cause)
-	print(json)
 
 func maxLength(list:Array) -> int:
 	var result = list[0].x
@@ -677,8 +790,6 @@ func maxLength(list:Array) -> int:
 		if i.x > result: result = i.x
 		if i.y > result: result = i.y
 	return result
-
-var currentSlot := 0
 
 func saveSlot(slot:int=currentSlot) -> void:
 	if slot == -1:
@@ -710,9 +821,10 @@ func loadSlot(slot:int) -> void:
 	var data = JSON.parse_string(file.get_as_text())
 	for i in data:
 		if i in self:
+			print(data[i])
 			set(i,data[i])
+			print(get(i))
 	currentSlot = slot
-	
 	cameraRef.updateSaves()
 
 func toDictionary(function:Callable,list:Array) -> Dictionary:

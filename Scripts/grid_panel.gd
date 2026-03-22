@@ -11,7 +11,7 @@ func _ready() -> void:
 		$Node/DescriptionContainer.position.x += 50
 
 func _input(event: InputEvent) -> void:
-	if selectable and get_tree().paused:
+	if selectable and get_tree().paused and is_visible_in_tree():
 		if event is InputEventKey:
 			if hovering and event.is_pressed():
 				if (OS.get_keycode_string(event.keycode)).left(1) == str(int((OS.get_keycode_string(event.keycode)))).left(1):
@@ -59,7 +59,7 @@ func _input(event: InputEvent) -> void:
 		if wasHovering:
 			#$Node/DescriptionContainer/MarginContainer/Label.text = ""
 			$Node.visible = false
-	else:
+	elif is_visible_in_tree():
 		$Node.visible = true
 		if not wasHovering:
 			$Node/DescriptionContainer/MarginContainer/Label.text = Globals.getDescriptionText($Label.text)

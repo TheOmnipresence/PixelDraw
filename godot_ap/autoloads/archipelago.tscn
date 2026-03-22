@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Resource_pmgvy"]
 script = ExtResource("2_2e7gq")
 major = 1
-build = 5
+build = 7
 
 [sub_resource type="Resource" id="Resource_m1v20"]
 script = ExtResource("2_2e7gq")

@@ -52,32 +52,33 @@ var availibleTools := [tools.NONE]:
 			var gridPanel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			gridPanel.get_child(0).text = tools.keys()[i]
 			cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
-enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE,LOOP,CIRCLE}
+enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE,LOOP,CIRCLE,DIAMOND}
 var baseShape := {"type":types.RECT,"x":3,"y":3}
 enum allStatuses {NONE,SPEED}
 const maxHeight = 300
-enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS}
+enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS,PLAGUE}
 const toolsCompatibility = {
 	"NONE":[],
 	"VOIDER":[],
 	"ERASER":[],
-	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																									],
-	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																				],
-	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI"											],
-	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR"																																									],
-	"SHUFFLER":[	"NONE",						"5_SQR"																																												],
-	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																							],
-	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN"																											],
-	"MC_PICK":[		"NONE",																										"7_LINE"																							],
-	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC"																				],
-	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"													],
-	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN"																											],
-	"STAMPER":[		"NONE",									"6_SQR"																																									],
-	"GRAVITATE":[	"NONE",																																							"5_TRI"											],
-	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR"																],
-	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",				],
-	"PARALYZER":[	"NONE",																																																"7_SQC",	],
-	"PLATFORMS":[	"NONE",																																										"50_SQR",				"7_SQC",	],
+	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																																		],
+	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																													],
+	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI"																				],
+	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR",																																								"8_CIR",							],
+	"SHUFFLER":[	"NONE",						"5_SQR"																																																					],
+	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																																],
+	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN",																																"12_DIA",	],
+	"MC_PICK":[		"NONE",																										"7_LINE"																																],
+	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC",																						"10_TRI",				],
+	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"																						],
+	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",																																			],
+	"STAMPER":[		"NONE",									"6_SQR"																																																		],
+	"GRAVITATE":[	"NONE",																																							"5_TRI",													"10_TRI",				],
+	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR",																						"12_DIA",	],
+	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",													],
+	"PARALYZER":[	"NONE",																																																"7_SQC",							"12_DIA",	],
+	"PLATFORMS":[	"NONE",																																										"50_SQR",				"7_SQC",	"8_CIR",							],
+	"PLAGUE":[		"NONE",																																	"10_SQR",																			"10_TRI",				],
 }
 var currentTool:tools = tools.NONE
 const enemySpawnShapes = ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"]
@@ -106,6 +107,8 @@ const allToolShapes = {
 	"7_LOOP":{"type":types.LOOP,"x":7,"y":7,"w":1},
 	"7_SQC":{"type":types.SQUIRCLE,"x":7,"y":7},
 	"8_CIR":{"type":types.CIRCLE,"d":8},
+	"10_TRI":{"type":types.TRIANGLE,"x":10,"y":10},
+	"12_DIA":{"type":types.DIAMOND,"len":12},
 }
 var structureShapes:Dictionary[String,Array] = {
 	"TOWER":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0),Vector3i(0,4,0),Vector3i(1,1,0),Vector3i(1,2,0),Vector3i(1,3,0),Vector3i(1,4,0),Vector3i(1,1,1),Vector3i(1,2,1),Vector3i(1,3,1),Vector3i(1,4,1),Vector3i(0,1,1),Vector3i(0,2,1),Vector3i(0,3,1),Vector3i(0,4,1)                ,Vector3i(-1,1,0),Vector3i(-1,2,0),Vector3i(-1,3,0),Vector3i(-1,4,0),Vector3i(-1,1,-1),Vector3i(-1,2,-1),Vector3i(-1,3,-1),Vector3i(-1,4,-1),Vector3i(0,1,-1),Vector3i(0,2,-1),Vector3i(0,3,-1),Vector3i(0,4,-1)],
@@ -412,7 +415,19 @@ var shapes = {
 	],
 	"TUT_AREA":[
 		[Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(1,4),Vector2i(2,1),Vector2i(2,2)]
-	]
+	],
+	"10_TRI":[
+		[Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(3,0),Vector2i(3,1),Vector2i(4,0)]
+	],
+	"12_DIA":[
+		[Vector2i(0,0),Vector2i(0,2),Vector2i(0,4),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3),Vector2i(2,4),Vector2i(3,1),Vector2i(3,2),Vector2i(3,3),Vector2i(4,0),Vector2i(4,2),Vector2i(4,4)]
+	],
+	"PLAGUE":[
+		[Vector2i(0,2),Vector2i(1,1),Vector2i(1,3),Vector2i(2,0),Vector2i(2,2),Vector2i(2,4),Vector2i(3,1),Vector2i(3,3),Vector2i(4,2)]
+	],
+	"BLOCK":[
+		loadPixels("res://Sprites/block.png")
+	],
 }
 
 static func loadPixels(imagePath:String):
@@ -454,6 +469,7 @@ var descriptions = {
 	"TERRAIN":{"name":"Terrain","text":"The power of creationism. Create terrain in the area.","type":"tool"},
 	"PARALYZER":{"name":"Paralyzer","text":"I don't know if that's spelled right. Freezes enemies in place.","type":"tool"},
 	"PLATFORMS":{"name":"Platforms","text":"More land!! Yay!","type":"tool"},
+	"PLAGUE":{"name":"Plague","text":"A sickness spreads, bringing death in it's path. If some spaces around a tile are empty, it becomes empty as well.","type":"tool"},
 	
 	# "":{"name":"","text":"","type":"tool"},
 	
@@ -476,6 +492,8 @@ var descriptions = {
 	"7_SQC":{"name":"7 - Squircle","text":"A bigger squircle! What are these anyways...","type":"shape"},
 	"200_SQR":{"name":"200 - Square","text":"The ultimate shape.","type":"shape"},
 	"8_CIR":{"name":"8 - Circle","text":"A circle in a square world.","type":"shape"},
+	"10_TRI":{"name":"10 - Triangle","text":"Yknow that theorem isn't actually pythagoras's","type":"shape"},
+	"12_DIA":{"name":"12 - Diamond","text":"Now this is actually a diamond shape.","type":"shape"},
 	
 	# "":{"name":"","text":"","type":"shape"},
 	
@@ -532,6 +550,7 @@ var descriptions = {
 	"TUT_AREA_3":{"name":"Tutorial Area Three","text":"","type":"action"},
 	"RANDOM_GENERATION":{"name":"Random Generation","text":"Cool mountains","type":"action"},
 	"START":{"name":"Start","text":"The start of a journey","type":"action"},
+	"BLOCK":{"name":"Block","text":"That's a big block. Gives a stack of mc blocks.","type":"action"},
 	
 	# "":{"name":"","text":"","type":"action"},
 }
@@ -656,6 +675,14 @@ class Shape extends Resource:
 	func _init(value:Array[Vector2i]) -> void:
 		universal_format = value
 	
+	static func rotatePoints(points:Array[Vector2i],clockwise:=true) -> Array[Vector2i]:
+		var result:Array[Vector2i] = []
+		
+		for i in points:
+			result.append(Vector2i(i.y,-i.x) if clockwise else Vector2i(-i.y,i.x))
+		
+		return makeStandard(result)
+	
 	static func makeStandard(list:Array[Vector2i]) -> Array[Vector2i]:
 		if list.is_empty(): return []
 		var mins = list[0]
@@ -671,6 +698,7 @@ class Shape extends Resource:
 		return modified
 	
 	static func shapeToBinary(shape:Array) -> String:
+		if shape.is_empty(): return ""
 		var result = ""
 		
 		shape = makeStandard(shape)
@@ -696,9 +724,11 @@ class Shape extends Resource:
 			for hex in string.right(-2).split(""):
 				for i in str(String.num_int64(hex.hex_to_int(),2)).split(""):
 					result.append(i == "1")
-		else:
+		elif Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
 			for i in string.split(""):
 				result.append(i == "1")
+		#else:
+			#string.to_utf8_buffer()
 		
 		return result
 	

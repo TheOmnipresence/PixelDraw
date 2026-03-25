@@ -13,6 +13,7 @@ size = Vector3(1.1, 1.1, 1.1)
 [node name="TRI_ENEMY" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_0kdir")
 knockbackMultiplier = 2
+enemyName = "TRI_ENEMY"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("ConvexPolygonShape3D_0kdir")

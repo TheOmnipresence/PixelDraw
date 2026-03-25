@@ -57,7 +57,7 @@ func _physics_process(delta: float) -> void:
 	velocity += savedVelocity
 	savedVelocity = Vector3(0,0,0)
 	
-	if round(position) != round(previousPos) and position.y < 3:
+	if round(position) != round(previousPos) and Globals.cameraRef.get_node("HUD/SetupTab/MinimapContainer").visible:
 		Globals.cameraRef.updateMinimap(Vector2i(roundi(position.x),roundi(position.z)))
 	
 	var joystick_axis = Input.get_vector("look_left", "look_right", "look_up", "look_down") * 0.02

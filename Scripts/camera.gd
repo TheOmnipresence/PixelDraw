@@ -14,7 +14,6 @@ func _ready() -> void:
 	$HUD/SetupTab/ScannerBox/PanelContainer2.get_child(-1).text = "SCANNER"
 	
 	var console:Window = preload("res://godot_ap/ui/ap_console_window.tscn").instantiate()
-	#var console = Window.new()
 	console.borderless = true
 	console.size.y = 130
 	Archipelago.load_console(console,false)
@@ -44,15 +43,15 @@ func _process(_delta: float) -> void:
 	$HUD/SetupTab/ScannerBox/PanelContainer.get_child(-1).text = Globals.allToolShapes.find_key(Globals.baseShape)
 	
 	if availibleShapesCopy != Globals.availibleShapes:
-		for i in $HUD/SetupTab/ShapesBox.get_children():
+		for i in %ShapesBox.get_children():
 			i.queue_free()
 		for i in Globals.availibleShapes:
 			var shapePanel = preload("res://Scenes/shape_panel.tscn").instantiate()
 			shapePanel.get_child(0).text = i
-			$HUD/SetupTab/ShapesBox.add_child(shapePanel)
+			%ShapesBox.add_child(shapePanel)
 		availibleShapesCopy = Globals.availibleShapes.duplicate(true)
 	
-	$HUD/ActionsTab/ScrollContainer/ActionsGrid.columns = (floor(get_viewport().get_visible_rect().size.x / 143) - 2)
+	$HUD/ActionsTab/ScrollContainer/ActionsGrid.columns = (floor(get_viewport().get_visible_rect().size.x / (155 + 3)) - 2)
 	
 	if Input.is_action_just_pressed("mouse3") and get_tree().paused:
 		var hintPanelData = {
@@ -66,8 +65,6 @@ func _process(_delta: float) -> void:
 			i.get_child(0).get_node("Label").text = hintRes.shape
 			i.get_child(0).get_node("Label").visible = Globals.isArchipelago
 			i.get_child(0).get_node("Label").set_meta(&"data",hintRes.data)
-		
-		#$HUD/ActionsTab/MarginContainer/ActionFindPanel/MarginContainer/TextureRect.texture = setRandomHint(Globals.getActions().filter(func(e): return not Globals.actionsScanned.has(e)))
 	
 	if Input.is_action_just_pressed("plr_tab_up") and %TabBar.current_tab > 0:
 		%TabBar.current_tab -= 1
@@ -110,7 +107,7 @@ func updateTabs() -> void:
 				for i in $HUD/ToolsTab.get_children():
 					i.visible = true
 			tabs.SHAPES:
-				$HUD/SetupTab/ShapesBox.visible = true
+				$HUD/SetupTab/ScrollContainer/ShapesBox.visible = true
 				for i in $HUD/ShapesTab.get_children():
 					i.visible = true
 			tabs.ACTIONS:
@@ -121,8 +118,11 @@ func updateTabs() -> void:
 				for i in $HUD/MoneyTab.get_children():
 					i.visible = true
 	
-	$HUD/SetupTab/MarginContainer.visible = ($HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Button.text == "Hide" and not get_tree().paused) or (get_tree().paused and (%TabBar.current_tab as tabs == tabs.SETUP))
-	$HUD/SetupTab/MinimapContainer.visible = ($HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapToggle.text == "Hide Minimap") and not get_tree().paused
+	$HUD/SetupTab/MarginContainer.visible = ($HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Button.text == "Hide" and not get_tree().paused) or (get_tree().paused and (%TabBar.current_tab as tabs == tabs.SETUP))
+	$HUD/SetupTab/MinimapContainer.visible = ($HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapToggle.text == "Hide Minimap") and not get_tree().paused
+	
+	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions.visible = get_tree().paused
+	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions.visible = get_tree().paused
 
 func updateSaves() -> void:
 	for i in $HUD/SavesTab/MarginContainer/VBoxContainer.get_children(): i.queue_free()
@@ -176,12 +176,8 @@ func _input(event: InputEvent) -> void:
 				lineEdit.caret_column = lineEdit.text.length()
 		else:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		
-		#match Input.mouse_mode:
-			#Input.MOUSE_MODE_CAPTURED:
-				#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-			#Input.MOUSE_MODE_VISIBLE:
-				#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			
+			get_parent().get_parent().get_node("GridMapOutline").clear()
 	
 	if event is InputEventMouseButton and not get_tree().paused:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -218,7 +214,7 @@ var palletShape = ""
 var internalClipboard = ""
 
 func _on_pallet_button_pressed() -> void:
-	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Button
+	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Button
 	button.text = {"Show":"Hide","Hide":"Show"}[button.text]
 
 func _on_copy_pressed() -> void:
@@ -227,6 +223,20 @@ func _on_copy_pressed() -> void:
 
 func _on_paste_pressed() -> void:
 	pinShape(DisplayServer.clipboard_get())
+
+func _on_clockwise_pressed() -> void:
+	rotateShape()
+
+func _on_counterclockwise_pressed() -> void:
+	rotateShape(false)
+
+func rotateShape(clockwise:=true) -> void:
+	var shapeClass = Globals.Shape.new([])
+	shapeClass.binary_format = palletShape
+	shapeClass.universal_format = Globals.Shape.rotatePoints(shapeClass.universal_format,clockwise)
+	palletShape = shapeClass.binary_format
+	
+	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(shapeClass.universal_format)
 
 func pinShape(data:String) -> void:
 	palletShape = data
@@ -239,28 +249,45 @@ func copyShape(data:String) -> void:
 	DisplayServer.clipboard_set(data)
 
 func _on_minimap_toggle_pressed() -> void:
-	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapToggle
+	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapToggle
 	button.text = {"Show Minimap":"Hide Minimap","Hide Minimap":"Show Minimap"}[button.text]
 	
 	if button.text == "Hide Minimap":
 		updateMinimap(Vector2i(roundi(get_parent().position.x),roundi(get_parent().position.z)))
 
+func _on_minimap_smaller_pressed() -> void:
+	minimapRadius -= 1
+
+func _on_minimap_bigger_pressed() -> void:
+	minimapRadius += 1
+
 var minimapRadius = 2:
 	set(value):
 		minimapRadius = clampi(value,0,10)
+		updateMinimap(Vector2i(roundi(get_parent().position.x),roundi(get_parent().position.z)))
 
 func updateMinimap(playerPos:Vector2i) -> void:
-	if $HUD/SetupTab/MinimapContainer.visible:
-		var positionsToCheck = []
-		var resultPoints = []
-		for x in range((2 * minimapRadius) + 1):
-			for y in range((2 * minimapRadius) + 1):
-				positionsToCheck.append(Vector2i(x,y))
-		
-		for i in positionsToCheck:
-			var cellItem = Globals.gridRef.get_cell_item(Globals.gridRef.vector2to3((i-Vector2i(minimapRadius,minimapRadius))+playerPos,0))
-			if cellItem == 1:
-				resultPoints.append(i)
-		
-		if not resultPoints.is_empty():
-			$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(resultPoints)
+	var positionsToCheck = []
+	var resultPoints = []
+	for x in range((2 * minimapRadius) + 1):
+		for y in range((2 * minimapRadius) + 1):
+			positionsToCheck.append(Vector2i(x,y))
+	
+	for i in positionsToCheck:
+		var cellItem = Globals.gridRef.get_cell_item(Globals.gridRef.vector2to3((i-Vector2i(minimapRadius,minimapRadius))+playerPos,0))
+		if cellItem == 1:
+			resultPoints.append(i)
+	
+	if not resultPoints.is_empty():
+		var typedPoints:Array[Vector2i] = []
+		typedPoints.assign(resultPoints)
+		$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(typedPoints)
+	else:
+		$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = ImageTexture.new()
+
+func _on_window_option_item_selected(index: int) -> void:
+	match index:
+		0:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		1:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)

@@ -48,9 +48,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -549.0
+offset_left = -554.0
 offset_top = -60.0
-offset_right = 387.0
+offset_right = 382.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
@@ -142,9 +142,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -549.0
+offset_left = -554.0
 offset_top = -133.0
-offset_right = 387.0
+offset_right = 382.0
 offset_bottom = -63.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -211,18 +211,22 @@ layout_mode = 2
 [node name="PanelContainer2" parent="HUD/SetupTab/ScannerBox" instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="ShapesBox" type="GridContainer" parent="HUD/SetupTab"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/SetupTab"]
+clip_contents = false
 layout_mode = 1
-anchors_preset = 6
+anchors_preset = 11
 anchor_left = 1.0
-anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -40.0
-offset_top = -20.0
-offset_bottom = 20.0
+anchor_bottom = 1.0
+offset_left = -192.0
 grow_horizontal = 0
 grow_vertical = 2
+horizontal_scroll_mode = 0
+metadata/_edit_lock_ = true
+
+[node name="ShapesBox" type="GridContainer" parent="HUD/SetupTab/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
 mouse_filter = 2
 columns = 2
 
@@ -233,6 +237,7 @@ offset_bottom = 40.0
 mouse_filter = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 136
+metadata/_edit_lock_ = true
 
 [node name="PinPanel" type="PanelContainer" parent="HUD/SetupTab/MarginContainer"]
 custom_minimum_size = Vector2(300, 300)
@@ -261,30 +266,55 @@ layout_mode = 2
 horizontal_alignment = 1
 metadata/data = ""
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+[node name="PalletOptions" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Button" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer"]
+[node name="Clockwise" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "<"
+
+[node name="Button" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Show"
 
-[node name="Copy" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer"]
+[node name="Copy" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy
 "
 
-[node name="Paste" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer"]
+[node name="Paste" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Paste
 "
 
-[node name="MinimapToggle" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+[node name="Counterclockwise" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
+text = ">"
+
+[node name="MinimapOptions" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="MinimapSmaller" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "-"
+
+[node name="MinimapToggle" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Show Minimap"
+
+[node name="MinimapBigger" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "+"
 
 [node name="MinimapContainer" type="MarginContainer" parent="HUD/SetupTab"]
 layout_mode = 1
@@ -295,6 +325,7 @@ offset_left = -40.0
 offset_bottom = 40.0
 grow_horizontal = 0
 theme_override_constants/margin_top = 100
+metadata/_edit_lock_ = true
 
 [node name="MinimapPanel" type="PanelContainer" parent="HUD/SetupTab/MinimapContainer"]
 layout_mode = 2
@@ -335,6 +366,7 @@ offset_bottom = 300.0
 grow_horizontal = 0
 mouse_filter = 2
 theme_override_constants/margin_top = 50
+metadata/_edit_lock_ = true
 
 [node name="ToolFindPanel" type="PanelContainer" parent="HUD/ToolsTab/MarginContainer"]
 custom_minimum_size = Vector2(300, 300)
@@ -391,6 +423,7 @@ offset_bottom = 40.0
 mouse_filter = 2
 theme_override_constants/margin_left = 103
 theme_override_constants/margin_top = 50
+metadata/_edit_lock_ = true
 
 [node name="ShapeFindPanel" type="PanelContainer" parent="HUD/ShapesTab/MarginContainer"]
 custom_minimum_size = Vector2(300, 300)
@@ -520,19 +553,62 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Button" type="Button" parent="HUD/MenuTab"]
+[node name="PanelContainer" type="PanelContainer" parent="HUD/MenuTab"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -4.0
-offset_top = -4.0
-offset_right = 4.0
-offset_bottom = 4.0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuTab/PanelContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Graphics"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Window Mode:"
+
+[node name="WindowOption" type="OptionButton" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 1
+item_count = 2
+popup/item_0/text = "Fullscreen"
+popup/item_0/id = 0
+popup/item_1/text = "Windowed"
+popup/item_1/id = 1
+
+[node name="ExitButton" type="Button" parent="HUD/MenuTab/PanelContainer/VBoxContainer"]
+layout_mode = 2
 mouse_filter = 1
 text = "End Journey"
 
@@ -589,10 +665,12 @@ offset_top = -58.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="Label" type="Label" parent="HUD/ConsoleTab/VBoxContainer"]
 layout_mode = 2
 label_settings = SubResource("LabelSettings_qxdsw")
+metadata/_edit_lock_ = true
 
 [node name="LineEdit" type="LineEdit" parent="HUD/ConsoleTab/VBoxContainer"]
 z_index = 1
@@ -696,10 +774,15 @@ layout_mode = 2
 alignment = 1
 
 [connection signal="tab_changed" from="HUD/MarginContainer/HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
-[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Button" to="." method="_on_pallet_button_pressed"]
-[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Copy" to="." method="_on_copy_pressed"]
-[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/HBoxContainer/Paste" to="." method="_on_paste_pressed"]
-[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapToggle" to="." method="_on_minimap_toggle_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Clockwise" to="." method="_on_clockwise_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Button" to="." method="_on_pallet_button_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Copy" to="." method="_on_copy_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Paste" to="." method="_on_paste_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Counterclockwise" to="." method="_on_counterclockwise_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapSmaller" to="." method="_on_minimap_smaller_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapToggle" to="." method="_on_minimap_toggle_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapBigger" to="." method="_on_minimap_bigger_pressed"]
+[connection signal="item_selected" from="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/WindowOption" to="." method="_on_window_option_item_selected"]
 [connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/Host" to="." method="hostMultiplayer"]
 [connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Join" to="." method="joinMultiplayer"]
 [connection signal="text_submitted" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Code" to="." method="joinMultiplayer"]

@@ -54,37 +54,33 @@ func _process(_delta: float) -> void:
 				i.y += 1
 				$"../GridMapOutline".set_cell_item(i,0)
 	
-	if $BulbTimer.is_stopped():
-		for cell in bulbCells:
-			set_cell_item(cell,bulbCells[cell])
-	
 	if Input.is_action_just_released("mouse3"):
 		var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.toolShapes[Globals.currentTool])
 		match Globals.currentTool:
 			Globals.tools.VOIDER:
 				for i in cells:
-					set_cell_item(Vector3i(i.x,0,i.y),0)
+					set_cell_item(vector2to3(i),0)
 			Globals.tools.ERASER:
 				for i in cells:
-					set_cell_item(Vector3i(i.x,0,i.y),1)
+					set_cell_item(vector2to3(i),1)
 			Globals.tools.C_GOL:
 				var cellValues = {}
 				for i in cells:
-					var neighborValues = getShape(Vector3i(i.x,0,i.y),{"type":Globals.types.RECT,"x":3,"y":3})
+					var neighborValues = getShape(vector2to3(i),{"type":Globals.types.RECT,"x":3,"y":3})
 					neighborValues = neighborValues.filter(func(e): return e != i)
 					neighborValues = neighborValues.map(func(e): return get_cell_item(Vector3i(e.x,0,e.y)))
 					neighborValues = neighborValues.filter(func(e): return e == 1)
 					if len(neighborValues) < 2:
-						cellValues[Vector3i(i.x,0,i.y)] = 0
+						cellValues[vector2to3(i)] = 0
 					elif len(neighborValues) > 3:
-						cellValues[Vector3i(i.x,0,i.y)] = 0
+						cellValues[vector2to3(i)] = 0
 					elif len(neighborValues) == 3:
-						cellValues[Vector3i(i.x,0,i.y)] = 1
+						cellValues[vector2to3(i)] = 1
 				for i in cellValues:
 					set_cell_item(i,cellValues[i])
 			Globals.tools.RAISER:
 				for i in cells:
-					if get_cell_item(Vector3i(i.x,0,i.y)) == 1:
+					if get_cell_item(vector2to3(i)) == 1:
 						var coords = Vector3i(i.x,clamp(local_to_map(Vector3(0,floor(Globals.playerRef.position.y-1),0)).y,0,20),i.y)
 						if get_cell_item(coords) == -1: set_cell_item(coords,2)
 			Globals.tools.LEVELER:
@@ -94,28 +90,26 @@ func _process(_delta: float) -> void:
 							set_cell_item(Vector3i(i.x,yLevel,i.y),-1)
 			Globals.tools.DUSTER:
 				for i in cells:
-					var neighborValues = getShape(Vector3i(i.x,0,i.y),{"type":Globals.types.SQUIRCLE,"x":3,"y":3})
+					var neighborValues = getShape(vector2to3(i),{"type":Globals.types.SQUIRCLE,"x":3,"y":3})
 					neighborValues = neighborValues.map(func(e): return get_cell_item(Vector3i(e.x,0,e.y)))
 					neighborValues = neighborValues.filter(func(e): return e == 1)
 					if len(neighborValues) < 2:
-						set_cell_item(Vector3i(i.x,0,i.y),0)
+						set_cell_item(vector2to3(i),0)
 			Globals.tools.SHUFFLER:
 				var values = []
 				for i in cells:
-					values.append(get_cell_item(Vector3i(i.x,0,i.y)))
+					values.append(get_cell_item(vector2to3(i)))
 				values.shuffle()
-				var index = 0
-				for i in cells:
-					set_cell_item(Vector3i(i.x,0,i.y),values[index])
-					index += 1
+				for i in range(len(cells)):
+					set_cell_item(vector2to3(cells[i]),values[i])
 			Globals.tools.STOPPER:
 				for i in getShape(Vector3i(local_to_map(Globals.playerRef.position).x + (5 if Globals.playerRef.velocity.x >= 10 else (-5 if Globals.playerRef.velocity.x <= -10 else 0)),0,local_to_map(Globals.playerRef.position).z + (5 if Globals.playerRef.velocity.z >= 10 else (-5 if Globals.playerRef.velocity.z <= -10 else 0))),Globals.toolShapes[Globals.currentTool]):
-					if get_cell_item(Vector3i(i.x,0,i.y)) == 1:
+					if get_cell_item(vector2to3(i)) == 1:
 						set_cell_item(Vector3i(i.x,clamp(local_to_map(Vector3(0,ceil(Globals.playerRef.position.y)-1,0)).y,0,Globals.maxHeight),i.y),1)
 			Globals.tools.BULB:
 				for i in cells:
-					bulbCells[Vector3i(i.x,0,i.y)] = get_cell_item(Vector3i(i.x,0,i.y))
-					set_cell_item(Vector3i(i.x,0,i.y), 1)
+					bulbCells[vector2to3(i)] = get_cell_item(vector2to3(i))
+					set_cell_item(vector2to3(i), 1)
 					$BulbTimer.start()
 			Globals.tools.MC_PICK:
 				cells = cells.filter(func(e): return get_cell_item(Vector3i(e.x,0,e.y)) == 1)
@@ -139,7 +133,7 @@ func _process(_delta: float) -> void:
 				await $McPickaxe.timeout
 				for i in cells:
 					Globals.mcBlocks += 1
-					set_cell_item(Vector3i(i.x,0,i.y),0)
+					set_cell_item(vector2to3(i),0)
 			Globals.tools.HOOK:
 				cells = cells.map(func(e): return Vector3i(e.x,2,e.y))
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
@@ -152,13 +146,13 @@ func _process(_delta: float) -> void:
 				for i in cells:
 					if Globals.mcBlocks <= 0:
 						break
-					else:
+					elif get_cell_item(vector2to3(i)) == 0:
 						Globals.mcBlocks -= 1
-						set_cell_item(Vector3i(i.x,0,i.y),1)
+						set_cell_item(vector2to3(i),1)
 			Globals.tools.STAMPER:
 				for i in cells:
 					if lastScanned.has(makeStandard(cells)[cells.find(i)]):
-						set_cell_item(Vector3i(i.x,0,i.y),1)
+						set_cell_item(vector2to3(i),1)
 			Globals.tools.GRAVITATE:
 				cells = cells.map(func(e): return Vector3i(e.x,2,e.y))
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
@@ -178,11 +172,21 @@ func _process(_delta: float) -> void:
 			Globals.tools.PLATFORMS:
 				for cell in cells:
 					set_cell_item(Vector3i(cell.x,0,cell.y),randi_range(0,1))
+			Globals.tools.PLAGUE:
+				var cellValues = {}
+				for cell in cells:
+					var neighborValues = getShape(vector2to3(cell),{"type":Globals.types.RECT,"x":3,"y":3})
+					neighborValues = neighborValues.filter(func(e): return e != cell)
+					neighborValues = neighborValues.map(func(e): return get_cell_item(Vector3i(e.x,0,e.y)))
+					neighborValues = neighborValues.filter(func(e): return e == 0)
+					cellValues[vector2to3(cell)] = 0 if len(neighborValues) > 3 else get_cell_item(vector2to3(cell))
+				for i in cellValues:
+					set_cell_item(i,cellValues[i])
 	
 	if Input.is_action_just_released("mouse1"):
 		var result = {}
 		for i in getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),Globals.baseShape):
-			result[i] = (get_cell_item(Vector3i(i.x,0,i.y)))
+			result[i] = (get_cell_item(vector2to3(i)))
 		checkForShapes(removeExtras(result))
 	
 	if Input.is_action_just_pressed("mouse2"):
@@ -377,7 +381,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
 			panel.get_child(0).text = shape
-			panel.custom_minimum_size = Vector2(140,60)
+			panel.custom_minimum_size = Vector2(155,60)
 			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
 			triggerPopup("New Action Triggered: " + shape,scanTypes.ACTION)
 		else:
@@ -406,7 +410,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 						chosenCell = i
 				
 				for i in cells:
-					set_cell_item(Vector3i(i.x,0,i.y),1)
+					set_cell_item(vector2to3(i),1)
 				
 				set_cell_item(Vector3i(chosenCell.x,0,chosenCell.y),0)
 			"SENDER":
@@ -488,8 +492,10 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 						rpc("summonEnemy",pos,enemyShape)
 			"CURRENCY_CUBICS":
 				addCurrency("CUBICS",1)
-			"CURRENCY_AGNI":
+			"CURRENCY_AGNI": 
 				addCurrency("AGNI",20)
+			"BLOCK":
+				Globals.mcBlocks += 64
 
 @rpc("any_peer","call_remote")
 func summonEnemy(pos:Vector3,shape:String):
@@ -525,14 +531,19 @@ func triggerPopup(text:String,type:scanTypes) -> void:
 	var amountSame = 1
 	for i in Globals.cameraRef.get_child(0).get_node("PopupBox").get_children():
 		var panelText = i.get_child(0).text
-		if panelText.right(2) == "x)": 
+		
+		if panelText == "":
+			continue
+		elif panelText.right(2) == "x)": 
 			panelText = panelText.left(panelText.rfind("(") - 1)
 			if panelText == text:
 				amountSame += int(i.get_child(0).text.replace(panelText,"").left(-2).right(-2))
 				i.queue_free()
+				i.get_child(0).text = ""
 		elif panelText == text:
 			amountSame += 1
 			i.queue_free()
+			i.get_child(0).text = ""
 	if amountSame > 1: text += " (" + str(amountSame) + "x)"
 	
 	var label = Label.new()
@@ -552,7 +563,7 @@ func triggerPopup(text:String,type:scanTypes) -> void:
 	if is_instance_valid(panel):
 		panel.queue_free()
 
-func getAllConnections(map:AStar2D,notInclude:Array,input:Dictionary,coords:Vector2i):
+static func getAllConnections(map:AStar2D,notInclude:Array,input:Dictionary,coords:Vector2i):
 	var checked = []
 	
 	if input[coords] == 1:
@@ -575,13 +586,14 @@ static func getShape(center:Vector3i,shape) -> Array:
 	var result = []
 	match shape.type:
 		Globals.types.RECT:
-			result = rectPoints(shape.x,shape.y,Vector2(center.x-(floor(shape.x/2)),center.z-(floor(shape.y/2))))
+			result = fullPointsForRect(shape,center)
 		Globals.types.SQUIRCLE:
-			result = rectPoints(shape.x,shape.y,Vector2(center.x-(floor(shape.x/2)),center.z-(floor(shape.y/2))))
-			result.erase(Vector2i(center.x-(floor(shape.x/2)),center.z-(floor(shape.y/2))))
-			result.erase(Vector2i(center.x+(floor(shape.x/2)),center.z-(floor(shape.y/2))))
-			result.erase(Vector2i(center.x+(floor(shape.x/2)),center.z+(floor(shape.y/2))))
-			result.erase(Vector2i(center.x-(floor(shape.x/2)),center.z+(floor(shape.y/2))))
+			result = fullPointsForRect(shape,center)
+			result.erase(Vector2i(topLeftPoint(center,Vector2i(shape.x,shape.y))))
+			var floored = Vector2i(floori(shape.x/2),floori(shape.y/2))
+			result.erase(Vector2i(center.x + floored.x, center.z - floored.y))
+			result.erase(Vector2i(center.x + floored.x, center.z + floored.y))
+			result.erase(Vector2i(center.x - floored.x, center.z + floored.y))
 		Globals.types.PLUS:
 			for x in range(-floor(shape.x/2.0),ceil(shape.x/2.0)):
 				if not result.has(Vector2i(x + center.x,center.z)):
@@ -602,14 +614,24 @@ static func getShape(center:Vector3i,shape) -> Array:
 					if not result.has(Vector2i(x + center.x,y + center.z)):
 						result.append(Vector2i(x + center.x,y + center.z))
 		Globals.types.LOOP:
-			result = rectPoints(shape.x,shape.y,Vector2(center.x-(floor(shape.x/2)),center.z-(floor(shape.y/2))))
+			result = fullPointsForRect(shape,center)
 			for i in rectPoints(shape.x-2,shape.y-2,Vector2(center.x-(floor(shape.x/2))+shape.w,center.z-(floor(shape.y/2))+shape.w)): result.erase(i)
 		Globals.types.CIRCLE:
-			result = rectPoints(shape.d+1,shape.d+1,Vector2(center.x-(floor(shape.d/2)),center.z-(floor(shape.d/2))))
+			result = rectPoints(shape.d+1,shape.d+1,topLeftPoint(center,Vector2i(shape.d,shape.d)))
 			for i in (result.duplicate_deep()):
 				if abs(pow((i.x - center.x + floor(shape.d/2.0)) - floor(shape.d/2),2) + pow((i.y - center.z - floor(shape.d/2.0)) + floor(shape.d/2),2)) > pow(floor(shape.d/2),2):
 					result.erase(i)
+		Globals.types.DIAMOND:
+			result = rectPoints(shape.len,shape.len,topLeftPoint(center,Vector2i(shape.len,shape.len)))
+			result = result.filter(func(e): return abs(e.x-center.x)+abs(e.y-center.z) <= (shape.len/2 - 1))
 	return result
+
+static func fullPointsForRect(shape:Dictionary,center:Vector3i) -> Array:
+	return rectPoints(shape.x,shape.y,topLeftPoint(center,Vector2i(shape.x,shape.y)))
+
+static func topLeftPoint(center:Vector3i,dimensions:Vector2i) -> Vector2i:
+	@warning_ignore("integer_division")
+	return Vector2i(center.x-(floor(dimensions.x/2)),center.z-(floor(dimensions.y/2)))
 
 static func rectPoints(x:int,y:int,tl:Vector2i):
 	var result = []
@@ -672,7 +694,7 @@ func heightGeneration(shapeCells:Array) -> Array:
 	var cellsToYVals = {}
 	
 	for i in shapeCells:
-		cells.append(Vector3i(i.x,0,i.y))
+		cells.append(vector2to3(i))
 		cellsToYVals[i] = 0
 	
 	var grid = GridMap.new()
@@ -774,7 +796,7 @@ func heightGeneration(shapeCells:Array) -> Array:
 			await get_tree().process_frame
 	
 	for i in cellsToYVals:
-		cells.erase(Vector3i(i.x,0,i.y))
+		cells.erase(vector2to3(i))
 		cells.append(Vector3i(i.x,cellsToYVals[i],i.y))
 	
 	for i in cells.duplicate(true):
@@ -881,3 +903,7 @@ func archipelagoPopup(info:NetworkItem) -> void:
 
 func finishArchipelago() -> void:
 	Archipelago.set_client_status(AP.ClientStatus.CLIENT_GOAL)
+
+func _on_bulb_timer_timeout() -> void:
+	for cell in bulbCells:
+		set_cell_item(cell,bulbCells[cell])

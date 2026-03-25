@@ -15,6 +15,7 @@ radius = 0.6
 
 [node name="RED_PILL" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_ktqm5")
+enemyName = "RED_PILL"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_qga6b")

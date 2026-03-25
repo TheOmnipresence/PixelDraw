@@ -10,6 +10,8 @@ extends CharacterBody3D
 
 @export var statusReward : StatusEffect
 
+@export var enemyName : String
+
 var outside = false
 var paralyzed = false
 var i_frames = 0.0
@@ -51,7 +53,7 @@ func _physics_process(delta: float) -> void:
 		if statusReward != null:
 			Globals.playerRef.addStatus(statusReward.status,statusReward.initialTime)
 		
-		Globals.gridRef.runShape("DEFEAT_"+str(name))
+		Globals.gridRef.runShape("DEFEAT_"+enemyName)
 		
 		queue_free()
 	

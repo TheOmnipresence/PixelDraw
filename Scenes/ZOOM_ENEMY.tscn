@@ -20,6 +20,7 @@ material = SubResource("StandardMaterial3D_px8fe")
 size = Vector3(1.1, 1.1, 1.1)
 
 [node name="ZOOM_ENEMY" type="CharacterBody3D" groups=["enemy"]]
+collision_layer = 17
 script = ExtResource("1_v18je")
 knockbackMultiplier = 2
 JUMP_VELOCITY = 10.0

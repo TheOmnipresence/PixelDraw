@@ -182,6 +182,8 @@ func _process(_delta: float) -> void:
 					cellValues[vector2to3(cell)] = 0 if len(neighborValues) > 3 else get_cell_item(vector2to3(cell))
 				for i in cellValues:
 					set_cell_item(i,cellValues[i])
+			Globals.tools.MAZER:
+				makeMaze(roundi(Globals.allToolShapes[Globals.toolShapes[Globals.currentTool]].x / 2.0),Vector3i(roundi(Globals.playerRef.position.x - 1),0,roundi(Globals.playerRef.position.z - 1)))
 	
 	if Input.is_action_just_released("mouse1"):
 		var result = {}
@@ -191,10 +193,13 @@ func _process(_delta: float) -> void:
 	
 	if Input.is_action_just_pressed("mouse2"):
 		for i in Globals.toolsCompatibility:
-			runShape(i,Vector2i(0,0))
+			runShape(i)
 		for i in Globals.allToolShapes:
-			runShape(i,Vector2i(0,0))
+			runShape(i)
 		Globals.mcToolLevel = "NETHERITE"
+		if Input.is_action_pressed("plr_shift"):
+			for i in Globals.getActions():
+				runShape(i)
 
 func heighestVisibleCells(list:Array) -> Array:
 	list = list.map(func(e): return vector2to3(e,getHeighestCell(e,roundi(Globals.playerRef.position.y -1))))
@@ -251,17 +256,47 @@ func checkForShapes(groups:Dictionary):
 				hasShape.append(group)
 				result.append(shape)
 		if hasShape.has(group): groups.erase(groups.find_key(group))
+		if Globals.isArchipelago:
+			if Archipelago.conn.slot_data["completion_shape"] != "":
+				if allTransformations(Globals.Shape.fromBooleanList(Globals.Shape.binaryOrHexToBooleanList(Archipelago.conn.slot_data["completion_shape"]))).has(group): tryFinish(true)
+			
+			for pattern in Globals.allExtraPatterns:
+				if pattern.has(group):
+					Globals.extraPatternsFound.append(Globals.allExtraPatterns.find(pattern))
+					tryFinish()
+	
 	if not groups.values().is_empty():
 		for i in groups.values():
 			result.append(i)
 		printerr(groups.values())
 	return result
 
+static func allTransformations(shape:Array) -> Array[Array]:
+	var possibleShapes:Array[Array] = [shape]
+	
+	#Rotations
+	possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(-e.y,e.x))))
+	possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(-e.x,-e.y))))
+	possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(e.y,-e.x))))
+	
+	for reflectedShape in possibleShapes.duplicate(true):
+		#Reflections
+		possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(-e.x,e.y))))
+		possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(e.x,-e.y))))
+		possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(-e.x,-e.y))))
+	
+	return possibleShapes
+
 static func vector2to3(vector,yPos=0):
 	if typeof(vector) == TYPE_VECTOR2:
 		return Vector3(vector.x,float(yPos),vector.y)
 	else:
 		return Vector3i(vector.x,yPos,vector.y)
+
+static func arrayHasAll(array:Array,all:Array) -> bool:
+	for i in all:
+		if not array.has(i): return false
+	return true
 
 func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
 	group = group.map(func(e): return vector2to3(e + pos,0))
@@ -300,8 +335,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 	elif Globals.enemySpawnShapes.has(shape):
 		if not Globals.actionsScanned.has(shape):
 			Globals.actionsScanned.append(shape)
-			if Globals.isArchipelago: if len(Globals.actionsScanned) == int(Archipelago.conn.slot_data["actions_needed"]): finishArchipelago()
-			
+			tryFinish()
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
 			panel.get_child(0).text = shape
@@ -337,7 +371,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 					
 					for i in structureGrid.get_children():
 						structureGrid.remove_child(i)
-						get_parent().add_child(i)
+						get_parent().get_node("StructureParent").add_child(i)
 						var pos = local_to_map(playerPos)
 						pos.y = 0
 						pos = map_to_local(pos)
@@ -349,8 +383,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 		
 		if not Globals.actionsScanned.has(shape):
 			Globals.actionsScanned.append(shape)
-			if Globals.isArchipelago: if len(Globals.actionsScanned) == int(Archipelago.conn.slot_data["actions_needed"]): finishArchipelago()
-			
+			tryFinish()
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
 			panel.get_child(0).text = shape
@@ -362,7 +395,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 		setColor(shape)
 		if not Globals.actionsScanned.has(shape):
 			Globals.actionsScanned.append(shape)
-			if Globals.isArchipelago: if len(Globals.actionsScanned) == int(Archipelago.conn.slot_data["actions_needed"]): finishArchipelago()
+			tryFinish()
 			
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
@@ -377,7 +410,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 	else:
 		if not Globals.actionsScanned.has(shape) and not (shape == "RANDOM_ACTION" or shape == "RANDOM_ENEMY"):
 			Globals.actionsScanned.append(shape)
-			if Globals.isArchipelago: if len(Globals.actionsScanned) >= int(Archipelago.conn.slot_data["actions_needed"]): finishArchipelago()
+			tryFinish()
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			panel.selectable = false
 			panel.get_child(0).text = shape
@@ -496,6 +529,8 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 				addCurrency("AGNI",20)
 			"BLOCK":
 				Globals.mcBlocks += 64
+			"MAZE":
+				makeMaze(20,Vector3i(center.x,0,center.y))
 
 @rpc("any_peer","call_remote")
 func summonEnemy(pos:Vector3,shape:String):
@@ -526,6 +561,33 @@ func buildCells(cells:Array,onPosition:Vector3,isComplexStructure:=false,structu
 		
 		if structureSize < 5000: await get_tree().create_timer(0.001 / structureSize).timeout
 		else: await get_tree().process_frame
+
+func makeMaze(width:int,center:Vector3i) -> void:
+	var currentCell = Vector2i.ZERO
+	var triedCells = null
+	var pastCells = []
+	while len(pastCells) < pow(width + 1,2) and triedCells != []:
+		if not pastCells.has(currentCell):
+			for neighbor in getNeighboringCells(Vector3i(currentCell.x,0,currentCell.y)):
+				if not pastCells.has(Vector2i(neighbor.x,neighbor.z)):
+					set_cell_item(neighbor+center,0)
+			set_cell_item(Vector3i(currentCell.x,0,currentCell.y)+center,1)
+			if not pastCells.is_empty():
+				var middleCell = (currentCell + pastCells[-1]) / 2
+				set_cell_item(Vector3i(middleCell.x,0,middleCell.y)+center,1)
+			
+			await get_tree().process_frame
+		
+		pastCells.erase(currentCell)
+		pastCells.append(currentCell)
+		var nextCells = [currentCell + Vector2i(2,0), currentCell + Vector2i(-2,0), currentCell + Vector2i(0,2), currentCell + Vector2i(0,-2)].filter(func(e): return not (pastCells.has(e) or (abs(e.x) > width) or (abs(e.y) > width)))
+		if nextCells.is_empty():
+			if triedCells == null: triedCells = pastCells.duplicate_deep()
+			triedCells.erase(currentCell)
+			if not triedCells.is_empty(): currentCell = triedCells.pick_random()
+		else:
+			currentCell = nextCells.pick_random()
+			triedCells = null
 
 func triggerPopup(text:String,type:scanTypes) -> void:
 	var amountSame = 1
@@ -673,10 +735,10 @@ func getNeighboringCells(coords:Vector3i) -> Array:
 	var result = []
 	
 	for x in range(coords.x - 1,coords.x + 2):
-		for y in range(coords.y - 1,coords.y + 2):
-			for z in range(coords.z - 1,coords.z + 2):
-				if get_cell_item(Vector3i(x,y,z)) != -1:
-					result.append(Vector3i(x,y,z))
+		#for y in range(coords.y - 1,coords.y + 2):
+		for z in range(coords.z - 1,coords.z + 2):
+			#if get_cell_item(Vector3i(x,y,z)) != -1:
+			result.append(Vector3i(x,coords.y,z))
 	
 	return result
 
@@ -883,12 +945,18 @@ func addCurrency(type:String,amount:float) -> void:
 	else:
 		Globals.currencies[type] = amount
 	
-	var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
-	panel.selectable = false
-	panel.get_child(0).text = type + ": " + str(Globals.currencies[type])
-	panel.custom_minimum_size = Vector2(140,60)
-	
-	Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer")
+	if Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer").get_children().filter(func(e): return e.get_child(0).text == "CURRENCY_" + type).is_empty():
+		
+		var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
+		panel.selectable = false
+		panel.get_child(0).text = "CURRENCY_" + type #+ ": " + str(Globals.currencies[type])
+		panel.custom_minimum_size = Vector2(140,60)
+		
+		#for i in Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer").get_children():
+			#if i.get_child(0).text.split(":")[0] == type:
+				#i.queue_free()
+		
+		Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer").add_child(panel)
 
 func sendArchipelagoItem(id:int,shape:String) -> void:
 	if not Globals.archipelagoLocationsFound.has(shape):
@@ -897,9 +965,15 @@ func sendArchipelagoItem(id:int,shape:String) -> void:
 		Archipelago.conn.scout(id,0,archipelagoPopup)
 
 func archipelagoPopup(info:NetworkItem) -> void:
-	var playerName = Archipelago.conn.get_player_name(info.src_player_id)
+	var playerName = Archipelago.conn.get_player_name(info.dest_player_id)
 	var itemName = info.get_name()
-	triggerPopup("Archipelago Item: " + playerName + "'s " + itemName,scanTypes.ARCHIPELAGO_SEND)
+	triggerPopup("Archipelago Item: " + playerName + "'s " + itemName, scanTypes.ARCHIPELAGO_SEND)
+
+func tryFinish(fromFinishShape:=false) -> void:
+	if Globals.isArchipelago: 
+		if len(Globals.actionsScanned) >= int(Archipelago.conn.slot_data["actions_needed"]) and arrayHasAll(Globals.extraPatternsFound,range(len(Archipelago.conn.slot_data["needed_patterns"]))): 
+			if (Archipelago.conn.slot_data["completion_shape"] == "" or fromFinishShape):
+				finishArchipelago() #TODO maybe add amount of extra shapes needed?
 
 func finishArchipelago() -> void:
 	Archipelago.set_client_status(AP.ClientStatus.CLIENT_GOAL)

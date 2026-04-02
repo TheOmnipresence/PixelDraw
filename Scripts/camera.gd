@@ -218,7 +218,8 @@ func _on_pallet_button_pressed() -> void:
 	button.text = {"Show":"Hide","Hide":"Show"}[button.text]
 
 func _on_copy_pressed() -> void:
-	DisplayServer.clipboard_set(palletShape)
+	#DisplayServer.clipboard_set(Globals.Shape.binaryToHex(palletShape))
+	DisplayServer.clipboard_set(Globals.Shape.binaryToHex(palletShape) if Input.is_action_pressed("plr_shift") else palletShape)
 	internalClipboard = palletShape
 
 func _on_paste_pressed() -> void:
@@ -246,7 +247,7 @@ func pinShape(data:String) -> void:
 	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(shapeClass.universal_format)
 
 func copyShape(data:String) -> void:
-	DisplayServer.clipboard_set(data)
+	DisplayServer.clipboard_set(Globals.Shape.binaryToHex(data) if Input.is_action_pressed("plr_shift") else data)
 
 func _on_minimap_toggle_pressed() -> void:
 	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapToggle

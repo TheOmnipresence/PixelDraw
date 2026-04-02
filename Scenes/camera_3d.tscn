@@ -25,6 +25,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 metadata/_edit_lock_ = true
 
 [node name="PopupBox" type="VBoxContainer" parent="HUD"]
@@ -258,6 +259,7 @@ theme_override_constants/margin_bottom = 3
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
+expand_mode = 1
 stretch_mode = 4
 
 [node name="Label" type="Label" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
@@ -387,6 +389,7 @@ theme_override_constants/margin_bottom = 3
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
+expand_mode = 1
 stretch_mode = 4
 
 [node name="Label" type="Label" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
@@ -444,6 +447,7 @@ theme_override_constants/margin_bottom = 3
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
+expand_mode = 1
 stretch_mode = 4
 
 [node name="Label" type="Label" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
@@ -483,6 +487,7 @@ anchor_top = 0.076000005
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -0.24800491
+mouse_filter = 2
 metadata/_edit_lock_ = true
 
 [node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer"]
@@ -521,6 +526,7 @@ theme_override_constants/margin_bottom = 3
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
+expand_mode = 1
 stretch_mode = 4
 
 [node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]

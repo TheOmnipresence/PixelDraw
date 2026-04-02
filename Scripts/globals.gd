@@ -56,7 +56,7 @@ enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE,LOOP,CIRCLE,DIAMOND}
 var baseShape := {"type":types.RECT,"x":3,"y":3}
 enum allStatuses {NONE,SPEED}
 const maxHeight = 300
-enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS,PLAGUE}
+enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS,PLAGUE,MAZER}
 const toolsCompatibility = {
 	"NONE":[],
 	"VOIDER":[],
@@ -72,13 +72,14 @@ const toolsCompatibility = {
 	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC",																						"10_TRI",				],
 	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"																						],
 	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",																																			],
-	"STAMPER":[		"NONE",									"6_SQR"																																																		],
+	"STAMPER":[		"NONE",									"6_SQR",																																																	],
 	"GRAVITATE":[	"NONE",																																							"5_TRI",													"10_TRI",				],
 	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR",																						"12_DIA",	],
 	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",													],
 	"PARALYZER":[	"NONE",																																																"7_SQC",							"12_DIA",	],
 	"PLATFORMS":[	"NONE",																																										"50_SQR",				"7_SQC",	"8_CIR",							],
 	"PLAGUE":[		"NONE",																																	"10_SQR",																			"10_TRI",				],
+	"MAZER":[		"NONE",									"6_SQR",																						"10_SQR",							"50_SQR",																],
 }
 var currentTool:tools = tools.NONE
 const enemySpawnShapes = ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"]
@@ -428,6 +429,12 @@ var shapes = {
 	"BLOCK":[
 		loadPixels("res://Sprites/block.png")
 	],
+	"MAZE":[
+		loadPixels("res://Sprites/maze.png")
+	],
+	"MAZER":[
+		loadPixels("res://Sprites/mazer.png")
+	],
 }
 
 static func loadPixels(imagePath:String):
@@ -459,7 +466,7 @@ var descriptions = {
 	"SHUFFLER":{"name":"Shuffler","text":"The power of chaos this tool has is unmatched. Have fun using this 20 times in a row to get what you want. Shuffles all the tiles in the area randomly.","type":"tool"},
 	"STOPPER":{"name":"Stopper","text":"Does not like to go fast. Will stop you by raising the ground in front of you.","type":"tool"},
 	"BULB":{"name":"Copper Bulb","text":"Shines light for you, and, when activated, lights more for a short time. Gives you a light passively and fills in all tiles temporarily when activated","type":"tool"},
-	"MC_PICK":{"name":"Minecraft Pickaxe","text":"Pickaxe crafted, somehow, without a crafting table. Will auto craft into better a better pickaxe when getting the correct materials.","type":"tool","other":["MC_TOOL"]},
+	"MC_PICK":{"name":"Minecraft Pickaxe","text":"Pickaxe crafted, somehow, without a crafting table. Will auto craft into better a better pickaxe when getting the correct materials.","type":"tool","other":["MC_TOOL","MC_BLOCK"]},
 	"HOOK":{"name":"Hook","text":"Not really of the captian variety, more as a grapple. Brings enemies in the area closer.","type":"tool"},
 	"BASE_SW":{"name":"Base Sword","text":"A really basic sword. Don't really know what else to say. Knocks enemies back a small amount in the area.","type":"tool"},
 	"PLACER":{"name":"Placer","text":"Does what your fist should really be doing instead, but, considering you don't have one, this places your minecraft blocks. Places collected minecraft blocks in the area.","type":"tool","other":["MC_BLOCK"]},
@@ -470,6 +477,7 @@ var descriptions = {
 	"PARALYZER":{"name":"Paralyzer","text":"I don't know if that's spelled right. Freezes enemies in place.","type":"tool"},
 	"PLATFORMS":{"name":"Platforms","text":"More land!! Yay!","type":"tool"},
 	"PLAGUE":{"name":"Plague","text":"A sickness spreads, bringing death in it's path. If some spaces around a tile are empty, it becomes empty as well.","type":"tool"},
+	"MAZER":{"name":"Mazer","text":"Solve these","type":"tool"},
 	
 	# "":{"name":"","text":"","type":"tool"},
 	
@@ -534,8 +542,9 @@ var descriptions = {
 	"SCALE_UP":{"name":"Scale Up","text":"Bigger","type":"action"},
 	"SCALE_DOWN":{"name":"Scale Down","text":"Smaller","type":"action"},
 	"MED_SPEED":{"name":"Medium Speed","text":"We go even faster now.","type":"action"},
-	"CURRENCY_CUBICS":{"name":"Cubics","text":"Suspiciously expensive cubes","type":"action"},
-	"CURRENCY_AGNI":{"name":"Agni","text":"Firey stones from a fallen kingdom.","type":"action"},
+	"CURRENCY_CUBICS":{"name":"Cubics","text":"Suspiciously expensive cubes","type":"action","other":["CURRENCY"]},
+	"CURRENCY_AGNI":{"name":"Agni","text":"Firey stones from a fallen kingdom.","type":"action","other":["CURRENCY"]},
+	"CURRENCY_DIAMONDS":{"name":"Diamonds","text":"Shiny","type":"action","other":["CURRENCY"]},
 	"GODOT_COLOR":{"name":"Godot Color Scheme","text":"This is a bit familiar","type":"action"},
 	"RED_PILL":{"name":"Spawned Red Pill","text":"A very basic enemy","type":"action"},
 	"TRI_ENEMY":{"name":"Spawned Triangle Enemy","text":"Actually, a triangular prism...","type":"action"},
@@ -550,7 +559,8 @@ var descriptions = {
 	"TUT_AREA_3":{"name":"Tutorial Area Three","text":"","type":"action"},
 	"RANDOM_GENERATION":{"name":"Random Generation","text":"Cool mountains","type":"action"},
 	"START":{"name":"Start","text":"The start of a journey","type":"action"},
-	"BLOCK":{"name":"Block","text":"That's a big block. Gives a stack of mc blocks.","type":"action"},
+	"BLOCK":{"name":"Block","text":"That's a big block. Gives a stack of mc blocks.","type":"action","other":["MC_BLOCK"]},
+	"MAZE":{"name":"Maze","text":"Solve this","type":"action"},
 	
 	# "":{"name":"","text":"","type":"action"},
 }
@@ -573,7 +583,9 @@ func getDescriptionText(key:String) -> String:
 							if not toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has(key)).is_empty():
 								result += "\n\nCompatibility: " + ", ".join(toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has(key)))
 						"action":
-							result += "\n\nPattern:\n" + visualize(shapes[key].pick_random())
+							pass
+							#if shapes.has(key):
+								#result += "\n\nPattern:\n" + visualize(shapes[key].pick_random())
 				"other":
 					for otherVal in descriptions[key][query]:
 						match otherVal:
@@ -581,7 +593,53 @@ func getDescriptionText(key:String) -> String:
 								result += "\n\nMaterial: " + Globals.mcToolLevel.capitalize()
 							"MC_BLOCK":
 								result += "\n\nBlocks: " + str(Globals.mcBlocks)
+							"CURRENCY":
+								result += "\n\nAmount: " + str(currencies[key.replace("CURRENCY_","")])
 	result = result.right(-2)
+	return result
+
+func getComplexDescription(key:String) -> Array[Control]:
+	var result : Array[Control] = []
+	if descriptions.has(key):
+		for query in descriptions[key]:
+			match query:
+				"type":
+					match descriptions[key][query]:
+						"action":
+							if shapes.has(key):
+								var shape = Shape.new([])
+								shape.universal_format.assign(shapes[key].pick_random())
+								
+								var container = HBoxContainer.new()
+								container.name = "PatternContainer"
+								container.alignment = BoxContainer.ALIGNMENT_CENTER
+								container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+								
+								var copyButton = Button.new()
+								copyButton.size_flags_horizontal = Control.SIZE_EXPAND
+								copyButton.name = "CopyButton"
+								copyButton.text = "Copy\n(Ctrl C)"
+								copyButton.pressed.connect(func(): cameraRef.copyShape(shape.binary_format))
+								container.add_child(copyButton)
+								
+								var pinButton = Button.new()
+								pinButton.size_flags_horizontal = Control.SIZE_EXPAND
+								pinButton.name = "PinButton"
+								pinButton.text = "Pin\n(Ctrl P)"
+								pinButton.pressed.connect(func(): cameraRef.pinShape(shape.binary_format))
+								container.add_child(pinButton)
+								
+								result.append(container)
+								
+								var textureRect = TextureRect.new()
+								textureRect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+								textureRect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+								textureRect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+								textureRect.custom_minimum_size = Vector2(100,100)
+								textureRect.texture = shape.image_format
+								
+								result.append(textureRect)
+	
 	return result
 
 static func visualize(pattern:Array) -> String:
@@ -602,6 +660,8 @@ static func visualize(pattern:Array) -> String:
 var isMultiplayer = false
 var isArchipelago = false
 var archipelagoLocationsFound = []
+var extraPatternsFound = []
+var allExtraPatterns = []
 const deathlinkMessages = [
 	"\"boop\" - %s",
 	"%s couldn't think of a pop culture refrence to put here",
@@ -670,6 +730,9 @@ class Shape extends Resource:
 			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
 		get():
 			return binaryToHex(shapeToBinary(universal_format))
+	var image_format:ImageTexture:
+		get():
+			return getImageFromList(universal_format)
 	
 	
 	func _init(value:Array[Vector2i]) -> void:
@@ -721,10 +784,12 @@ class Shape extends Resource:
 		var result:Array[bool] = []
 		
 		if string.left(2) == "0x":
-			for hex in string.right(-2).split(""):
-				for i in str(String.num_int64(hex.hex_to_int(),2)).split(""):
-					result.append(i == "1")
-		elif Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
+			string = String.num_int64(string.hex_to_int(),2)
+		
+		if string.left(2) == "0b":
+			string = string.right(-2)
+		
+		if Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
 			for i in string.split(""):
 				result.append(i == "1")
 		#else:
@@ -788,6 +853,7 @@ func _ready() -> void:
 		Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,true,e)))
 		Archipelago.conn.force_scout_all()
 		Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
+		allExtraPatterns = Archipelago.conn.slot_data["needed_patterns"].map(func(e): return Shape.makeStandard(Shape.fromBooleanList(Shape.binaryOrHexToBooleanList(e)))).map(gridRef.allTransformations)
 		))
 	Archipelago.connect("disconnected",(func():isArchipelago = true))
 	
@@ -799,12 +865,14 @@ func archipelagoName() -> String:
 func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_overlapping_bodies().has(playerRef)),fromDeathlink:=false) -> void:
 	if trueDeath:
 		var deathCause = deathlinkMessages.pick_random() % archipelagoName()
+		for i in playerRef.get_parent().get_node("StructureParent").get_children():
+			i.queue_free()
 		gridRef.clear()
 		for x in range(3):
 			for y in range(3):
-				gridRef.set_cell_item(Vector3i(x,0,y),0)
+				gridRef.set_cell_item(Vector3i(x-1,0,y-1),0)
 		for i in shapes["START"][0]:
-			gridRef.set_cell_item(Vector3i(i.x,0,i.y),1)
+			gridRef.set_cell_item(Vector3i(i.x-1,0,i.y-1),1)
 		if isArchipelago and not fromDeathlink and Archipelago.is_deathlink(): Archipelago.conn.send_deathlink(deathCause)
 	playerRef.position = Globals.respawnPoint
 	playerRef.velocity = Vector3(0,0,0)

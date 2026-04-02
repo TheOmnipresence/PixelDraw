@@ -34,8 +34,6 @@ func _physics_process(delta: float) -> void:
 		$CollisionShape3D.disabled = false
 	else: i_frames -= delta
 	
-	
-	
 	if randi_range(0,5) == 3 and (is_on_floor() or (isBird and position.y < birdHeight)) and not outside:
 		velocity.y = JUMP_VELOCITY
 	
@@ -47,7 +45,6 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED / 60)
 		velocity.z = move_toward(velocity.z, 0, SPEED / 60)
-	
 	
 	if position.y < -200:
 		if statusReward != null:

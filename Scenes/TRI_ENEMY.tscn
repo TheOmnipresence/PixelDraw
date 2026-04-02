@@ -11,6 +11,7 @@ points = PackedVector3Array(0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5
 size = Vector3(1.1, 1.1, 1.1)
 
 [node name="TRI_ENEMY" type="CharacterBody3D" groups=["enemy"]]
+collision_layer = 17
 script = ExtResource("1_0kdir")
 knockbackMultiplier = 2
 enemyName = "TRI_ENEMY"

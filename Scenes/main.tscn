@@ -25,7 +25,7 @@ cell_size = Vector3(1, 1, 1)
 collision_layer = 9
 collision_priority = 100.0
 data = {
-"cells": PackedInt32Array(65535, 0, 1, 65535, 65535, 1, 65535, 65534, 1, 0, 0, 1, 0, 65535, 1, 1, 65535, 1, 1, 0, 0, 0, 65534, 0, 1, 65534, 0)
+"cells": PackedInt32Array(65535, 65535, 1, 0, 65535, 0, 0, 1, 1, 0, 0, 1, 65535, 0, 1, 65535, 1, 1, 1, 65535, 0, 1, 0, 1, 1, 1, 0)
 }
 script = ExtResource("2_8gbba")
 
@@ -141,6 +141,8 @@ script = ExtResource("7_6bp64")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Bounds"]
 shape = SubResource("BoxShape3D_344ge")
+
+[node name="StructureParent" type="Node3D" parent="."]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_21xkr")

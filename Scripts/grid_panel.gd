@@ -43,7 +43,7 @@ func _input(event: InputEvent) -> void:
 							Globals.toolShapes[Globals.barLayout[Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ShapeBar").get_children().find(i)]] = "NONE"
 	
 	self_modulate = Color(1,1,1,1)
-	if not hovering:
+	if not hovering:# and not (Input.is_action_pressed("plr_ctrl") and wasHovering):
 		if selectable:
 			if isTool: 
 				if Globals.hoveringTool == $Label.text:
@@ -57,17 +57,30 @@ func _input(event: InputEvent) -> void:
 				if Globals.toolsCompatibility[Globals.hoveringTool].has($Label.text):
 					self_modulate = Color(1,0.001,0.001,1)
 		if wasHovering:
-			#$Node/DescriptionContainer/MarginContainer/Label.text = ""
+			#%DescriptionLabel.text = ""
 			$Node.visible = false
 	elif is_visible_in_tree():
 		$Node.visible = true
 		if not wasHovering:
-			$Node/DescriptionContainer/MarginContainer/Label.text = Globals.getDescriptionText($Label.text)
-			if $Node/DescriptionContainer/MarginContainer/Label.text == "":
+			for i in $Node/DescriptionContainer/MarginContainer/VBoxContainer.get_children():
+				if i != %DescriptionLabel:
+					i.queue_free()
+			
+			for i in Globals.getComplexDescription($Label.text):
+				$Node/DescriptionContainer/MarginContainer/VBoxContainer.add_child(i)
+			
+			%DescriptionLabel.text = Globals.getDescriptionText($Label.text)
+			if %DescriptionLabel.text == "":
 				$Node.visible = false
 	wasHovering = hovering
 	
-	hovering = get_global_rect().has_point(get_global_mouse_position())
+	hovering = get_global_rect().has_point(get_global_mouse_position()) #and not Input.is_action_pressed("plr_ctrl")
 	if hovering and selectable:
 		if isTool: Globals.hoveringTool = $Label.text
 		else: Globals.hoveringShape = $Label.text
+	
+	if $Node/DescriptionContainer/MarginContainer/VBoxContainer.has_node("PatternContainer"):
+		if event.is_action("plr_copy") and event.is_pressed():
+			$Node/DescriptionContainer/MarginContainer/VBoxContainer.get_node("PatternContainer").get_node("CopyButton").pressed.emit()
+		if event.is_action("plr_pin") and event.is_pressed():
+			$Node/DescriptionContainer/MarginContainer/VBoxContainer.get_node("PatternContainer").get_node("PinButton").pressed.emit()

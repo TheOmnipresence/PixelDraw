@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bo83hyyb6s2d0"]
+[gd_scene load_steps=3 format=3 uid="uid://bo83hyyb6s2d0"]
 
 [ext_resource type="Script" uid="uid://pcdgwlb78m68" path="res://Scripts/grid_panel.gd" id="1_lb3ly"]
+[ext_resource type="FontFile" uid="uid://beivumjeqnfni" path="res://Speeches/Fonts/Recursive-VariableFont_CASL,CRSV,MONO,slnt,wght.ttf" id="2_vc74s"]
 
 [node name="ShapePanel" type="PanelContainer"]
 custom_minimum_size = Vector2(90, 60)
@@ -27,11 +28,18 @@ theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="Label" type="Label" parent="Node/DescriptionContainer/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Node/DescriptionContainer/MarginContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="Node/DescriptionContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
+mouse_behavior_recursive = 1
 theme_override_constants/line_spacing = 1
-theme_override_font_sizes/font_size = 8
+theme_override_fonts/font = ExtResource("2_vc74s")
+theme_override_font_sizes/font_size = 15
 autowrap_mode = 3
 
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]

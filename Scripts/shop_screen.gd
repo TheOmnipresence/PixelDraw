@@ -6,13 +6,8 @@ extends Control
 
 signal recieved_scout
 
-#func _ready() -> void:
-	#setup()
-
 func setup() -> void:
-	#Input.action_press("plr_leave")
 	Globals.cameraRef.get_child(0).get_node("MarginContainer").get_child(0).get_node("TabBar").current_tab = Globals.cameraRef.tabs.MONEY
-	#Input.parse_input_event(InputMap.action_get_events("plr_leave")[0])
 	visible = true
 	
 	$PanelContainer/MarginContainer/VBoxContainer/Name.text = shop_name

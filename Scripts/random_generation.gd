@@ -1,20 +1,47 @@
 extends GridMap
 
-@export var popupTime:=2
+## Time (in seconds) that popups stay on screen
+const popupTime:=2
+
+## The colors that popup text can have, for every item in [enum popupTypes]
 const popupColors = {
-	scanTypes.TOOL:Color(1.0, 0.0, 0.0, 1.0),
-	scanTypes.SHAPE:Color(0.0, 0.0, 1.0, 1.0),
-	scanTypes.ACTION:Color(0.0, 1.0, 0.0, 1.0),
-	scanTypes.OTHER:Color(0.2,0.2,0.2),
-	scanTypes.ARCHIPELAGO_SEND:Color(1,0.735,0,1),
-	scanTypes.ARCHIPELAGO_DEATHLINK: Color(1.0, 1.0, 0.0, 1.0),
-	scanTypes.STATUS_EFFECT:Color(0.735,0,1,1)
+	popupTypes.TOOL:Color(1.0, 0.0, 0.0, 1.0),
+	popupTypes.SHAPE:Color(0.0, 0.0, 1.0, 1.0),
+	popupTypes.ACTION:Color(0.0, 1.0, 0.0, 1.0),
+	popupTypes.OTHER:Color(0.2,0.2,0.2),
+	popupTypes.ARCHIPELAGO_SEND:Color(1,0.735,0,1),
+	popupTypes.ARCHIPELAGO_GOAL:Color(0.73,0.535,0,1),
+	popupTypes.ARCHIPELAGO_DEATHLINK: Color(1.0, 1.0, 0.0, 1.0),
+	popupTypes.STATUS_EFFECT:Color(0.735,0,1,1)
 }
 
+## The types of popup you cen recieve
+enum popupTypes {
+	TOOL, ## When you scan a new tool
+	SHAPE, ## When you scan a new shape
+	ACTION, ## When you scan a new action
+	OTHER, ## Other things, or when you scan an action you have already discovered
+	ARCHIPELAGO_SEND, ## When you find an Archipelago item
+	ARCHIPELAGO_GOAL, ## When you goal in Archipelago
+	ARCHIPELAGO_DEATHLINK, ## When you recieve a deathlink
+	STATUS_EFFECT ## Unused
+}
+
+## The last pattern scanned, used for [enum Globals.tools].STAMPER
 var lastScanned = []
+
+## The cells currently lighted from [enum Globals.tools].BULB
 var bulbCells = {}
+
+## The cells currently being mined from [enum Globals.tools].MC_PICK
+var pickaxeCells = []
+
+## If currently mining blocks
+var miningBlocks := false
+
+## The center point of the plane
 var planeOrigin = Vector3i.ZERO
-enum scanTypes {TOOL,SHAPE,ACTION,OTHER,ARCHIPELAGO_SEND,ARCHIPELAGO_DEATHLINK,STATUS_EFFECT}
+
 
 func _ready() -> void:
 	var duplicatedShapes = Globals.shapes.duplicate(true)
@@ -36,6 +63,7 @@ func _ready() -> void:
 			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
 	
 	Globals.gridRef = self
+
 
 func _process(_delta: float) -> void:
 	if Input.is_action_just_released("mouse1") or Input.is_action_just_released("mouse3"):
@@ -113,27 +141,7 @@ func _process(_delta: float) -> void:
 					$BulbTimer.start()
 			Globals.tools.MC_PICK:
 				cells = cells.filter(func(e): return get_cell_item(Vector3i(e.x,0,e.y)) == 1)
-				var speed = 0
-				match Globals.mcToolLevel:
-					"WOOD":
-						speed = 1.15
-					"STONE":
-						speed = 0.6
-					"IRON":
-						speed = 0.4
-					"DIAMOND":
-						speed = 0.3
-					"NETHERITE":
-						speed = 0.25
-					"GOLD":
-						speed = 0.2
-						Globals.mcToolLevel = "WOOD"
-				speed *= len(cells)
-				$McPickaxe.start(speed + $McPickaxe.time_left)
-				await $McPickaxe.timeout
-				for i in cells:
-					Globals.mcBlocks += 1
-					set_cell_item(vector2to3(i),0)
+				pickaxeCells += cells
 			Globals.tools.HOOK:
 				cells = cells.map(func(e): return Vector3i(e.x,2,e.y))
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
@@ -141,7 +149,7 @@ func _process(_delta: float) -> void:
 						enemy.velocity = enemy.position.direction_to(Globals.playerRef.position) * 100
 						enemy.position.lerp(Globals.playerRef.position,0.99)
 			Globals.tools.BASE_SW:
-				hitEnemy(0.5)
+				hitEnemy(5)
 			Globals.tools.PLACER:
 				for i in cells:
 					if Globals.mcBlocks <= 0:
@@ -169,7 +177,7 @@ func _process(_delta: float) -> void:
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
 					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
 						enemy.paralyze(3)
-			Globals.tools.PLATFORMS:
+			Globals.tools.PLATFORM:
 				for cell in cells:
 					set_cell_item(Vector3i(cell.x,0,cell.y),randi_range(0,1))
 			Globals.tools.PLAGUE:
@@ -200,11 +208,47 @@ func _process(_delta: float) -> void:
 		if Input.is_action_pressed("plr_shift"):
 			for i in Globals.getActions():
 				runShape(i)
+			giveCurrency("DIAMONDS",100)
+	
+	if not miningBlocks and not pickaxeCells.is_empty():
+		updatePickaxeBlocks()
 
+
+func updatePickaxeBlocks() -> void:
+	miningBlocks = true
+	var speed = 0
+	match Globals.mcToolLevel:
+		"WOOD":
+			speed = 1.15
+		"STONE":
+			speed = 0.6
+		"IRON":
+			speed = 0.4
+		"DIAMOND":
+			speed = 0.3
+		"NETHERITE":
+			speed = 0.25
+		"GOLD":
+			speed = 0.2
+			Globals.mcToolLevel = "WOOD"
+	#speed *= len(cells)
+	while not pickaxeCells.is_empty():
+		var i = pickaxeCells.pick_random()
+		$McPickaxe.start(speed)
+		await $McPickaxe.timeout
+		Globals.mcBlocks += 1
+		set_cell_item(vector2to3(i),0)
+		pickaxeCells.erase(i)
+	miningBlocks = false
+
+
+## Returns the heighest cells lower than the player at the coords of [param list]
 func heighestVisibleCells(list:Array) -> Array:
 	list = list.map(func(e): return vector2to3(e,getHeighestCell(e,roundi(Globals.playerRef.position.y -1))))
 	return list
 
+
+## Builds the starting cells
 func startCells():
 	var grid := GridMap.new()
 	grid.mesh_library = preload("res://Sprites/MeshLibraries/MeshLibrary.tres")
@@ -215,7 +259,9 @@ func startCells():
 	buildCells(grid.get_used_cells(),Vector3.ZERO,true,grid)
 	if Globals.isMultiplayer: rpc("buildCells",Vector3.ZERO,true,grid)
 
-func removeExtras(input:Dictionary):
+
+## Finds the groups of cells from [param input]
+func removeExtras(input:Dictionary) -> Dictionary:
 	lastScanned = []
 	var map := AStar2D.new()
 	for coords in input:
@@ -245,7 +291,9 @@ func removeExtras(input:Dictionary):
 	
 	return groups
 
-func checkForShapes(groups:Dictionary):
+
+## Runs [method scanShape] on each identifiable group in [param groups]. Also handles completion shape and extra patterns for archipelago.
+func checkForShapes(groups:Dictionary) -> Array:
 	var result = []
 	var hasShape = []
 	for group in groups.values().duplicate_deep():
@@ -258,7 +306,7 @@ func checkForShapes(groups:Dictionary):
 		if hasShape.has(group): groups.erase(groups.find_key(group))
 		if Globals.isArchipelago:
 			if Archipelago.conn.slot_data["completion_shape"] != "":
-				if allTransformations(Globals.Shape.fromBooleanList(Globals.Shape.binaryOrHexToBooleanList(Archipelago.conn.slot_data["completion_shape"]))).has(group): tryFinish(true)
+				if Globals.Shape.allTransformations(Globals.Shape.fromBooleanList(Globals.Shape.binaryOrHexToBooleanList(Archipelago.conn.slot_data["completion_shape"]))).has(group): tryFinish(true)
 			
 			for pattern in Globals.allExtraPatterns:
 				if pattern.has(group):
@@ -271,33 +319,16 @@ func checkForShapes(groups:Dictionary):
 		printerr(groups.values())
 	return result
 
-static func allTransformations(shape:Array) -> Array[Array]:
-	var possibleShapes:Array[Array] = [shape]
-	
-	#Rotations
-	possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(-e.y,e.x))))
-	possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(-e.x,-e.y))))
-	possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(e.y,-e.x))))
-	
-	for reflectedShape in possibleShapes.duplicate(true):
-		#Reflections
-		possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(-e.x,e.y))))
-		possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(e.x,-e.y))))
-		possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(-e.x,-e.y))))
-	
-	return possibleShapes
 
+## Converts a [Vector2] to a [Vector3]
 static func vector2to3(vector,yPos=0):
 	if typeof(vector) == TYPE_VECTOR2:
 		return Vector3(vector.x,float(yPos),vector.y)
 	else:
 		return Vector3i(vector.x,yPos,vector.y)
 
-static func arrayHasAll(array:Array,all:Array) -> bool:
-	for i in all:
-		if not array.has(i): return false
-	return true
 
+## Runs [method runShape] on a shape
 func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
 	group = group.map(func(e): return vector2to3(e + pos,0))
 	await lightShape(group,0,false)
@@ -305,14 +336,23 @@ func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
 	await get_tree().create_timer(0.2).timeout
 	await lightShape(group,-1,false)
 
+
+## Highlights the [param cells] on the gridmap
 func lightShape(cells,value:int,wait:=true) -> void:
 	if wait: await get_tree().create_timer(randf_range(0.3,0.9)).timeout
 	
 	for i in cells:
 		$"../ActivationGridMap".set_cell_item(i,value)
 
+
+#INFO very important
+## Gives you a tool or shape or runs an action 
 func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=false,archipelagoInfo:NetworkItem=NetworkItem.new()):
 	print(shape)
+	
+	if Globals.isArchipelago and not Globals.startedArchipelago and not calledFromArchipelago:
+		Globals.startedArchipelago = true
+	
 	if Globals.tools.keys().has(shape):
 		if Globals.isArchipelago and not calledFromArchipelago:
 			sendArchipelagoItem(Globals.toolsCompatibility.keys().find(shape),shape)
@@ -324,25 +364,22 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 				gridPanel.get_child(0).text = shape
 				Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
 				
-				triggerPopup("New Tool: " + shape + ("" if not Globals.isArchipelago else " From: " + Archipelago.conn.get_player_name(archipelagoInfo.src_player_id)),scanTypes.TOOL)
+				trigger_popup("New Tool: " + shape + ("" if not Globals.isArchipelago else " From: " + Archipelago.conn.get_player_name(archipelagoInfo.src_player_id)),popupTypes.TOOL)
 	elif Globals.allToolShapes.has(shape):
 		if Globals.isArchipelago and not calledFromArchipelago:
 			sendArchipelagoItem(Globals.allToolShapes.keys().find(shape) + 1000,shape)
 		else:
 			if not Globals.availibleShapes.has(shape):
 				Globals.availibleShapes.append(shape)
-				triggerPopup("New Shape: " + shape + ("" if not Globals.isArchipelago else " From: " + Archipelago.conn.get_player_name(archipelagoInfo.src_player_id)),scanTypes.SHAPE)
+				trigger_popup("New Shape: " + shape + ("" if not Globals.isArchipelago else " From: " + Archipelago.conn.get_player_name(archipelagoInfo.src_player_id)),popupTypes.SHAPE)
+	elif Globals.UPGRADES.has(shape):
+		match shape:
+			"MC_INVENTORY":
+				Globals.mcInventoryLevel += 1
 	elif Globals.enemySpawnShapes.has(shape):
 		if not Globals.actionsScanned.has(shape):
-			Globals.actionsScanned.append(shape)
-			tryFinish()
-			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
-			panel.selectable = false
-			panel.get_child(0).text = shape
-			panel.custom_minimum_size = Vector2(140,60)
-			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
-			
-			triggerPopup("New Action Triggered: SPAWNED_" + shape,scanTypes.ACTION)
+			add_action(shape)
+			trigger_popup("New Action Triggered: SPAWNED_" + shape,popupTypes.ACTION)
 		
 		var pos = map_to_local(local_to_map(Globals.playerRef.position))
 		summonEnemy(pos,shape)
@@ -382,44 +419,47 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 					rpc("buildCells",cells,playerPos,isComplexStructure,shape)
 		
 		if not Globals.actionsScanned.has(shape):
-			Globals.actionsScanned.append(shape)
-			tryFinish()
-			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
-			panel.selectable = false
-			panel.get_child(0).text = shape
-			panel.custom_minimum_size = Vector2(140,60)
-			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
-			
-			triggerPopup("New Action Triggered: BUILT_" + shape,scanTypes.ACTION)
+			add_action(shape)
+			trigger_popup("New Action Triggered: BUILT_" + shape,popupTypes.ACTION)
 	elif Globals.colorShapes.has(shape):
 		setColor(shape)
 		if not Globals.actionsScanned.has(shape):
-			Globals.actionsScanned.append(shape)
-			tryFinish()
-			
-			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
-			panel.selectable = false
-			panel.get_child(0).text = shape
-			panel.custom_minimum_size = Vector2(140,60)
-			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
-			
-			triggerPopup("New Action Triggered: COLORED_" + shape,scanTypes.ACTION)
+			add_action(shape)
+			trigger_popup("New Action Triggered: COLORED_" + shape,popupTypes.ACTION)
 	elif shape.contains("DEFEAT_"):
 		if Globals.isArchipelago and not calledFromArchipelago and Globals.enemySpawnShapes.has(shape.replace("DEFEAT_","")):
 			if Archipelago.conn.slot_data["randomize_enemy_deaths"]: sendArchipelagoItem(Globals.enemySpawnShapes.find(shape.replace("DEFEAT_","")) + 2000,shape)
+	elif Globals.SALESMEN.has(shape):
+		if not Globals.actionsScanned.has(shape):
+			add_action(shape)
+		trigger_popup("New Action Triggered: SUMMONED_" + shape,popupTypes.ACTION)
+		for i in Globals.cameraRef.get_node("%Salesmen").get_children():
+			if i.summoner == shape:
+				i.setup()
+				break
 	else:
 		if not Globals.actionsScanned.has(shape) and not (shape == "RANDOM_ACTION" or shape == "RANDOM_ENEMY"):
-			Globals.actionsScanned.append(shape)
-			tryFinish()
-			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
-			panel.selectable = false
-			panel.get_child(0).text = shape
-			panel.custom_minimum_size = Vector2(155,60)
-			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
-			triggerPopup("New Action Triggered: " + shape,scanTypes.ACTION)
+			add_action(shape)
+			trigger_popup("New Action Triggered: " + shape,popupTypes.ACTION)
 		else:
-			triggerPopup("Action Triggered: " + shape,scanTypes.OTHER)
+			trigger_popup("Action Triggered: " + shape,popupTypes.OTHER)
 		match shape:
+			var x when x.left(10) == "CHIP_PACK_":
+				if not Globals.isArchipelago:
+					Globals.compatibilityChips += Globals.chipPackAmounts[int(x.right(-10)) - 1]
+					Globals.chipPackAmounts[int(x.right(-10)) - 1] = 0
+				elif calledFromArchipelago:
+					Globals.compatibilityChips += 1
+				else:
+					var chipsBefore := 0
+					for i in Globals.chipPackAmounts.slice(0, int(x.right(-10)) - 1):
+						chipsBefore += i
+					
+					for i in range(Globals.chipPackAmounts[int(x.right(-10)) - 1]):
+						sendArchipelagoItem(i + chipsBefore + 3000, shape + "-" + str(i + 1))
+			"COMPATIBILITY_CHIP":
+				if Globals.isArchipelago and calledFromArchipelago:
+					Globals.compatibilityChips += 1
 			"CREEPER":
 				for i:SpotLight3D in $"../Biomes".get_children():
 					i.light_color = Color(randf_range(0.0,1.0),randf_range(0.0,1.0),randf_range(0.0,1.0))
@@ -464,7 +504,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 			"DIAMOND":
 				if Globals.mcToolLevel == "GOLD" or Globals.mcToolLevel == "IRON":
 					Globals.mcToolLevel = "DIAMOND"
-				addCurrency("DIAMONDS",1.0)
+				newCurrency("DIAMONDS",8.0)
 			"NETHERITE":
 				if Globals.mcToolLevel == "DIAMOND":
 					Globals.mcToolLevel = "NETHERITE"
@@ -524,14 +564,31 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 					if Globals.isMultiplayer:
 						rpc("summonEnemy",pos,enemyShape)
 			"CURRENCY_CUBICS":
-				addCurrency("CUBICS",1)
+				newCurrency("CUBICS",1)
 			"CURRENCY_AGNI": 
-				addCurrency("AGNI",20)
+				newCurrency("AGNI",20)
 			"BLOCK":
 				Globals.mcBlocks += 64
 			"MAZE":
 				makeMaze(20,Vector3i(center.x,0,center.y))
+			"STRENGTHEN_BOUNDS":
+				Globals.bounds_velocity += 20
+				await get_tree().create_timer(90).timeout
+				Globals.bounds_velocity -= 20
 
+
+## Logs an action
+func add_action(shape:String) -> void:
+	Globals.actionsScanned.append(shape)
+	tryFinish()
+	var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
+	panel.selectable = false
+	panel.get_child(0).text = shape
+	panel.custom_minimum_size = Vector2(155,60)
+	Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
+
+
+## Spawns an enemy at position [param pos], enemy kind is specified with [param shape]
 @rpc("any_peer","call_remote")
 func summonEnemy(pos:Vector3,shape:String):
 	var enemy = load("res://Scenes/"+shape+".tscn").instantiate()
@@ -539,6 +596,8 @@ func summonEnemy(pos:Vector3,shape:String):
 	await get_tree().create_timer(2).timeout
 	get_parent().add_child(enemy)
 
+
+## Places all of the [param cells]
 @rpc("any_peer","call_remote")
 func buildCells(cells:Array,onPosition:Vector3,isComplexStructure:=false,structureGrid=null,matchGround:=false) -> void:
 	if typeof(structureGrid) == TYPE_STRING and isComplexStructure: structureGrid = load(Globals.complexStructures[structureGrid]).instantiate()
@@ -562,11 +621,12 @@ func buildCells(cells:Array,onPosition:Vector3,isComplexStructure:=false,structu
 		if structureSize < 5000: await get_tree().create_timer(0.001 / structureSize).timeout
 		else: await get_tree().process_frame
 
+## Makes a maze with [param width]
 func makeMaze(width:int,center:Vector3i) -> void:
 	var currentCell = Vector2i.ZERO
 	var triedCells = null
 	var pastCells = []
-	while len(pastCells) < pow(width + 1,2) and triedCells != []:
+	while len(pastCells) < ((width + 1) ** 2) and triedCells != []:
 		if not pastCells.has(currentCell):
 			for neighbor in getNeighboringCells(Vector3i(currentCell.x,0,currentCell.y)):
 				if not pastCells.has(Vector2i(neighbor.x,neighbor.z)):
@@ -589,7 +649,9 @@ func makeMaze(width:int,center:Vector3i) -> void:
 			currentCell = nextCells.pick_random()
 			triedCells = null
 
-func triggerPopup(text:String,type:scanTypes) -> void:
+
+## Gives you a popup with [param text] and colored by the [param type]
+func trigger_popup(text:String,type:popupTypes) -> void:
 	var amountSame = 1
 	for i in Globals.cameraRef.get_child(0).get_node("PopupBox").get_children():
 		var panelText = i.get_child(0).text
@@ -625,7 +687,9 @@ func triggerPopup(text:String,type:scanTypes) -> void:
 	if is_instance_valid(panel):
 		panel.queue_free()
 
-static func getAllConnections(map:AStar2D,notInclude:Array,input:Dictionary,coords:Vector2i):
+
+## Something
+static func getAllConnections(map:AStar2D,notInclude:Array,input:Dictionary,coords:Vector2i) -> Array:
 	var checked = []
 	
 	if input[coords] == 1:
@@ -637,10 +701,14 @@ static func getAllConnections(map:AStar2D,notInclude:Array,input:Dictionary,coor
 					checked.append_array(iResult)
 	return checked
 
+
+## Sets the color scheme of the gridmap from [param colorName]
 func setColor(colorName:String) -> void:
 	for meshIndex:int in Array(mesh_library.get_item_list()):
 		mesh_library.get_item_mesh(meshIndex).material.albedo_color = Globals.colorShapes[colorName][meshIndex]
 
+
+## Gets all the cells from [param shape]'s data
 static func getShape(center:Vector3i,shape) -> Array:
 	if typeof(shape) == TYPE_STRING:
 		shape = Globals.allToolShapes[shape]
@@ -681,31 +749,41 @@ static func getShape(center:Vector3i,shape) -> Array:
 		Globals.types.CIRCLE:
 			result = rectPoints(shape.d+1,shape.d+1,topLeftPoint(center,Vector2i(shape.d,shape.d)))
 			for i in (result.duplicate_deep()):
-				if abs(pow((i.x - center.x + floor(shape.d/2.0)) - floor(shape.d/2),2) + pow((i.y - center.z - floor(shape.d/2.0)) + floor(shape.d/2),2)) > pow(floor(shape.d/2),2):
+				if abs((((i.x - center.x + floor(shape.d/2.0)) - floor(shape.d/2)) ** 2) + (((i.y - center.z - floor(shape.d/2.0)) + floor(shape.d/2)) ** 2)) > floor(shape.d/2) ** 2:
 					result.erase(i)
 		Globals.types.DIAMOND:
 			result = rectPoints(shape.len,shape.len,topLeftPoint(center,Vector2i(shape.len,shape.len)))
 			result = result.filter(func(e): return abs(e.x-center.x)+abs(e.y-center.z) <= (shape.len/2 - 1))
 	return result
 
+
+## Gets [method rectPoints] with regular dimensions
 static func fullPointsForRect(shape:Dictionary,center:Vector3i) -> Array:
 	return rectPoints(shape.x,shape.y,topLeftPoint(center,Vector2i(shape.x,shape.y)))
 
+
+## Gets the top left point with the given [param dimensions] and the [param center]
 static func topLeftPoint(center:Vector3i,dimensions:Vector2i) -> Vector2i:
 	@warning_ignore("integer_division")
 	return Vector2i(center.x-(floor(dimensions.x/2)),center.z-(floor(dimensions.y/2)))
 
-static func rectPoints(x:int,y:int,tl:Vector2i):
-	var result = []
+
+## Returns rectangle points
+static func rectPoints(x:int,y:int,tl:Vector2i) -> Array[Vector2i]:
+	var result:Array[Vector2i] = []
 	for xRan in range(0,x):
 		for yRan in range(0,y):
 			result.append(Vector2i(xRan,yRan) + tl)
 	return result
 
+
+## Returns the [param array] sorted
 static func sorted(array:Array) -> Array:
 	array.sort()
 	return array
 
+
+## Standardizes the [param list]
 static func makeStandard(list:Array) -> Array:
 	if list.is_empty(): return []
 	var mins = list[0]
@@ -718,19 +796,25 @@ static func makeStandard(list:Array) -> Array:
 	list = list.map(func(e): return e - mins)
 	return sorted(list)
 
-static func vectorMin(vect1:Vector2i,vect2:Vector2i):
+
+## Returns the minimum vector
+static func vectorMin(vect1:Vector2i,vect2:Vector2i) -> Vector2i:
 	if abs(vect1.x) + abs(vect1.y) < abs(vect2.x) + abs(vect2.y):
 		return vect1
 	else:
 		return vect2
 
-func hitEnemy(dist:float,shape:String = Globals.toolShapes[Globals.currentTool]):
+
+## Hits enemies in the shape [param shape]
+func hitEnemy(dist:float,shape:String = Globals.toolShapes[Globals.currentTool]) -> void:
 	var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),shape)
 	cells = cells.map(func(e): return Vector3i(e.x,2,e.y))
 	for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
 		if cells.has(local_to_map(enemy.position)): 
 			enemy.savedVelocity = ((enemy.position - (Globals.respawnPoint)).normalized() * 20 * (dist + Globals.playerRef.strength))
 
+
+## Gets the surrounding cells of [param coords]
 func getNeighboringCells(coords:Vector3i) -> Array:
 	var result = []
 	
@@ -742,7 +826,9 @@ func getNeighboringCells(coords:Vector3i) -> Array:
 	
 	return result
 
-static func mode(array:Array):
+
+## Finds the mode of the [param array]
+static func mode(array:Array) -> Variant:
 	var result = {}
 	for i in array:
 		if result.has(i):
@@ -751,6 +837,8 @@ static func mode(array:Array):
 			result[i] = 1
 	return result.find_key(result.values().max())
 
+
+## Randomly generates terrain
 func heightGeneration(shapeCells:Array) -> Array:
 	var cells = []
 	var cellsToYVals = {}
@@ -876,7 +964,9 @@ func heightGeneration(shapeCells:Array) -> Array:
 	
 	return addStructures(cells)
 
-func pickNextCell(currentCell:Vector2i,leftCells:Array):
+
+## Chooses a new cell for terrain generation
+func pickNextCell(currentCell:Vector2i,leftCells:Array) -> Variant:
 	var result = null
 	var distance = 1
 	
@@ -894,6 +984,8 @@ func pickNextCell(currentCell:Vector2i,leftCells:Array):
 	
 	return result
 
+
+## Does nothing
 func addStructures(cells:Array) -> Array:
 	return cells
 	#var structureOrigins = []
@@ -908,6 +1000,8 @@ func addStructures(cells:Array) -> Array:
 	#
 	#return cells
 
+
+## Gets the heighest cell at the [param pos]
 func getHeighestCell(pos:Vector2i,maxHeight:int=Globals.maxHeight) -> int:
 	var result = 0
 	var currentIndex = maxHeight
@@ -919,6 +1013,8 @@ func getHeighestCell(pos:Vector2i,maxHeight:int=Globals.maxHeight) -> int:
 	
 	return result
 
+
+## Sends the gridmap's data to peers
 @rpc("any_peer","call_remote")
 func sendMap() -> void:
 	var result = {}
@@ -926,20 +1022,36 @@ func sendMap() -> void:
 		result[i] = get_cell_item(i)
 	rpc_id(multiplayer.get_remote_sender_id(),"resetMap",result)
 
+
+## Resets the gridmap
 @rpc("authority","call_remote")
 func resetMap(mapInfo:Dictionary) -> void:
 	clear()
 	for i in mapInfo:
 		set_cell_item(i,mapInfo[i])
 
-func multiplyAttribute(attribute:String,value:Array,time:float):
+
+## Multiplies the [param attribute]
+func multiplyAttribute(attribute:String,value:Array,time:float) -> void:
 	Globals.playerRef.multipliers[attribute].changes.append(value)
 	Globals.playerRef.updateMultipliers()
 	await get_tree().create_timer(time).timeout
 	Globals.playerRef.multipliers[attribute].changes.erase(value)
 	Globals.playerRef.updateMultipliers()
 
-func addCurrency(type:String,amount:float) -> void:
+
+## Gives you a new currency of [param type]
+func newCurrency(type:String,amount:float) -> void:
+	if not Globals.currencies.has(type): giveCurrency(type,amount)
+
+
+## Increases the amount of currency of [param type] if you already have discovered it
+func moreCurrency(type:String,amount:float) -> void:
+	if Globals.currencies.has(type): giveCurrency(type,amount)
+
+
+## Increases the amount of currency of [param type]
+func giveCurrency(type:String,amount:float) -> void:
 	if Globals.currencies.has(type):
 		Globals.currencies[type] += amount
 	else:
@@ -949,34 +1061,51 @@ func addCurrency(type:String,amount:float) -> void:
 		
 		var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
 		panel.selectable = false
-		panel.get_child(0).text = "CURRENCY_" + type #+ ": " + str(Globals.currencies[type])
+		panel.get_child(0).text = "CURRENCY_" + type
 		panel.custom_minimum_size = Vector2(140,60)
-		
-		#for i in Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer").get_children():
-			#if i.get_child(0).text.split(":")[0] == type:
-				#i.queue_free()
 		
 		Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer").add_child(panel)
 
+
+## Sends the notification that you found the location
 func sendArchipelagoItem(id:int,shape:String) -> void:
 	if not Globals.archipelagoLocationsFound.has(shape):
 		Globals.archipelagoLocationsFound.append(shape)
 		Archipelago.collect_location(id)
 		Archipelago.conn.scout(id,0,archipelagoPopup)
 
+
+## Gives you a popup when you recieve an item from Archipelago
 func archipelagoPopup(info:NetworkItem) -> void:
 	var playerName = Archipelago.conn.get_player_name(info.dest_player_id)
 	var itemName = info.get_name()
-	triggerPopup("Archipelago Item: " + playerName + "'s " + itemName, scanTypes.ARCHIPELAGO_SEND)
+	trigger_popup("Archipelago Item: " + playerName + "'s " + itemName, popupTypes.ARCHIPELAGO_SEND)
 
+
+## Checks if you can finish Archipelago
 func tryFinish(fromFinishShape:=false) -> void:
 	if Globals.isArchipelago: 
-		if len(Globals.actionsScanned) >= int(Archipelago.conn.slot_data["actions_needed"]) and arrayHasAll(Globals.extraPatternsFound,range(len(Archipelago.conn.slot_data["needed_patterns"]))): 
-			if (Archipelago.conn.slot_data["completion_shape"] == "" or fromFinishShape):
-				finishArchipelago() #TODO maybe add amount of extra shapes needed?
+		if len(Globals.actionsScanned) >= int(Archipelago.conn.slot_data["actions_needed"]):
+			if not Globals.scanned_all_actions and int(Archipelago.conn.slot_data["actions_needed"]) > 0:
+				trigger_popup("Scanned All Actions", popupTypes.ARCHIPELAGO_GOAL)
+				Globals.scanned_all_actions = true
+			@warning_ignore("static_called_on_instance")
+			if Globals.arrayHasAll(Globals.extraPatternsFound,range(len(Archipelago.conn.slot_data["needed_patterns"]))): 
+				if not Globals.scanned_all_extra_patterns and len(Archipelago.conn.slot_data["needed_patterns"]) > 0:
+					trigger_popup("Scanned All Needed Patterns", popupTypes.ARCHIPELAGO_GOAL)
+					Globals.scanned_all_extra_patterns = true
+				if (Archipelago.conn.slot_data["completion_shape"] == "" or fromFinishShape):
+					finishArchipelago() #TODO maybe add amount of extra shapes needed?
 
+
+## Sends the Archipelago goal signal
 func finishArchipelago() -> void:
 	Archipelago.set_client_status(AP.ClientStatus.CLIENT_GOAL)
+	
+	if not Globals.finished_archipelago:
+		trigger_popup("Finished Archipelago", popupTypes.ARCHIPELAGO_GOAL)
+		Globals.finished_archipelago = true
+
 
 func _on_bulb_timer_timeout() -> void:
 	for cell in bulbCells:

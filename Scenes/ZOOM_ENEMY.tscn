@@ -26,6 +26,8 @@ knockbackMultiplier = 2
 JUMP_VELOCITY = 10.0
 statusReward = SubResource("Resource_a63oq")
 enemyName = "ZOOM_ENEMY"
+currencyName = "CUBICS"
+currencyAmount = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_v18je")

@@ -125,7 +125,10 @@ func _input(event):
 		sitting = false
 	
 	if Input.is_action_just_pressed("plr_restart"):
-		Globals.reset()
+		if Input.is_action_pressed("plr_shift"):
+			Globals.reset(true)
+		else:
+			Globals.reset()
 
 func updateMultipliers():
 	for multiplier in multipliers:

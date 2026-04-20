@@ -3,14 +3,19 @@ extends Camera3D
 var availibleShapesCopy = []
 
 var tabIndex = tabs.SETUP
-enum tabs {SETUP,TOOLS,SHAPES,ACTIONS,MENU,ARCHIPELAGO,CONSOLE,MONEY,SAVES}
+enum tabs {SETUP,TOOLS,SHAPES,ACTIONS,MENU,ARCHIPELAGO,CONSOLE,MULTIPLAYER,MONEY,SAVES}
 
 var ip:String
+
 
 func _enter_tree() -> void:
 	Globals.cameraRef = self
 
+
 func _ready() -> void:
+	for i in [$HUD/SetupTab/ScannerBox/PanelContainer,$HUD/SetupTab/ScannerBox/PanelContainer2]:
+		i.get_node("ColorRect").visible = false
+		i.get_node("OutlineContainer").visible = false
 	$HUD/SetupTab/ScannerBox/PanelContainer2.get_child(-1).text = "SCANNER"
 	
 	var console:Window = preload("res://godot_ap/ui/ap_console_window.tscn").instantiate()
@@ -19,7 +24,7 @@ func _ready() -> void:
 	Archipelago.load_console(console,false)
 	$HUD/ArchipelagoTab/Console/Positioner.add_child(console)
 	
-	for i in [$HUD/ToolsTab/MarginContainer/ToolFindPanel,$HUD/ShapesTab/MarginContainer/ShapeFindPanel,$HUD/ActionsTab/MarginContainer/ActionFindPanel]:
+	for i in [$HUD/ToolsTab/MarginContainer/ToolFindPanel,$HUD/ShapesTab/MarginContainer/ShapeFindPanel,$HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel]:
 		i.get_child(0).get_node("HBoxContainer").get_node("Copy").pressed.connect(func(): copyShape(i.get_child(0).get_node("Label").get_meta("data")))
 		i.get_child(0).get_node("HBoxContainer").get_node("Pin").pressed.connect(func(): pinShape(i.get_child(0).get_node("Label").get_meta("data")))
 	
@@ -27,10 +32,8 @@ func _ready() -> void:
 	
 	updateTabs()
 
+
 func _process(_delta: float) -> void:
-	for i in range(len(Globals.barLayout)):
-		$HUD/HBoxContainer.get_child(i).get_child(-1).text = Globals.tools.keys()[Globals.barLayout[i]]
-	
 	$HUD/ArchipelagoTab/Console/Positioner.get_child(0).visible = $HUD/ArchipelagoTab/Console.visible
 	
 	for i in $HUD/HBoxContainer.get_children():
@@ -57,7 +60,7 @@ func _process(_delta: float) -> void:
 		var hintPanelData = {
 			$HUD/ToolsTab/MarginContainer/ToolFindPanel:(Globals.tools.keys().filter(func(e): return (not Globals.availibleTools.has(Globals.tools.keys().find(e)) if not Globals.isArchipelago else not Globals.archipelagoLocationsFound.has(e)))),
 			$HUD/ShapesTab/MarginContainer/ShapeFindPanel:(Globals.allToolShapes.keys().filter(func(e): return (not Globals.availibleShapes.has(e) if not Globals.isArchipelago else not Globals.archipelagoLocationsFound.has(e)))),
-			$HUD/ActionsTab/MarginContainer/ActionFindPanel:(Globals.getActions().filter(func(e): return not Globals.actionsScanned.has(e)))
+			$HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel:(Globals.getActions().filter(func(e): return not Globals.actionsScanned.has(e)))
 		}
 		for i in hintPanelData:
 			var hintRes = setRandomHint(hintPanelData[i])
@@ -71,7 +74,14 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("plr_tab_down") and %TabBar.current_tab + 1 < %TabBar.tab_count:
 		%TabBar.current_tab += 1
 	
+	if not get_tree().paused:
+		if Input.is_action_just_pressed("plr_copy"):
+			_on_minimap_copy_pressed()
+		if Input.is_action_just_pressed("plr_pin"):
+			_on_minimap_pin_pressed()
+	
 	$HUD/MarginContainer/HBoxContainer/CompassLabel.text = {0:"N",-1:"E",-2:"S",2:"S",1:"W"}[roundi(get_parent().rotation_degrees.y/90)]
+
 
 func setRandomHint(sourceList:Array,iteration:int=0) -> Dictionary:
 	if iteration >= 30: return {"image":ImageTexture.new(),"shape":"","data":""}
@@ -88,6 +98,7 @@ func setRandomHint(sourceList:Array,iteration:int=0) -> Dictionary:
 	else:
 		return {"image":ImageTexture.new(),"shape":"","data":""}
 	return setRandomHint(sourceList,iteration + 1)
+
 
 func updateTabs() -> void:
 	var allTabs = get_child(0).get_children().filter(func(e): return str(e.name).contains("Tab") and not str(e.name) == "TabBar")
@@ -107,7 +118,7 @@ func updateTabs() -> void:
 				for i in $HUD/ToolsTab.get_children():
 					i.visible = true
 			tabs.SHAPES:
-				$HUD/SetupTab/ScrollContainer/ShapesBox.visible = true
+				$HUD/SetupTab/ScrollContainer.visible = true
 				for i in $HUD/ShapesTab.get_children():
 					i.visible = true
 			tabs.ACTIONS:
@@ -123,6 +134,7 @@ func updateTabs() -> void:
 	
 	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions.visible = get_tree().paused
 	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions.visible = get_tree().paused
+
 
 func updateSaves() -> void:
 	for i in $HUD/SavesTab/MarginContainer/VBoxContainer.get_children(): i.queue_free()
@@ -153,6 +165,7 @@ func updateSaves() -> void:
 	saveAsNewButton.text = "Save as new slot"
 	saveAsNewButton.pressed.connect(func(): Globals.saveSlot(-1))
 	$HUD/SavesTab/MarginContainer/VBoxContainer.add_child(saveAsNewButton)
+
 
 func _input(event: InputEvent) -> void:
 	if event.is_action("scroll_up") and event.is_released():
@@ -186,50 +199,70 @@ func _input(event: InputEvent) -> void:
 		if event.is_action_pressed("mouse1"): checkForIp()
 		elif event.is_action_released("mouse1"): $HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/IPLabel.text = "Click to reveal IP"
 
+
 func checkForIp():
 	await get_tree().process_frame
 	if get_viewport().gui_get_focus_owner() == $HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/IPLabel:
 		$HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/IPLabel.text = ip
 
+
 func updateBar():
+	for i in range(len(Globals.barLayout)):
+		var shape = Globals.tools.keys()[Globals.barLayout[i]]
+		$HUD/HBoxContainer.get_child(i).get_child(-1).text = shape
+		var shapeRes = Globals.Shape.new([])
+		shapeRes.pattern_name_format = shape
+		$HUD/HBoxContainer.get_child(i).get_node("TextureContainer").get_child(0).texture = shapeRes.icon_format
 	if Globals.barIndex <= -1: Globals.barIndex = 9
 	if Globals.barIndex >= 10: Globals.barIndex = 0
 	Globals.currentTool = Globals.tools.keys().find($HUD/HBoxContainer.get_child(Globals.barIndex).get_child(-1).text) as Globals.tools
+
 
 func _on_tab_bar_tab_changed(tab: int) -> void:
 	tabIndex = tab as tabs
 	updateTabs()
 
+
 func _on_end_journey_button_pressed() -> void:
 	pass
 
+
 func hostMultiplayer() -> void:
 	ip = MultiplayerSetup.host()
+
 
 func joinMultiplayer(text=$HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Code.text) -> void:
 	multiplayer.connected_to_server.connect(func():Globals.gridRef.rpc_id(1,"sendMap"))
 	MultiplayerSetup.join(text)
 
+
 var palletShape = ""
+
 var internalClipboard = ""
+
 
 func _on_pallet_button_pressed() -> void:
 	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Button
 	button.text = {"Show":"Hide","Hide":"Show"}[button.text]
+
 
 func _on_copy_pressed() -> void:
 	#DisplayServer.clipboard_set(Globals.Shape.binaryToHex(palletShape))
 	DisplayServer.clipboard_set(Globals.Shape.binaryToHex(palletShape) if Input.is_action_pressed("plr_shift") else palletShape)
 	internalClipboard = palletShape
 
+
 func _on_paste_pressed() -> void:
 	pinShape(DisplayServer.clipboard_get())
+
 
 func _on_clockwise_pressed() -> void:
 	rotateShape()
 
+
 func _on_counterclockwise_pressed() -> void:
 	rotateShape(false)
+
 
 func rotateShape(clockwise:=true) -> void:
 	var shapeClass = Globals.Shape.new([])
@@ -237,17 +270,21 @@ func rotateShape(clockwise:=true) -> void:
 	shapeClass.universal_format = Globals.Shape.rotatePoints(shapeClass.universal_format,clockwise)
 	palletShape = shapeClass.binary_format
 	
-	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(shapeClass.universal_format)
+	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = shapeClass.image_format
+
 
 func pinShape(data:String) -> void:
 	palletShape = data
 	
 	var shapeClass = Globals.Shape.new([])
 	shapeClass.binary_format = data
-	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(shapeClass.universal_format)
+	$HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer/TextureRect.texture = shapeClass.image_format
+	#get_parent().get_parent().get_node("test").get_child(0).mesh.surface_get_material(0).albedo_texture = shapeClass.icon_format
+
 
 func copyShape(data:String) -> void:
 	DisplayServer.clipboard_set(Globals.Shape.binaryToHex(data) if Input.is_action_pressed("plr_shift") else data)
+
 
 func _on_minimap_toggle_pressed() -> void:
 	var button = $HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapToggle
@@ -256,16 +293,20 @@ func _on_minimap_toggle_pressed() -> void:
 	if button.text == "Hide Minimap":
 		updateMinimap(Vector2i(roundi(get_parent().position.x),roundi(get_parent().position.z)))
 
+
 func _on_minimap_smaller_pressed() -> void:
 	minimapRadius -= 1
 
+
 func _on_minimap_bigger_pressed() -> void:
 	minimapRadius += 1
+
 
 var minimapRadius = 2:
 	set(value):
 		minimapRadius = clampi(value,0,10)
 		updateMinimap(Vector2i(roundi(get_parent().position.x),roundi(get_parent().position.z)))
+
 
 func updateMinimap(playerPos:Vector2i) -> void:
 	var positionsToCheck = []
@@ -279,12 +320,18 @@ func updateMinimap(playerPos:Vector2i) -> void:
 		if cellItem == 1:
 			resultPoints.append(i)
 	
+	var shape = Globals.Shape.new([])
+	
 	if not resultPoints.is_empty():
 		var typedPoints:Array[Vector2i] = []
 		typedPoints.assign(resultPoints)
-		$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = Globals.Shape.getImageFromList(typedPoints)
+		shape.universal_format = typedPoints
+		$HUD/SetupTab/MinimapContainer/MinimapPanel.set_meta("data",shape.hexadecimal_format)
+		$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = shape.image_format
 	else:
+		$HUD/SetupTab/MinimapContainer/MinimapPanel.set_meta("data","")
 		$HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer/TextureRect.texture = ImageTexture.new()
+
 
 func _on_window_option_item_selected(index: int) -> void:
 	match index:
@@ -292,3 +339,32 @@ func _on_window_option_item_selected(index: int) -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		1:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func updateDescriptionWindows(type:String,value:String) -> void:
+	var node = {
+		"Tool":null,
+		"Shape":null,
+		"Action":$HUD/ActionsTab/MarginContainer/VBoxContainer/Panel/Label,
+	}[type]
+	if node == null: return
+	
+	node.text = Globals.getDescriptionText(value)
+	for i in node.get_parent().get_parent().get_children().filter(func(e): return not e is PanelContainer):
+		i.queue_free()
+	for i in Globals.getComplexDescription(value):
+		if i is TextureRect:
+			i.size_flags_horizontal = Control.SIZE_SHRINK_END
+		elif i is HBoxContainer:
+			for button in i.get_children():
+				if button is Button:
+					button.text = button.text.split("\n")[0]
+		node.get_parent().get_parent().add_child(i)
+
+
+func _on_minimap_copy_pressed() -> void:
+	copyShape($HUD/SetupTab/MinimapContainer/MinimapPanel.get_meta("data"))
+
+
+func _on_minimap_pin_pressed() -> void:
+	pinShape($HUD/SetupTab/MinimapContainer/MinimapPanel.get_meta("data"))

@@ -1,0 +1,50 @@
+[gd_scene load_steps=6 format=3 uid="uid://cq0xys1ijpkog"]
+
+[ext_resource type="PackedScene" uid="uid://cebpnre0v71ag" path="res://agd/test.blend" id="1_lc1oi"]
+[ext_resource type="Texture2D" uid="uid://rfngk7m3vyoo" path="res://Sprites/logo.png" id="2_u11yb"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0iyo3"]
+resource_name = "logo"
+transparency = 4
+cull_mode = 2
+albedo_texture = ExtResource("2_u11yb")
+roughness = 0.5
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_d77n5"]
+_surfaces = [{
+"aabb": AABB(-0.5, 0, -0.5, 1, 1e-05, 1),
+"format": 34896613377,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 1, 0),
+"name": "logo",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_nuppn"]
+resource_name = "test_logo"
+_surfaces = [{
+"aabb": AABB(-0.5, 0, -0.5, 1, 1e-05, 1),
+"attribute_data": PackedByteArray(0, 0, 255, 255, 255, 255, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0),
+"format": 34896613399,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 1, 0),
+"material": SubResource("StandardMaterial3D_0iyo3"),
+"name": "logo",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 0, 0, 255, 255, 255, 191, 255, 255, 0, 0, 0, 0, 255, 191, 255, 255, 0, 0, 255, 255, 255, 191, 0, 0, 0, 0, 0, 0, 255, 191, 255, 255, 255, 127, 255, 255, 255, 127, 255, 255, 255, 127, 255, 255, 255, 127)
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_d77n5")
+
+[node name="test" instance=ExtResource("1_lc1oi")]
+
+[node name="logo" parent="." index="0"]
+mesh = SubResource("ArrayMesh_nuppn")

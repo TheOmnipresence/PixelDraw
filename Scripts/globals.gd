@@ -1,17 +1,100 @@
 extends Node
 
-var firstPause:= true
+## If multiplayer is active
+var isMultiplayer = false
+
+## If archipelago is active
+var isArchipelago = false
+
+## The archipelago locations found
+var archipelagoLocationsFound = []
+
+## The needed patterns found for archipelago
+var extraPatternsFound = []
+
+## All the needed patterns for archipelago
+var allExtraPatterns = []
+
+## Set to true the first successful scan after connection to archipelago
+var startedArchipelago = false:
+	set(value):
+		if not (value and startedArchipelago):
+			startedArchipelago = value
+			if value:
+				Archipelago.set_client_status(Archipelago.ClientStatus.CLIENT_PLAYING)
+
+## The deathlink messages for archipelago
+const deathlinkMessages = [
+	"\"boop\" - %s",
+	"%s couldn't think of a pop culture refrence to put here",
+	"%s poked at the wrong guy",
+	"%s fought for Aiur",
+	"That's the wrong action, %s",
+	"Oh no, %s lost all their [insert currency here]",
+	"%s's home bed was missing or obstructed",
+	"*sad giraffe noises* - %s",
+	"\"%s has been cubified, sir\"",
+	"%s broke through the shiny wall",
+	"%s's world is looking a little too pixelated",
+	"baba is not %s",
+	"%s fell off of the space platform",
+	"%s walked past elderbug",
+	"The zombies ate %s's brains",
+	"GLaDOS is dissapointed in %s",
+	"%s IS a potato",
+	"%s really wants to turn keep inventory on right now",
+	"%s needs Shakra to help for this fight (apperently)",
+	"What's the point of this wall being here if %s is just gonna breeze right through??",
+	"%s was bonked by an apricot-flavored popsicle",
+	"\"death.fell.accident.water\" - %s",
+	"%s died? Interesting... very Interesting",
+	"%s didn't think that mantis shrimps are cool",
+	"%s didn't think that would do two masks",
+	"%s overreacted",
+]
+
+var finished_archipelago := false
+
+var scanned_all_extra_patterns := false
+
+var scanned_all_actions := false
+
+var bounds_velocity := 100
 
 @warning_ignore("unused_signal")
+## Emits once the player finishes its ready function
 signal player_ready
+
+## A refrence to the player
 var playerRef:CharacterBody3D
+
+## A refrence to the camera
 var cameraRef:Camera3D
+
+## A refrence to the grid
 var gridRef:GridMap
+
+## If you can use commands in the command line
 var cheatsOn = false
+
+## All the popups recieved
 var allPopups:Array[String] = []
+
+## The level for the minecraft tools (MC_PICK)
 var mcToolLevel := "WOOD"
-var mcBlocks := 0
+
+## The amount of minecraft blocks you currently have stored
+var mcBlocks := 0:
+	set(value):
+		mcBlocks = clampi(value,0,mcInventoryLevel * 64)
+
+## The level of inventory for minecraft
+var mcInventoryLevel := 1
+
+## The current save slot
 var currentSlot := 0
+
+## The variables that are saved to file
 const VARS_TO_SAVE = [
 	"actionsScanned",
 	"availibleTools",
@@ -22,6 +105,8 @@ const VARS_TO_SAVE = [
 	"respawnPoint",
 	"archipelagoLocationsFound",
 ]
+
+## A list of all actions scanned, used predominantly for Archipelago stuff
 var actionsScanned = []:
 	set(value):
 		for shape in value:
@@ -33,12 +118,38 @@ var actionsScanned = []:
 			Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).add_child(panel)
 		actionsScanned = []
 		actionsScanned.assign(value)
+
+## The currencies and how much of them
 var currencies := {}
+
+## The reset point of the player
 var respawnPoint := Vector3(0,2,0)
-var hoveringTool := "NONE"
-var hoveringShape := "NONE"
+
+## The tool that is being hovered over in the ui
+var hoveringTool := "NONE":
+	set(value):
+		hoveringTool = value
+		cameraRef.updateDescriptionWindows("Tool",value)
+
+## The shape that is being hovered over in the ui
+var hoveringShape := "NONE":
+	set(value):
+		hoveringShape = value
+		cameraRef.updateDescriptionWindows("Shape",value)
+
+## The action that is being hovered over in the ui
+var hoveringAction := "NONE":
+	set(value):
+		hoveringAction = value
+		cameraRef.updateDescriptionWindows("Action",value)
+
+## The tools currently on the toolbar
 var barLayout:Array[tools] = [tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE]
+
+## The currently selected index of the toolbar
 var barIndex := 0
+
+## All unlocked tools
 var availibleTools := [tools.NONE]:
 	set(value):
 		if typeof(value[0]) == TYPE_FLOAT or typeof(value[0]) == TYPE_INT:
@@ -52,42 +163,131 @@ var availibleTools := [tools.NONE]:
 			var gridPanel = preload("res://Scenes/grid_panel.tscn").instantiate()
 			gridPanel.get_child(0).text = tools.keys()[i]
 			cameraRef.get_child(0).get_node("SetupTab").get_node("ToolsGrid").add_child(gridPanel)
-enum types {RECT,SQUIRCLE,PLUS,DIAGONAL,LINE,TRIANGLE,LOOP,CIRCLE,DIAMOND}
-var baseShape := {"type":types.RECT,"x":3,"y":3}
+
+## The types of shape
+enum types {
+	RECT, ## A rectangle, perameters "x" and "y" for lengths in both axis
+	SQUIRCLE, ## Rectangle with the corners gone, perameters "x" and "y" for lengths in both axis
+	PLUS, ## A plus shape, two perpendicular lines meeting in the middle, perameters "x" and "y" for lengths in both axis
+	DIAGONAL, ## A diagonal line, perameter "len" for length and "tl" for inversion
+	LINE, ## A line, perameter "len" for length and "vertical" for axis
+	TRIANGLE, ## A right triangle, perameters "x" and "y" for lengths in both axis
+	LOOP, ## A square loop, perameters "x" and "y" for lengths in both axis and "w" for width of the loop
+	CIRCLE, ## A circle, perameter "d" for diameter
+	DIAMOND, ## A square rhombus, perameter "len" for lengths of opposite corners
+}
+
+## The shape the scanner uses
+var baseShape := allToolShapes.BASE_RECT
+
+## All status effects
 enum allStatuses {NONE,SPEED}
+
+## The maximum height that the grid map can place cells
 const maxHeight = 300
-enum tools {NONE,VOIDER,ERASER,C_GOL,RAISER,LEVELER,DUSTER,SHUFFLER,STOPPER,BULB,MC_PICK,HOOK,BASE_SW,PLACER,STAMPER,GRAVITATE,SUMMON,TERRAIN,PARALYZER,PLATFORMS,PLAGUE,MAZER}
-const toolsCompatibility = {
+
+## All tools
+enum tools {
+	NONE, ## A blank tool
+	VOIDER, ## 
+	ERASER,
+	C_GOL,
+	RAISER,
+	LEVELER,
+	DUSTER,
+	SHUFFLER,
+	STOPPER,
+	BULB,
+	MC_PICK,
+	HOOK,
+	BASE_SW,
+	PLACER,
+	STAMPER,
+	GRAVITATE,
+	SUMMON,
+	TERRAIN,
+	PARALYZER,
+	PLATFORM,
+	PLAGUE,
+	MAZER,
+} # TODO: HOLE
+
+## The compatible shapes for each tool
+var toolsCompatibility = {
 	"NONE":[],
 	"VOIDER":[],
 	"ERASER":[],
-	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																																		],
-	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																													],
-	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI"																				],
-	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR",																																								"8_CIR",							],
-	"SHUFFLER":[	"NONE",						"5_SQR"																																																					],
-	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																																],
-	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN",																																"12_DIA",	],
-	"MC_PICK":[		"NONE",																										"7_LINE"																																],
-	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC",																						"10_TRI",				],
-	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"																						],
-	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",																																			],
-	"STAMPER":[		"NONE",									"6_SQR",																																																	],
-	"GRAVITATE":[	"NONE",																																							"5_TRI",													"10_TRI",				],
-	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR",																						"12_DIA",	],
-	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",													],
-	"PARALYZER":[	"NONE",																																																"7_SQC",							"12_DIA",	],
-	"PLATFORMS":[	"NONE",																																										"50_SQR",				"7_SQC",	"8_CIR",							],
-	"PLAGUE":[		"NONE",																																	"10_SQR",																			"10_TRI",				],
-	"MAZER":[		"NONE",									"6_SQR",																						"10_SQR",							"50_SQR",																],
+	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																																					],
+	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																																],
+	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI",																			"6/4_RECT",	],
+	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR",																																								"8_CIR",										],
+	"SHUFFLER":[	"NONE",						"5_SQR"																																																								],
+	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																																			],
+	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN",																																"11_DIA",				],
+	"MC_PICK":[		"NONE",																										"7_LINE"																																			],
+	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC",																						"10_TRI",							],
+	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"																									],
+	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",																																						],
+	"STAMPER":[		"NONE",									"6_SQR",																																																				],
+	"GRAVITATE":[	"NONE",																																							"5_TRI",													"10_TRI",							],
+	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR",																						"11_DIA",				],
+	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",																],
+	"PARALYZER":[	"NONE",																																																"7_SQC",							"11_DIA",	"6/4_RECT",	],
+	"PLATFORM":[	"NONE",																																										"50_SQR",				"7_SQC",	"8_CIR",										],
+	"PLAGUE":[		"NONE",																																	"10_SQR",																			"10_TRI",							],
+	"MAZER":[		"NONE",									"6_SQR",																						"10_SQR",							"50_SQR",																			],
 }
+
+const additionalCompatibilities = {
+	"NONE":[],
+	"VOIDER":[],
+	"ERASER":[],
+	"C_GOL":["10_SQR","50_SQR"],
+	"RAISER":["11_DIA"],
+	"LEVELER":["11_DIA"],
+	"DUSTER":["7_SQC"],
+	"SHUFFLER":["7_LINE"],
+	"STOPPER":["3_DIAG"],
+	"BULB":["SM_DIA"],
+	"MC_PICK":["6_SQR"],
+	"HOOK":["7_SQC"],
+	"BASE_SW":["7_LOOP"],
+	"PLACER":["BASE_RECT"],
+	"STAMPER":["6/4_RECT"],
+	"GRAVITATE":["8_CIR"],
+	"SUMMON":["10_TRI"],
+	"TERRAIN":["10_SQR"],
+	"PARALYZER":["5_PLUS"],
+	"PLATFORM":["BASE_RECT"],
+	"PLAGUE":["6/4_RECT"],
+	"MAZER":["5_SQR"],
+}
+
+## All tool compatibilities currently unlocked
+var unlockedCompatibilities = {}
+
+## The amount of compatibility chips
+var compatibilityChips := 0:
+	set(value):
+		compatibilityChips = value
+		cameraRef.get_child(0).get_node("ToolsTab").get_node("ChipAmount").text = "Compatibility Chips: " + str(value)
+
+## The current tool selected in the toolbar
 var currentTool:tools = tools.NONE
+
+## The patterns that spawn enemies
 const enemySpawnShapes = ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"]
+
+## The associated shapes for tools in the toolbar
 var toolShapes:Dictionary[tools,String] = {tools.NONE:"BASE_RECT"}
+
+## All unlocked shapes
 var availibleShapes: = ["NONE","BASE_RECT"]:
 	set(value):
 		availibleShapes = []
 		availibleShapes.assign(value)
+
+## The data for every shape
 const allToolShapes = {
 	"NONE":{},
 	"BASE_RECT":{"type":types.RECT,"x":3,"y":3},
@@ -109,8 +309,11 @@ const allToolShapes = {
 	"7_SQC":{"type":types.SQUIRCLE,"x":7,"y":7},
 	"8_CIR":{"type":types.CIRCLE,"d":8},
 	"10_TRI":{"type":types.TRIANGLE,"x":10,"y":10},
-	"12_DIA":{"type":types.DIAMOND,"len":12},
+	"11_DIA":{"type":types.DIAMOND,"len":12},
+	"6/4_RECT":{"type":types.RECT,"x":6,"y":4}
 }
+
+## The structure data for every structure pattern
 var structureShapes:Dictionary[String,Array] = {
 	"TOWER":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0),Vector3i(0,4,0),Vector3i(1,1,0),Vector3i(1,2,0),Vector3i(1,3,0),Vector3i(1,4,0),Vector3i(1,1,1),Vector3i(1,2,1),Vector3i(1,3,1),Vector3i(1,4,1),Vector3i(0,1,1),Vector3i(0,2,1),Vector3i(0,3,1),Vector3i(0,4,1)                ,Vector3i(-1,1,0),Vector3i(-1,2,0),Vector3i(-1,3,0),Vector3i(-1,4,0),Vector3i(-1,1,-1),Vector3i(-1,2,-1),Vector3i(-1,3,-1),Vector3i(-1,4,-1),Vector3i(0,1,-1),Vector3i(0,2,-1),Vector3i(0,3,-1),Vector3i(0,4,-1)],
 	"CUBE":[Vector3i(0,1,0),Vector3i(0,2,0),Vector3i(0,3,0)],
@@ -122,24 +325,65 @@ var structureShapes:Dictionary[String,Array] = {
 	"RANDOM_GENERATION":[],
 	"START":[]
 }
+
+## The structures that pull cell data
 const complexStructures = {
 	"TUT_AREA":"res://Scenes/StructureMaps/tut_map.tscn",
 	"TUT_AREA_2":"res://Scenes/StructureMaps/tut_map_2.tscn",
 	"TUT_AREA_3":"res://Scenes/StructureMaps/tut_map_3.tscn"
 }
+
+## The unlockable color schemes
 const colorShapes = {
 	"NORMAL_COLOR":[Color.BLACK,Color.WHITE,Color(0.57,0.57,0.57),Color(0.04,0.04,0.04)],
 	"C_GOL_COLOR":[Color(0.0, 0.0, 0.0, 1.0),Color(1.0, 1.0, 0.0, 1.0),Color(1,1,1),Color(1,1,1)],
 	"GODOT_COLOR":[Color("242424"),Color(0.24, 0.59, 0.83),Color.WHITE,Color.WHITE],
 }
+
+## The amount of compatibility chips you get for every pack
+var chipPackAmounts = [
+	1,
+	2,
+]
+
+## The exchange rates for the currencies, in however many you would get from 1 cubic
 var currencyExchangeRates:Dictionary[String,float] = { # To cubics
 	"CUBICS":1.0,
 	"USD":100.0,
-	"DIAMONDS":(6.7027791 * pow(10,-8)),
+	"DIAMONDS":(1/75.0),
 	"GEO":(100.0/0.225),
 	"ROSARIES":(100.0/0.45),
 	"AGNI":(100.0/0.225)*(1.0/35)
 }
+
+## All salesmen
+const SALESMEN: Array[String] = [
+	"CUBIC_SALESMAN",
+	"MINECRAFT_USER",
+]
+
+
+const ALL_SHOP_ITEMS: Array[String] = [
+	"CUBIC_SALESMAN_ITEM_1",
+	"CUBIC_SALESMAN_ITEM_2",
+	"CUBIC_SALESMAN_ITEM_3",
+	"MINECRAFT_USER_ITEM_1",
+	"MINECRAFT_USER_ITEM_2",
+	"MINECRAFT_USER_ITEM_3-1",
+	"MINECRAFT_USER_ITEM_3-2",
+	"MINECRAFT_USER_ITEM_3-3",
+	"MINECRAFT_USER_ITEM_3-4",
+	"MINECRAFT_USER_ITEM_3-5",
+	"MINECRAFT_USER_ITEM_3-6",
+	"MINECRAFT_USER_ITEM_3-7",
+]
+
+
+const UPGRADES:Array[String] = [
+	"MC_INVENTORY"
+]
+
+## All patterns
 var shapes = {
 	"NONE":[
 		[]
@@ -396,7 +640,7 @@ var shapes = {
 	"7_SQC":[
 		[Vector2i(0,1),Vector2i(1,0),Vector2i(1,2),Vector2i(2,1)]
 	],
-	"PLATFORMS":[
+	"PLATFORM":[
 		[Vector2i(0,0),Vector2i(1,1),Vector2i(1,2),Vector2i(2,0),Vector2i(2,2),Vector2i(2,4),Vector2i(3,2),Vector2i(3,3),Vector2i(4,4)]
 	],
 	"200_SQR":[
@@ -420,7 +664,7 @@ var shapes = {
 	"10_TRI":[
 		[Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(3,0),Vector2i(3,1),Vector2i(4,0)]
 	],
-	"12_DIA":[
+	"11_DIA":[
 		[Vector2i(0,0),Vector2i(0,2),Vector2i(0,4),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3),Vector2i(2,4),Vector2i(3,1),Vector2i(3,2),Vector2i(3,3),Vector2i(4,0),Vector2i(4,2),Vector2i(4,4)]
 	],
 	"PLAGUE":[
@@ -435,25 +679,39 @@ var shapes = {
 	"MAZER":[
 		loadPixels("res://Sprites/mazer.png")
 	],
+	"CHIP_PACK_1":[
+		[Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,3),Vector2i(2,1),Vector2i(2,2)]
+	],
+	"6/4_RECT":[
+		loadShape({"type":types.RECT,"x":4,"y":2})
+	],
+	"CHIP_PACK_2":[
+		[Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,3),Vector2i(2,1),Vector2i(2,2),Vector2i(3,0),Vector2i(3,3),Vector2i(4,1),Vector2i(4,2)]
+	],
+	#"LOAF":[
+		#[Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,3),Vector2i(2,0),Vector2i(2,2),Vector2i(3,1)]
+	#],
+	#"BARGE":[
+		#[Vector2i(0,1),Vector2i(1,0),Vector2i(1,2),Vector2i(2,1),Vector2i(2,3),Vector2i(3,2)]
+	#],
+	#"LONG_BOAT":[
+		#[Vector2i(0,0),Vector2i(0,1),Vector2i(1,0),Vector2i(1,2),Vector2i(2,1),Vector2i(2,3),Vector2i(3,2)]
+	#],
+	#"LONG_SHIP":[
+		#[Vector2i(0,0),Vector2i(0,1),Vector2i(1,0),Vector2i(1,2),Vector2i(2,1),Vector2i(2,3),Vector2i(3,2),Vector2i(3,3)]
+	#],
+	"CUBIC_SALESMAN":[
+		loadPixels("res://Sprites/cubic_salesman.png")
+	],
+	"MINECRAFT_USER":[
+		loadPixels("res://Sprites/minecraft_user.png")
+	],
+	"STRENGTHEN_BOUNDS":[
+		[Vector2i(0,0),Vector2i(0,2),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,2)]
+	],
 }
 
-static func loadPixels(imagePath:String):
-	var image:Image = load(imagePath).get_image()
-	var result = []
-	for x in range(image.get_size().x):
-		for y in range(image.get_size().y):
-			if image.get_pixel(x,y) == Color(0,0,0,1):
-				result.append(Vector2i(x,y))
-	return result
-
-static func loadVoxels(scenePath:String):
-	var gridmap:GridMap = load(scenePath).instantiate()
-	return gridmap.get_used_cells()
-
-static func loadShape(shape:Dictionary) -> Array:
-	var loader = preload("res://Scripts/random_generation.gd")
-	return loader.makeStandard(loader.getShape(Vector3i.ZERO,shape))
-
+## Descriptions for all tools, shapes, and actions
 var descriptions = {
 	"NONE":{"name":"Nothing","text":"Really. Nothing."},
 	# Tools
@@ -475,11 +733,11 @@ var descriptions = {
 	"SUMMON":{"name":"Summoner","text":"Bring them down! USE ME!!! I WILL BRING YOUR ENEMIES DOWN IF YOU WON'T!!!","type":"tool"},
 	"TERRAIN":{"name":"Terrain","text":"The power of creationism. Create terrain in the area.","type":"tool"},
 	"PARALYZER":{"name":"Paralyzer","text":"I don't know if that's spelled right. Freezes enemies in place.","type":"tool"},
-	"PLATFORMS":{"name":"Platforms","text":"More land!! Yay!","type":"tool"},
+	"PLATFORM":{"name":"Platform","text":"More land!! Yay!","type":"tool"},
 	"PLAGUE":{"name":"Plague","text":"A sickness spreads, bringing death in it's path. If some spaces around a tile are empty, it becomes empty as well.","type":"tool"},
 	"MAZER":{"name":"Mazer","text":"Solve these","type":"tool"},
 	
-	# "":{"name":"","text":"","type":"tool"},
+	#"":{"name":"","text":"","type":"tool"},
 	
 	# Shapes
 	"BASE_RECT":{"name":"Base Rectangle","text":"Yes I know, it's a square, but this sounds better.","type":"shape"},
@@ -501,9 +759,10 @@ var descriptions = {
 	"200_SQR":{"name":"200 - Square","text":"The ultimate shape.","type":"shape"},
 	"8_CIR":{"name":"8 - Circle","text":"A circle in a square world.","type":"shape"},
 	"10_TRI":{"name":"10 - Triangle","text":"Yknow that theorem isn't actually pythagoras's","type":"shape"},
-	"12_DIA":{"name":"12 - Diamond","text":"Now this is actually a diamond shape.","type":"shape"},
+	"11_DIA":{"name":"11 - Diamond","text":"Now this is actually a diamond shape.","type":"shape"},
+	"6/4_RECT":{"name":"6 by 4 - Rectangle","text":"This is actually a rectangle","type":"shape"},
 	
-	# "":{"name":"","text":"","type":"shape"},
+	#"":{"name":"","text":"","type":"shape"},
 	
 	# Actions
 	"CREEPER":{"name":"Creeper","text":"","type":"action"},
@@ -512,7 +771,7 @@ var descriptions = {
 	"L":{"name":"L","text":"Not a W. Sends you down.","type":"action"},
 	"ZIG":{"name":"Zig","text":"Shocking. Multiplies your speed.","type":"action"},
 	"ZAG":{"name":"Zag","text":"Electrifying. Multiplies your speed.","type":"action"},
-	"COMPASS":{"name":"Compass","text":"An interesting artifact, Perhaps constructed from iron, but has hints of red along with yellow. Along with this, it seems to require a great deal of effort to use. Anyway, points the way twords the center.","type":"action"},
+	"COMPASS":{"name":"Compass","text":"An interesting artifact, Perhaps constructed from iron, but has hints of red along with yellow. Along with this, it seems to require a great deal of effort to use. Anyway, points the way towards the center.","type":"action"},
 	"SENDER":{"name":"Sender","text":"Redirects you to the center.","type":"action"},
 	"UNSENDER":{"name":"Unsender","text":"Redirects you away from the center.","type":"action"},
 	"GROUNDER":{"name":"Grounder","text":"Very halting. Stops you in your tracks.","type":"action"},
@@ -561,10 +820,36 @@ var descriptions = {
 	"START":{"name":"Start","text":"The start of a journey","type":"action"},
 	"BLOCK":{"name":"Block","text":"That's a big block. Gives a stack of mc blocks.","type":"action","other":["MC_BLOCK"]},
 	"MAZE":{"name":"Maze","text":"Solve this","type":"action"},
+	"CHIP_PACK_1":{"name":"Chip Pack 1","text":"The first of many packs. Gives you 1 compatibility chip to upgrade your tools.","type":"action","other":["CHIP_PACK"]},
+	"CHIP_PACK_2":{"name":"Chip Pack 2","text":"Another chip pack. Gives you 2 compatibility chips to upgrade your tools.","type":"action","other":["CHIP_PACK"]},
+	"CUBIC_SALESMAN":{"name":"Cubic Salesman","text":"Barters with rather expensive cubes","type":"action"},
+	"MINECRAFT_USER":{"name":"Minecraft User","text":"Gimme those shiny rocks","type":"action"},
+	"STRENGTHEN_BOUNDS":{"name":"Strengthen Bounds","text":"Reinforce the walls that hold you in","type":"action"},
 	
-	# "":{"name":"","text":"","type":"action"},
+	#"":{"name":"","text":"","type":"action"},
 }
 
+
+func _ready() -> void:
+	Archipelago.connect("connected",(func(_arg,_arg2):
+		isArchipelago = true
+		Archipelago.conn.deathlink.connect(recieveDeathlink)
+		Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,true,e)))
+		Archipelago.conn.force_scout_all()
+		Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
+		allExtraPatterns = Archipelago.conn.slot_data["needed_patterns"].map(func(e): return Shape.makeStandard(Shape.fromBooleanList(Shape.binaryOrHexToBooleanList(e)))).map(Shape.allTransformations)
+		))
+	Archipelago.connect("disconnected",(func():isArchipelago = false))
+	
+	checkForErrors()
+	#await get_tree().create_timer(1).timeout
+	#var result = allScanningShapes(true)
+	#for i in result:
+		#if not result[i].has("BASE_RECT"):
+			#print(i, ": ", result[i])
+
+
+## A method to get the description for the pattern [param key]
 func getDescriptionText(key:String) -> String:
 	var result = ""
 	if descriptions.has(key):
@@ -577,11 +862,19 @@ func getDescriptionText(key:String) -> String:
 				"type":
 					match descriptions[key][query]:
 						"tool":
-							if not toolsCompatibility[key].filter(func(e): return e != "NONE").is_empty():
-								result += "\n\nCompatibility: " + ", ".join(toolsCompatibility[key].filter(func(e): return e != "NONE"))
+							var regCompatibility = toolsCompatibility[key].filter(func(e): return e != "NONE")
+							if not regCompatibility.is_empty():
+								result += "\n\nCompatibility: " + ", ".join(regCompatibility)
+							var moreCompatibility = additionalCompatibilities[key].filter(func(e): return not safeGet(unlockedCompatibilities,key,[]).has(e))
+							if not moreCompatibility.is_empty():
+								result += "\n\nLocked Compatibility: " + ", ".join(moreCompatibility)
 						"shape":
-							if not toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has(key)).is_empty():
+							var regCompatibility = toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has(key))
+							if not regCompatibility.is_empty():
 								result += "\n\nCompatibility: " + ", ".join(toolsCompatibility.keys().filter(func(e): return toolsCompatibility[e].has(key)))
+							var moreCompatibility = additionalCompatibilities.keys().filter(func(e): return not safeGet(unlockedCompatibilities,e,[]).has(key) and additionalCompatibilities[e].has(key))
+							if not moreCompatibility.is_empty():
+								result += "\n\nLocked Compatibility: " + ", ".join(moreCompatibility)
 						"action":
 							pass
 							#if shapes.has(key):
@@ -592,12 +885,16 @@ func getDescriptionText(key:String) -> String:
 							"MC_TOOL":
 								result += "\n\nMaterial: " + Globals.mcToolLevel.capitalize()
 							"MC_BLOCK":
-								result += "\n\nBlocks: " + str(Globals.mcBlocks)
+								result += "\n\nBlocks: " + str(Globals.mcBlocks) + " / " + str(64 * mcInventoryLevel)
 							"CURRENCY":
 								result += "\n\nAmount: " + str(currencies[key.replace("CURRENCY_","")])
+							"CHIP_PACK":
+								result += "\n\nCompatibility Chips: " + str(compatibilityChips)
 	result = result.right(-2)
 	return result
 
+
+## A method to get nodes as descriptions for the pattern [param key]
 func getComplexDescription(key:String) -> Array[Control]:
 	var result : Array[Control] = []
 	if descriptions.has(key):
@@ -616,14 +913,14 @@ func getComplexDescription(key:String) -> Array[Control]:
 								container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 								
 								var copyButton = Button.new()
-								copyButton.size_flags_horizontal = Control.SIZE_EXPAND
+								copyButton.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 								copyButton.name = "CopyButton"
 								copyButton.text = "Copy\n(Ctrl C)"
 								copyButton.pressed.connect(func(): cameraRef.copyShape(shape.binary_format))
 								container.add_child(copyButton)
 								
 								var pinButton = Button.new()
-								pinButton.size_flags_horizontal = Control.SIZE_EXPAND
+								pinButton.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 								pinButton.name = "PinButton"
 								pinButton.text = "Pin\n(Ctrl P)"
 								pinButton.pressed.connect(func(): cameraRef.pinShape(shape.binary_format))
@@ -642,6 +939,32 @@ func getComplexDescription(key:String) -> Array[Control]:
 	
 	return result
 
+
+## A pattern loader, loads pixels from an image given with the path [param imagePath]
+static func loadPixels(imagePath:String):
+	var image:Image = load(imagePath).get_image()
+	if image.is_compressed(): image.decompress()
+	var result = []
+	for x in range(image.get_size().x):
+		for y in range(image.get_size().y):
+			if image.get_pixel(x,y) == Color(0,0,0,1):
+				result.append(Vector2i(x,y))
+	return result
+
+
+## A structure loader, loads cells from a gridmap scene given with the path [param scenePath]
+static func loadVoxels(scenePath:String):
+	var gridmap:GridMap = load(scenePath).instantiate()
+	return gridmap.get_used_cells()
+
+
+## A shape loader, takes them from the shape data [param shape]
+static func loadShape(shape:Dictionary) -> Array:
+	var loader = preload("res://Scripts/random_generation.gd")
+	return loader.makeStandard(loader.getShape(Vector3i.ZERO,shape))
+
+
+## Returns the pattern as text visualization
 static func visualize(pattern:Array) -> String:
 	var result = ""
 	var length = pattern.map(func(e): return e.x).max()
@@ -657,43 +980,11 @@ static func visualize(pattern:Array) -> String:
 	
 	return result
 
-var isMultiplayer = false
-var isArchipelago = false
-var archipelagoLocationsFound = []
-var extraPatternsFound = []
-var allExtraPatterns = []
-const deathlinkMessages = [
-	"\"boop\" - %s",
-	"%s couldn't think of a pop culture refrence to put here",
-	"%s poked at the wrong guy",
-	"%s fought for Aiur",
-	"That's the wrong action, %s",
-	"Oh no, %s lost all their [insert currency here]",
-	"%s's home bed was missing or obstructed",
-	"*sad giraffe noises* - %s",
-	"\"%s has been cubified, sir\"",
-	"%s broke through the shiny wall",
-	"%s's world is looking a little too pixelated",
-	"baba is not %s",
-	"%s fell off of the space platform",
-	"%s walked past elderbug",
-	"The zombies ate %s's brains",
-	"GLaDOS is dissapointed in %s",
-	"%s IS a potato",
-	"%s really wants to turn keep inventory on right now",
-	"%s needs Shakra to help for this fight (apperently)",
-	"What's the point of this wall being here if %s is just gonna breeze right through??",
-	"%s was bonked by an apricot-flavored popsicle",
-	"\"death.fell.accident.water\" - %s",
-	"%s died? Interesting... very Interesting",
-	"%s didn't think that mantis shrimps are cool",
-	"%s didn't think that would do two masks",
-	"%s overreacted",
-]
 
-func testShapes() -> void:
+## Tests all possible patterns
+func testShapes(length:int) -> void:
 	var amounts = {}
-	var bitGrid = getBits(16)
+	var bitGrid = getBits(roundi(length ** 2))
 	bitGrid = bitGrid.map(Shape.toCells)
 	
 	for i in bitGrid:
@@ -706,6 +997,8 @@ func testShapes() -> void:
 	print(amounts)
 	print(len(amounts))
 
+
+## Gets possible bit arrays
 static func getBits(length:int) -> Array:
 	if length <= 1: return [[false],[true]]
 	
@@ -715,158 +1008,39 @@ static func getBits(length:int) -> Array:
 		result.append(i + [true])
 	return result
 
-class Shape extends Resource:
-	
-	var universal_format:Array[Vector2i]
-	var binary_format:String:
-		set(value):
-			universal_format = []
-			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
-		get():
-			return shapeToBinary(universal_format)
-	var hexadecimal_format:String:
-		set(value):
-			universal_format = []
-			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
-		get():
-			return binaryToHex(shapeToBinary(universal_format))
-	var image_format:ImageTexture:
-		get():
-			return getImageFromList(universal_format)
-	
-	
-	func _init(value:Array[Vector2i]) -> void:
-		universal_format = value
-	
-	static func rotatePoints(points:Array[Vector2i],clockwise:=true) -> Array[Vector2i]:
-		var result:Array[Vector2i] = []
-		
-		for i in points:
-			result.append(Vector2i(i.y,-i.x) if clockwise else Vector2i(-i.y,i.x))
-		
-		return makeStandard(result)
-	
-	static func makeStandard(list:Array[Vector2i]) -> Array[Vector2i]:
-		if list.is_empty(): return []
-		var mins = list[0]
-		for i in list:
-			if i.x < mins.x:
-				mins.x = i.x
-			if i.y < mins.y:
-				mins.y = i.y
-		
-		var modified:Array[Vector2i] = []
-		modified.assign(list.map(func(e): return e - mins))
-		modified.sort()
-		return modified
-	
-	static func shapeToBinary(shape:Array) -> String:
-		if shape.is_empty(): return ""
-		var result = ""
-		
-		shape = makeStandard(shape)
-		
-		var maxVector = Vector2i(
-			shape.map(func(e): return e.x).max() + 1,
-			shape.map(func(e): return e.y).max() + 1
-		)
-		
-		for x in range([maxVector.x,maxVector.y].max()):
-			for y in range([maxVector.x,maxVector.y].max()):
-				result += "1" if shape.has(Vector2i(x,y)) else "0"
-		
-		return result
-	
-	static func binaryToHex(binary:String) -> String:
-		return "0x" + String.num_int64(binary.bin_to_int(),16)
-	
-	static func binaryOrHexToBooleanList(string:String) -> Array[bool]:
-		var result:Array[bool] = []
-		
-		if string.left(2) == "0x":
-			string = String.num_int64(string.hex_to_int(),2)
-		
-		if string.left(2) == "0b":
-			string = string.right(-2)
-		
-		if Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
-			for i in string.split(""):
-				result.append(i == "1")
-		#else:
-			#string.to_utf8_buffer()
-		
-		return result
-	
-	static func fromBooleanList(list:Array[bool]) -> Array[Vector2i]:
-		var cellsResult = toCells(list)
-		var result:Array[Vector2i]
-		result.assign(cellsResult.keys().filter(func(e): return cellsResult[e] == 1))
-		return result
-	
-	static func toCells(list:Array[bool]) -> Dictionary:
-		var result = []
-		var gridSize := ceili(sqrt(len(list)))
-		
-		for x in range(gridSize):
-			if len(list) == len(result): break
-			for y in range(gridSize):
-				if len(list) == len(result): break
-				result.append(Vector2i(x,y))
-		
-		var dictionaryResult = {}
-		for i in result:
-			dictionaryResult[i] = 1 if list[result.find(i)] else 0
-		
-		return dictionaryResult
-	
-	static func getImageFromList(shapePoints:Array[Vector2i]) -> ImageTexture:
-		if shapePoints.is_empty(): return ImageTexture.new()
-		var maxVector = Vector2i(shapePoints.map(func(e): return e.x).max() + 1,shapePoints.map(func(e): return e.y).max() + 1)
-		
-		var image := Image.create_empty(maxVector.x*10,maxVector.y*10,false,Image.Format.FORMAT_RGBA8)
-		
-		for i in shapePoints:
-			for x in range(10):
-				for y in range(10):
-					image.set_pixelv(Vector2i(i*10)+Vector2i(x,y),Color.WHITE if (x < 9) and (y < 9) else Color.DARK_GRAY)
-		
-		return ImageTexture.create_from_image(image)
 
+## Gets the max length for the shape, as in it'll return 3 if it fits in a 3 by 3 grid
 func size(shape:Array) -> int:
 	return [shape.map(func(e): return e.x).max(),shape.map(func(e): return e.y).max()].max() + 1
 
+
+## Checks for the existance of decriptions on patterns
 func checkForErrors() -> void:
 	for i in shapes:
 		if not descriptions.has(i) and not structureShapes.has(i) and not enemySpawnShapes.has(i):
 			printerr("No description for " + i)
 
+
+## Returns all action names
 func getActions() -> Array:
 	return descriptions.keys().filter(
 		func(e): 
 			if descriptions[e].has("type"): return descriptions[e].type == "action"
 			else: return e == "CAR")
 
-func _ready() -> void:
-	Archipelago.connect("connected",(func(_arg,_arg2):
-		isArchipelago = true
-		Archipelago.conn.deathlink.connect(recieveDeathlink)
-		Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,true,e)))
-		Archipelago.conn.force_scout_all()
-		Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
-		allExtraPatterns = Archipelago.conn.slot_data["needed_patterns"].map(func(e): return Shape.makeStandard(Shape.fromBooleanList(Shape.binaryOrHexToBooleanList(e)))).map(gridRef.allTransformations)
-		))
-	Archipelago.connect("disconnected",(func():isArchipelago = true))
-	
-	checkForErrors()
 
+## Gets your name in archipelago
 func archipelagoName() -> String:
 	return Archipelago.conn.get_player().get_name() if Globals.isArchipelago else ""
 
+
+## Resets the grid when you fall off
 func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_overlapping_bodies().has(playerRef)),fromDeathlink:=false) -> void:
 	if trueDeath:
 		var deathCause = deathlinkMessages.pick_random() % archipelagoName()
 		for i in playerRef.get_parent().get_node("StructureParent").get_children():
 			i.queue_free()
+		respawnPoint = Vector3(0,2,0)
 		gridRef.clear()
 		for x in range(3):
 			for y in range(3):
@@ -878,10 +1052,14 @@ func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_ove
 	playerRef.velocity = Vector3(0,0,0)
 	playerRef.strength = 0.0
 
+
+## Recieves the deathlink and resets the player
 func recieveDeathlink(_source:String,cause:String,_json:Dictionary) -> void:
 	reset(true,true)
-	gridRef.triggerPopup("Archipelago Deathlink: " + cause,gridRef.scanTypes.ARCHIPELAGO_DEATHLINK)
+	gridRef.trigger_popup("Archipelago Deathlink: " + cause,gridRef.scanTypes.ARCHIPELAGO_DEATHLINK)
 
+
+## Returns the max size of the pattern
 func maxLength(list:Array) -> int:
 	var result = list[0].x
 	for i in list:
@@ -889,6 +1067,8 @@ func maxLength(list:Array) -> int:
 		if i.y > result: result = i.y
 	return result
 
+
+## Saves the game to a [param slot]
 func saveSlot(slot:int=currentSlot) -> void:
 	if slot == -1:
 		slot = Array(DirAccess.open("user://Data/").get_files()).filter(func(e): return str(e).contains("save")).map(func(e): return int(str(e).replace("save","").replace(".dat",""))).max() + 1
@@ -912,6 +1092,8 @@ func saveSlot(slot:int=currentSlot) -> void:
 	
 	cameraRef.updateSaves()
 
+
+## Loads the game from a [param slot]
 func loadSlot(slot:int) -> void:
 	if not DirAccess.dir_exists_absolute("user://Data/"): DirAccess.make_dir_absolute("user://Data/")
 	if not FileAccess.file_exists("user://Data/save"+str(slot)+".dat"): FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.WRITE)
@@ -919,14 +1101,309 @@ func loadSlot(slot:int) -> void:
 	var data = JSON.parse_string(file.get_as_text())
 	for i in data:
 		if i in self:
-			print(data[i])
+			#print(data[i])
 			set(i,data[i])
-			print(get(i))
+			#print(get(i))
 	currentSlot = slot
 	cameraRef.updateSaves()
 
+
+## Converts the [param list] to a [Dictionary] using the [param function] on each key
 func toDictionary(function:Callable,list:Array) -> Dictionary:
 	var result = {}
 	for i in list:
 		result[i] = function.call(i)
 	return result
+
+
+## Safely gets the value of [param key] in the [param dictionary]
+static func safeGet(dictionary:Dictionary,key,fallback,setValue:=false):
+	if not dictionary.has(key):
+		if setValue:
+			dictionary[key] = fallback
+		else:
+			return fallback
+	return dictionary[key]
+
+
+## Returns true if [param array] has all of the values in [param all]
+static func arrayHasAll(array:Array,all:Array) -> bool:
+	for i in all:
+		if not array.has(i): return false
+	return true
+
+
+## Checks if the given [param pattern] can fit (in any transformation) inside of [param shape].
+func canPatternFit(shape:Array,pattern:Array) -> bool:
+	if shape.is_empty(): return false
+	if pattern.is_empty(): return false
+	
+	var typedShape: Array[Vector2i] = []
+	typedShape.assign(shape)
+	shape = Shape.makeStandard(typedShape)
+	var shapeSize = Vector2i(shape.map(func(e): return e.x).max(),shape.map(func(e): return e.x).min()) + Vector2i.ONE
+	
+	for i in Shape.allTransformations(pattern, true, shapeSize):
+		if arrayHasAll(shape,i):
+			return true
+	return false
+
+
+## Gets all the [member allToolShapes] that [param pattern] can fit into.
+func getScanningShapes(pattern:Array) -> Array:
+	return allToolShapes.keys().filter(func(e): return canPatternFit(gridRef.getShape(Vector3i.ZERO,allToolShapes[e]), pattern))
+
+
+## Returns all shapes that each pattern in [member shapes] can fit into.
+func allScanningShapes(noActions := false) -> Dictionary:
+	var result = {}
+	var actions = getActions()
+	for pattern in shapes.keys().filter(func(e): return not noActions or not actions.has(e)):
+		result[pattern] = getScanningShapes(shapes[pattern][0])
+	return result
+
+
+class Shape extends Resource: ## Class for pattern format changes and manipulation
+	
+	## Data in universal format (the base that the game uses most), an array of 2d coordinates that are filled
+	var universal_format:Array[Vector2i]:
+		set(value):
+			pattern_name_format = ""
+			universal_format = value
+	
+	## Data as a binary string, going from top to bottom then left to right
+	var binary_format:String:
+		set(value):
+			universal_format = []
+			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
+		get():
+			return shapeToBinary(universal_format)
+	
+	## Data as a hexadecimal string (starting with 0x) and is a compressed version of [member binary_format]
+	var hexadecimal_format:String:
+		set(value):
+			universal_format = []
+			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
+		get():
+			return binaryToHex(shapeToBinary(universal_format))
+	
+	## Data as an image
+	var image_format:ImageTexture:
+		set(value):
+			universal_format = []
+			universal_format.assign(decodeImage(value))
+		get():
+			return getImageFromList(universal_format)
+	
+	## Data as the pattern name in [member Globals.shapes]
+	var pattern_name_format:String:
+		set(value):
+			if value != "":
+				universal_format = []
+				if Globals.shapes.has(value):
+					var typedValue : Array[Vector2i]
+					typedValue.assign(Globals.shapes[value][0])
+					universal_format = makeStandard(typedValue)
+			pattern_name_format = value
+		get():
+			if pattern_name_format == "":
+				for shape in Globals.shapes:
+					if Globals.shapes[shape].has(makeStandard(universal_format)):
+						pattern_name_format = shape
+						break
+			return pattern_name_format
+	
+	## Data as an icon image
+	var icon_format:ImageTexture:
+		set(value):
+			universal_format = []
+			universal_format.assign(decodeImage(value,false,Color.WHITE,value.get_image().get_pixel(0,0),Color.DARK_GRAY,1))
+		get():
+			var backgroundColor := Color(0.08,0.08,0.08)
+			if pattern_name_format != "":
+				if Globals.tools.has(pattern_name_format):
+					var library:MeshLibrary = preload("res://Sprites/MeshLibraries/OutlinerMeshLibrary.tres")
+					backgroundColor = (library.get_item_mesh(Globals.tools[pattern_name_format]).surface_get_material(0).albedo_color)
+					backgroundColor.a = 1
+					backgroundColor.v -= 0.2
+			return getImageFromList(universal_format,false,Color.WHITE,backgroundColor,Color.DARK_GRAY,1)
+	
+	
+	func _init(value:Array[Vector2i]) -> void:
+		universal_format = value
+	
+	
+	## Rotates the points (in [member universal_format]), with [param clockwise] defining the direction
+	static func rotatePoints(points:Array[Vector2i],clockwise:=true) -> Array[Vector2i]:
+		var result:Array[Vector2i] = []
+		
+		for i in points:
+			result.append(Vector2i(i.y,-i.x) if clockwise else Vector2i(-i.y,i.x))
+		
+		return makeStandard(result)
+	
+	
+	## Standardizes the [param list] (in [member universal_format]) to make sure it can be recognised
+	static func makeStandard(list:Array) -> Array[Vector2i]:
+		if list.is_empty(): return []
+		var mins = list[0]
+		for i in list:
+			if i.x < mins.x:
+				mins.x = i.x
+			if i.y < mins.y:
+				mins.y = i.y
+		
+		var modified:Array[Vector2i] = []
+		modified.assign(list.map(func(e): return e - mins))
+		modified.sort()
+		return modified
+	
+	
+	## Encodes the [param shape] (in [member universal_format]) to [member binary_format]
+	static func shapeToBinary(shape:Array) -> String:
+		if shape.is_empty(): return ""
+		var result = ""
+		
+		shape = makeStandard(shape)
+		
+		var maxVector = Vector2i(
+			shape.map(func(e): return e.x).max() + 1,
+			shape.map(func(e): return e.y).max() + 1
+		)
+		
+		for x in range([maxVector.x,maxVector.y].max()):
+			for y in range([maxVector.x,maxVector.y].max()):
+				result += "1" if shape.has(Vector2i(x,y)) else "0"
+		
+		return result
+	
+	
+	## Converts the [param binary] to hexadecimal
+	static func binaryToHex(binary:String) -> String:
+		return "0x" + String.num_int64(binary.bin_to_int(),16)
+	
+	
+	## Converts the [param string] (in either [member binary_format] or [member hexadecimal_format]) to a binary list
+	static func binaryOrHexToBooleanList(string:String) -> Array[bool]:
+		var result:Array[bool] = []
+		
+		if string.left(2) == "0x":
+			string = String.num_int64(string.hex_to_int(),2)
+		
+		if string.left(2) == "0b":
+			string = string.right(-2)
+		
+		if Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
+			for i in string.split(""):
+				result.append(i == "1")
+		#else:
+			#string.to_utf8_buffer()
+		
+		return result
+	
+	
+	## Converts a binary [param list] to [member universal_format].
+	static func fromBooleanList(list:Array[bool]) -> Array[Vector2i]:
+		var cellsResult = toCells(list)
+		var result:Array[Vector2i]
+		result.assign(cellsResult.keys().filter(func(e): return cellsResult[e] == 1))
+		return result
+	
+	
+	## Converts a binary [param list] to a [Dictionary] of the coords to the value
+	static func toCells(list:Array[bool]) -> Dictionary:
+		var result = []
+		var gridSize := ceili(sqrt(len(list)))
+		
+		for x in range(gridSize):
+			if len(list) == len(result): break
+			for y in range(gridSize):
+				if len(list) == len(result): break
+				result.append(Vector2i(x,y))
+		
+		var dictionaryResult = {}
+		for i in result:
+			dictionaryResult[i] = 1 if list[result.find(i)] else 0
+		
+		return dictionaryResult
+	
+	
+	## Converts [member universal_format] to [member image_format], [member icon_format], or a custom other image format
+	static func getImageFromList(shapePoints:Array[Vector2i], addOutlines:=true, baseColor:=Color.WHITE, backgroundColor:=Color.TRANSPARENT, outlineColor:=Color.DARK_GRAY, iconRingSize:=0) -> ImageTexture:
+		if shapePoints.is_empty(): return ImageTexture.new()
+		
+		var maxVector = Vector2i(shapePoints.map(func(e): return e.x).max() + 1,shapePoints.map(func(e): return e.y).max() + 1)
+		if addOutlines: maxVector *= 10
+		
+		var image := Image.create_empty(maxVector.x,maxVector.y,false,Image.Format.FORMAT_RGBA8)
+		
+		if addOutlines:
+			for i in shapePoints:
+				for x in range(10):
+					for y in range(10):
+						image.set_pixelv(Vector2i(i*10)+Vector2i(x,y),baseColor if (x < 9) and (y < 9) else outlineColor)
+		else:
+			for i in shapePoints:
+				image.set_pixelv(Vector2i(i),baseColor)
+		
+		if backgroundColor != Color.TRANSPARENT:
+			var backgroundImage := Image.create_empty(maxVector.x+(iconRingSize*2),maxVector.y+(iconRingSize*2),false,Image.Format.FORMAT_RGBA8)
+			backgroundImage.fill(backgroundColor)
+			var foregroundImage = image.duplicate_deep()
+			backgroundImage.blend_rect(foregroundImage,Rect2i(Vector2i.ZERO,foregroundImage.get_size()),Vector2i(iconRingSize,iconRingSize))
+			image = backgroundImage.duplicate_deep()
+		
+		return ImageTexture.create_from_image(image)
+	
+	
+	## Decodes an [member image_format] or [member icon_format] to [member universal_format]
+	static func decodeImage(imageTexture:ImageTexture, usingOutlines:=true, baseColor:=Color.WHITE, _backgroundColor:=Color.TRANSPARENT, _outlineColor:=Color.DARK_GRAY, iconRingSize:=0) -> Array[Vector2i]:
+		var image:Image = imageTexture.get_image()
+		var outlineMultiplier = 10 if usingOutlines else 1
+		if image.is_compressed(): image.decompress()
+		var result:Array[Vector2i] = []
+		@warning_ignore("integer_division")
+		for x in range(image.get_size().x / outlineMultiplier):
+			@warning_ignore("integer_division")
+			for y in range(image.get_size().y / outlineMultiplier):
+				if image.get_pixel(x * outlineMultiplier + iconRingSize, y * outlineMultiplier + iconRingSize) == baseColor:
+					result.append(Vector2i(x,y))
+		return result
+	
+	
+	## Returns all rotations and reflections of [param shape]
+	static func allTransformations(shape:Array, translate := false, maxes := Vector2i.ZERO) -> Array[Array]:
+		var possibleShapes:Array[Array] = [shape]
+		
+		#Rotations
+		possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(-e.y,e.x))))
+		possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(-e.x,-e.y))))
+		possibleShapes.append(makeStandard(shape.map(func(e): return Vector2i(e.y,-e.x))))
+		
+		for reflectedShape in possibleShapes.duplicate(true):
+			#Reflections
+			possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(-e.x,e.y))))
+			possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(e.x,-e.y))))
+			possibleShapes.append(makeStandard(reflectedShape.map(func(e): return Vector2i(-e.x,-e.y))))
+		
+		if translate:
+			for currentShape in possibleShapes.duplicate(true):
+				possibleShapes.append_array(allTranslations(currentShape,maxes))
+		
+		return possibleShapes
+	
+	static func allTranslations(shape: Array, maxes: Vector2i) -> Array[Array]:
+		if maxes == Vector2i.ZERO: return [shape]
+		if shape.is_empty(): return [[]]
+		
+		var result: Array[Array] = []
+		var typedShape: Array[Vector2i] = []
+		typedShape.assign(shape)
+		#shape = makeStandard(typedShape)
+		var shapeSize = Vector2i(shape.map(func(e): return e.x).max(),shape.map(func(e): return e.x).min()) + Vector2i.ONE
+		
+		for x in range(maxes.x - shapeSize.x):
+			for y in range(maxes.y - shapeSize.y):
+				result.append(shape.map(func(e): return e + Vector2i(x,y)))
+		
+		return result

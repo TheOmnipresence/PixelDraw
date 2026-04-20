@@ -9,11 +9,12 @@ var wasHovering = false
 func _ready() -> void:
 	if not selectable:
 		$Node/DescriptionContainer.position.x += 50
+	#$Node/DescriptionContainer.position += global_position
 
 func _input(event: InputEvent) -> void:
 	if selectable and get_tree().paused and is_visible_in_tree():
-		if event is InputEventKey:
-			if hovering and event.is_pressed():
+		if hovering and event.is_pressed():
+			if event is InputEventKey:
 				if (OS.get_keycode_string(event.keycode)).left(1) == str(int((OS.get_keycode_string(event.keycode)))).left(1):
 					if isTool:
 						Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1] = Globals.tools.keys().find($Label.text) as Globals.tools
@@ -33,14 +34,32 @@ func _input(event: InputEvent) -> void:
 								Globals.baseShape = {}
 							
 							Globals.cameraRef.updateBar()
-		if event.is_action("mouse1"):
-			if hovering and event.is_pressed():
-				if not isTool:
+			if event.is_action("mouse1"):
+				if isTool:
+					@warning_ignore("static_called_on_instance")
+					if not Globals.additionalCompatibilities[$Label.text].is_empty() and Globals.compatibilityChips > 0 and not len(Globals.safeGet(Globals.unlockedCompatibilities,$Label.text,[],true)) >= len(Globals.additionalCompatibilities[$Label.text]):
+						Globals.compatibilityChips -= 1
+						if not Globals.unlockedCompatibilities.has($Label.text):
+							Globals.unlockedCompatibilities[$Label.text] = []
+						var newShape = Globals.additionalCompatibilities[$Label.text].filter(func(e): return not Globals.unlockedCompatibilities[$Label.text].has(e))[0]
+						Globals.toolsCompatibility[$Label.text].append(newShape)
+						Globals.unlockedCompatibilities[$Label.text].append(newShape)
+						%DescriptionLabel.text = Globals.getDescriptionText($Label.text)
+				else:
 					Globals.baseShape = Globals.allToolShapes[$Label.text]
 					for i in Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ShapeBar").get_children():
 						if i.get_child(-1).text == $Label.text:
 							i.get_child(-1).text = "NONE"
 							Globals.toolShapes[Globals.barLayout[Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ShapeBar").get_children().find(i)]] = "NONE"
+			if event.is_action("mouse3"):
+				if isTool:
+					if Globals.isArchipelago:
+						@warning_ignore("static_called_on_instance")
+						Globals.compatibilityChips += len(Globals.safeGet(Globals.unlockedCompatibilities,$Label.text,[],true))
+						for i in Globals.unlockedCompatibilities[$Label.text]:
+							Globals.toolsCompatibility[$Label.text].erase(i)
+						Globals.unlockedCompatibilities[$Label.text] = []
+						%DescriptionLabel.text = Globals.getDescriptionText($Label.text)
 	
 	self_modulate = Color(1,1,1,1)
 	if not hovering:# and not (Input.is_action_pressed("plr_ctrl") and wasHovering):
@@ -75,9 +94,12 @@ func _input(event: InputEvent) -> void:
 	wasHovering = hovering
 	
 	hovering = get_global_rect().has_point(get_global_mouse_position()) #and not Input.is_action_pressed("plr_ctrl")
-	if hovering and selectable:
-		if isTool: Globals.hoveringTool = $Label.text
-		else: Globals.hoveringShape = $Label.text
+	if hovering and not wasHovering:
+		if selectable:
+			if isTool: Globals.hoveringTool = $Label.text
+			else: Globals.hoveringShape = $Label.text
+		else:
+			Globals.hoveringAction = $Label.text
 	
 	if $Node/DescriptionContainer/MarginContainer/VBoxContainer.has_node("PatternContainer"):
 		if event.is_action("plr_copy") and event.is_pressed():

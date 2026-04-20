@@ -8,9 +8,12 @@ extends CharacterBody3D
 @export var isBird = false
 @export var birdHeight = 0
 
-@export var statusReward : StatusEffect
+@export var statusReward: StatusEffect
 
-@export var enemyName : String
+@export var enemyName: String
+
+@export var currencyName: String
+@export var currencyAmount: float
 
 var outside = false
 var paralyzed = false
@@ -49,6 +52,8 @@ func _physics_process(delta: float) -> void:
 	if position.y < -200:
 		if statusReward != null:
 			Globals.playerRef.addStatus(statusReward.status,statusReward.initialTime)
+		if currencyName != "" and currencyAmount > 0:
+			Globals.gridRef.moreCurrency(currencyName,currencyAmount)
 		
 		Globals.gridRef.runShape("DEFEAT_"+enemyName)
 		

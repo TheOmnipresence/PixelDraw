@@ -1,12 +1,168 @@
-[gd_scene load_steps=6 format=3 uid="uid://b6xwkcre57k6h"]
+[gd_scene load_steps=33 format=3 uid="uid://b6xwkcre57k6h"]
 
 [ext_resource type="Script" uid="uid://c7tdfafjs15ad" path="res://Scripts/camera.gd" id="1_qxdsw"]
 [ext_resource type="PackedScene" uid="uid://wjyhyg46r80y" path="res://Scenes/bar_panel.tscn" id="2_fxq6n"]
+[ext_resource type="PackedScene" uid="uid://cjw0swkpkxbov" path="res://Scenes/shop_screen.tscn" id="3_fxq6n"]
 [ext_resource type="Script" uid="uid://cg3mkk8gg42s4" path="res://Scripts/console_tab.gd" id="3_jvsei"]
+[ext_resource type="Script" uid="uid://bx064qpt4ldgu" path="res://Scripts/shop_exchange.gd" id="4_u72ve"]
+[ext_resource type="Script" uid="uid://hdsm61lfwx8k" path="res://Scripts/shop_item.gd" id="5_37r0i"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_fxq6n"]
 font_size = 21
 shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Resource" id="Resource_r5i3s"]
+script = ExtResource("5_37r0i")
+item = "RAISER"
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_et8os"]
+script = ExtResource("5_37r0i")
+item = "CUBICS"
+is_currency = true
+currency_amount = 5
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_0dl0p"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_r5i3s")
+second_item = SubResource("Resource_et8os")
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_n5w7h"]
+script = ExtResource("5_37r0i")
+item = "C_GOL"
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_07w6d"]
+script = ExtResource("5_37r0i")
+item = "CUBICS"
+is_currency = true
+currency_amount = 1
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_688am"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_n5w7h")
+second_item = SubResource("Resource_07w6d")
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_2ltf3"]
+script = ExtResource("5_37r0i")
+item = "SHUFFLER"
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_c5rqi"]
+script = ExtResource("5_37r0i")
+item = "CUBICS"
+is_currency = true
+currency_amount = 10
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_kt3w8"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_2ltf3")
+second_item = SubResource("Resource_c5rqi")
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_jlak5"]
+script = ExtResource("5_37r0i")
+item = "DIAMONDS"
+is_currency = true
+currency_amount = 2
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_iyaix"]
+script = ExtResource("5_37r0i")
+item = "CUBICS"
+is_currency = true
+currency_amount = 160
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_5ev7h"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_jlak5")
+second_item = SubResource("Resource_iyaix")
+purchase_times = -1
+shop_type = 0
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_u72ve"]
+script = ExtResource("5_37r0i")
+item = "MC_PICK"
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_37r0i"]
+script = ExtResource("5_37r0i")
+item = "DIAMONDS"
+is_currency = true
+currency_amount = 3
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_4jh8l"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_u72ve")
+second_item = SubResource("Resource_37r0i")
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_ut0yd"]
+script = ExtResource("5_37r0i")
+item = "PLACER"
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_t1qjf"]
+script = ExtResource("5_37r0i")
+item = "DIAMONDS"
+is_currency = true
+currency_amount = 10
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_2w5jc"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_ut0yd")
+second_item = SubResource("Resource_t1qjf")
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_3amlf"]
+script = ExtResource("5_37r0i")
+item = "MC_INVENTORY"
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_4hqgd"]
+script = ExtResource("5_37r0i")
+item = "DIAMONDS"
+is_currency = true
+currency_amount = 4
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_mlm03"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_3amlf")
+second_item = SubResource("Resource_4hqgd")
+purchase_times = 7
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
+
+[sub_resource type="Resource" id="Resource_jgnoc"]
+script = ExtResource("5_37r0i")
+item = "CUBICS"
+is_currency = true
+currency_amount = 200
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_cdmcj"]
+script = ExtResource("5_37r0i")
+item = "DIAMONDS"
+is_currency = true
+currency_amount = 3
+metadata/_custom_type_script = "uid://hdsm61lfwx8k"
+
+[sub_resource type="Resource" id="Resource_t3i8u"]
+script = ExtResource("4_u72ve")
+first_item = SubResource("Resource_jgnoc")
+second_item = SubResource("Resource_cdmcj")
+purchase_times = -1
+shop_type = 0
+metadata/_custom_type_script = "uid://bx064qpt4ldgu"
 
 [sub_resource type="LabelSettings" id="LabelSettings_qxdsw"]
 line_spacing = 1.0
@@ -125,6 +281,41 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "N"
 label_settings = SubResource("LabelSettings_fxq6n")
+
+[node name="PlaytimeMenus" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="Salesmen" type="Control" parent="HUD/PlaytimeMenus"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="Cubic" parent="HUD/PlaytimeMenus/Salesmen" instance=ExtResource("3_fxq6n")]
+visible = false
+layout_mode = 1
+shop_items = Array[ExtResource("4_u72ve")]([SubResource("Resource_0dl0p"), SubResource("Resource_688am"), SubResource("Resource_kt3w8"), SubResource("Resource_5ev7h")])
+shop_name = "Cubic Salesman"
+summoner = "CUBIC_SALESMAN"
+
+[node name="McUser" parent="HUD/PlaytimeMenus/Salesmen" instance=ExtResource("3_fxq6n")]
+visible = false
+layout_mode = 1
+shop_items = Array[ExtResource("4_u72ve")]([SubResource("Resource_4jh8l"), SubResource("Resource_2w5jc"), SubResource("Resource_mlm03"), SubResource("Resource_t3i8u")])
+shop_name = "Minecraft User"
+summoner = "MINECRAFT_USER"
 
 [node name="SetupTab" type="Control" parent="HUD"]
 layout_mode = 1
@@ -331,6 +522,7 @@ metadata/_edit_lock_ = true
 
 [node name="MinimapPanel" type="PanelContainer" parent="HUD/SetupTab/MinimapContainer"]
 layout_mode = 2
+metadata/data = ""
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel"]
 layout_mode = 2
@@ -347,6 +539,19 @@ texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 stretch_mode = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MinimapCopy" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy (CTRL C)"
+
+[node name="MinimapPin" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pin (CTRL P)"
 
 [node name="ToolsTab" type="Control" parent="HUD"]
 layout_mode = 1
@@ -411,6 +616,19 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Pin
 "
+
+[node name="ChipAmount" type="Label" parent="HUD/ToolsTab"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Compatibility Chips: 0"
 
 [node name="ShapesTab" type="Control" parent="HUD"]
 anchors_preset = 0
@@ -487,8 +705,9 @@ anchor_top = 0.076000005
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -0.24800491
+offset_right = -303.0
+offset_bottom = -65.0
 mouse_filter = 2
-metadata/_edit_lock_ = true
 
 [node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer"]
 layout_mode = 2
@@ -507,47 +726,59 @@ mouse_filter = 2
 theme_override_constants/margin_top = 50
 metadata/_edit_lock_ = true
 
-[node name="ActionFindPanel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer"]
+layout_mode = 2
+
+[node name="ActionFindPanel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/MarginContainer"]
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer"]
 layout_mode = 2
 horizontal_alignment = 1
 metadata/data = ""
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="Copy" type="Button" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Copy" type="Button" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy
 "
 
-[node name="Pin" type="Button" parent="HUD/ActionsTab/MarginContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Pin" type="Button" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pin
 "
+
+[node name="Panel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/Panel"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 3
 
 [node name="MenuTab" type="Control" parent="HUD"]
 layout_mode = 1
@@ -788,6 +1019,8 @@ alignment = 1
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapSmaller" to="." method="_on_minimap_smaller_pressed"]
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapToggle" to="." method="_on_minimap_toggle_pressed"]
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions/MinimapBigger" to="." method="_on_minimap_bigger_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer/MinimapCopy" to="." method="_on_minimap_copy_pressed"]
+[connection signal="pressed" from="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer/MinimapPin" to="." method="_on_minimap_pin_pressed"]
 [connection signal="item_selected" from="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/WindowOption" to="." method="_on_window_option_item_selected"]
 [connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/Host" to="." method="hostMultiplayer"]
 [connection signal="pressed" from="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/Join" to="." method="joinMultiplayer"]

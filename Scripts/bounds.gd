@@ -5,7 +5,7 @@ func _ready() -> void:
 
 func _on_body_exited(body: Node3D) -> void:
 	#print(abs(body.velocity.x) + abs(body.velocity.z))
-	if abs(body.velocity.x) + abs(body.velocity.z) > 100:
+	if abs(body.velocity.x) + abs(body.velocity.z) > Globals.bounds_velocity:
 		if body != Globals.playerRef:
 			body.outside = true
 	else:

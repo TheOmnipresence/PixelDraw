@@ -610,6 +610,9 @@ func _handle_command(json: Dictionary) -> void: # Handle an incoming packet from
 				var trap_name: String = json["data"].get("trap_name", "")
 				trap_name = TRAP_LINK_ALIASES.get(trap_name, trap_name)
 				conn.traplink.emit(source, trap_name, json)
+			
+			# TODO Check for EnergyLink?
+			
 		"LocationInfo":
 			conn._on_locinfo(json)
 		"Retrieved":

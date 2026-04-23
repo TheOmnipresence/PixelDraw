@@ -23,7 +23,8 @@ func _input(event: InputEvent) -> void:
 						
 						Globals.cameraRef.updateBar()
 					else:
-						if Globals.toolsCompatibility[Globals.tools.keys()[(Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1])]].has($Label.text):
+						var compatibilities = Globals.toolsCompatibility[Globals.tools.keys()[(Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1])]]
+						if compatibilities.has($Label.text) or compatibilities.has("ALL"):
 							Globals.toolShapes[Globals.barLayout[int(OS.get_keycode_string(event.keycode)) - 1]] = $Label.text
 							for i in Globals.cameraRef.get_child(0).get_node("SetupTab").get_node("ShapeBar").get_children():
 								if i.get_child(-1).text == $Label.text:

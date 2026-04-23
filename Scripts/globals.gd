@@ -53,6 +53,8 @@ const deathlinkMessages = [
 	"%s overreacted",
 ]
 
+var deathlink_amnesty := 0
+
 var finished_archipelago := false
 
 var scanned_all_extra_patterns := false
@@ -169,13 +171,22 @@ enum types {
 	RECT, ## A rectangle, perameters "x" and "y" for lengths in both axis
 	SQUIRCLE, ## Rectangle with the corners gone, perameters "x" and "y" for lengths in both axis
 	PLUS, ## A plus shape, two perpendicular lines meeting in the middle, perameters "x" and "y" for lengths in both axis
-	DIAGONAL, ## A diagonal line, perameter "len" for length and "tl" for inversion
-	LINE, ## A line, perameter "len" for length and "vertical" for axis
+	DIAGONAL, ## A diagonal line, perameter "len" for length, "tl" for inversion, and "w" for width
+	LINE, ## A line, perameter "len" for length, "w" for width, and "vertical" for axis
 	TRIANGLE, ## A right triangle, perameters "x" and "y" for lengths in both axis
-	LOOP, ## A square loop, perameters "x" and "y" for lengths in both axis and "w" for width of the loop
+	LOOP, ## A rectangle loop, perameters "x" and "y" for lengths in both axis and "w" for width of the loop
 	CIRCLE, ## A circle, perameter "d" for diameter
-	DIAMOND, ## A square rhombus, perameter "len" for lengths of opposite corners
-}
+	DIAMOND, ## A square rhombus, perameter "len" for lengths between opposite corners
+	X, ## Two diagonal lines, perameter "len" for length and "w" for width
+	SEMICIRCLE, ## Half a circle, perameter "d" for diameter and "dir" for direction the half should face (n,s,e,w)
+	QUADRANT, ## A quarter circle, perameter "d" for diameter and "dir" for direction the quarter should face (ne,se,nw,sw)
+	OCTAGON, ## An octogon, perameter "w" for width from top to bottom and "x" for side length of triangle cut out
+	ISOSCELES, ## An isosceles triangle, perameters "x" and "y" for lengths in both axis
+	ASTERISK, ## An asterisk, perameter "len" for length and "w" for width
+	RING, ## A circular loop, peramater "o" for outside diameter and "i" for inside diameter
+	TRAPEZIOD, ## A trapezoid, peramaters "b" for base, "h" for height, and "t" for top length
+	HEXAGON, ## A hexagon, peramaters "b" for base, "h" for height, and "t" for top length
+} # Xes X, Semicircle X, quarter circle X, octogon X, isosceles triangle X, asterisk X, hex X, parabola?
 
 ## The shape the scanner uses
 var baseShape := allToolShapes.BASE_RECT
@@ -246,20 +257,20 @@ const additionalCompatibilities = {
 	"RAISER":["11_DIA"],
 	"LEVELER":["11_DIA"],
 	"DUSTER":["7_SQC"],
-	"SHUFFLER":["7_LINE"],
+	"SHUFFLER":["7_LINE","5_DIAG"],
 	"STOPPER":["3_DIAG"],
 	"BULB":["SM_DIA"],
-	"MC_PICK":["6_SQR"],
-	"HOOK":["7_SQC"],
-	"BASE_SW":["7_LOOP"],
+	"MC_PICK":["6_SQR","3_DIAG"],
+	"HOOK":["7_SQC","10_SQR"],
+	"BASE_SW":["7_LOOP","5_PLUS"],
 	"PLACER":["BASE_RECT"],
 	"STAMPER":["6/4_RECT"],
 	"GRAVITATE":["8_CIR"],
 	"SUMMON":["10_TRI"],
 	"TERRAIN":["10_SQR"],
 	"PARALYZER":["5_PLUS"],
-	"PLATFORM":["BASE_RECT"],
-	"PLAGUE":["6/4_RECT"],
+	"PLATFORM":["BASE_RECT","SM_DIA"],
+	"PLAGUE":["6/4_RECT","BASE_RECT"],
 	"MAZER":["5_SQR"],
 }
 
@@ -294,13 +305,13 @@ const allToolShapes = {
 	"5_SQR":{"type":types.RECT,"x":5,"y":5},
 	"6_SQR":{"type":types.RECT,"x":6,"y":6},
 	"SM_DIA":{"type":types.SQUIRCLE,"x":3,"y":3},
-	"5_PLUS":{"type":types.PLUS,"x":5,"y":5},
-	"3_DIAG":{"type":types.DIAGONAL,"len":3,"tl":true},
-	"3_DIAG_IN":{"type":types.DIAGONAL,"len":3,"tl":false},
-	"7_LINE":{"type":types.LINE,"len":7 ,"vertical":false},
+	"5_PLUS":{"type":types.PLUS,"x":5,"y":5,"w":1},
+	"3_DIAG":{"type":types.DIAGONAL,"len":3,"tl":true,"w":1},
+	"3_DIAG_IN":{"type":types.DIAGONAL,"len":3,"tl":false,"w":1},
+	"7_LINE":{"type":types.LINE,"len":7,"vertical":false,"w":1},
 	"5_SQC":{"type":types.SQUIRCLE,"x":5,"y":5},
 	"10_SQR":{"type":types.RECT,"x":10,"y":10},
-	"5_DIAG":{"type":types.DIAGONAL,"len":5,"tl":true},
+	"5_DIAG":{"type":types.DIAGONAL,"len":5,"tl":true,"w":1},
 	"16_SQR":{"type":types.RECT,"x":16,"y":16},
 	"5_TRI":{"type":types.TRIANGLE,"x":5,"y":5},
 	"50_SQR":{"type":types.RECT,"x":50,"y":50},
@@ -310,7 +321,28 @@ const allToolShapes = {
 	"8_CIR":{"type":types.CIRCLE,"d":8},
 	"10_TRI":{"type":types.TRIANGLE,"x":10,"y":10},
 	"11_DIA":{"type":types.DIAMOND,"len":12},
-	"6/4_RECT":{"type":types.RECT,"x":6,"y":4}
+	"6/4_RECT":{"type":types.RECT,"x":6,"y":4},
+	
+	"4_LOOP":{"type":types.LOOP,"x":4,"y":4,"w":1},
+	"6_DIAG":{"type":types.DIAGONAL,"len":6,"tl":true,"w":2},
+	"5_DIA":{"type":types.DIAMOND,"len":6},
+	"7_PLUS":{"type":types.PLUS,"x":7,"y":7,"w":1},
+	"4_TRI":{"type":types.TRIANGLE,"x":4,"y":4},
+	"3/7_RECT":{"type":types.RECT,"x":3,"y":7},
+	"9_SQC":{"type":types.SQUIRCLE,"x":9,"y":9},
+	"12_LINE":{"type":types.LINE,"len":12,"vertical":true,"w":3},
+	"7/11_SQC":{"type":types.SQUIRCLE,"x":7,"y":11},
+	"8/4_TRI":{"type":types.TRIANGLE,"x":4,"y":8},
+	"7_X":{"type":types.X,"len":7,"w":2},
+	"5_X":{"type":types.X,"len":5,"w":1},
+	"6_SEMI":{"type":types.SEMICIRCLE,"d":6,"dir":"w"},
+	"9_QUAD":{"type":types.QUADRANT,"d":9,"dir":"ne"},
+	"11_OCTO":{"type":types.OCTAGON,"w":11,"x":3},
+	"8_ISOS":{"type":types.ISOSCELES,"x":8,"y":8},
+	"13_AST":{"type":types.ASTERISK,"len":13,"w":2},
+	"12_RING":{"type":types.RING,"o":12,"i":8},
+	"6_TRAP":{"type":types.TRAPEZIOD,"b":12,"t":6,"h":6},
+	"20_HEX":{"type":types.HEXAGON,"b":20,"t":10,"h":20},
 }
 
 ## The structure data for every structure pattern
@@ -336,7 +368,7 @@ const complexStructures = {
 ## The unlockable color schemes
 const colorShapes = {
 	"NORMAL_COLOR":[Color.BLACK,Color.WHITE,Color(0.57,0.57,0.57),Color(0.04,0.04,0.04)],
-	"C_GOL_COLOR":[Color(0.0, 0.0, 0.0, 1.0),Color(1.0, 1.0, 0.0, 1.0),Color(1,1,1),Color(1,1,1)],
+	"C_GOL_COLOR":[Color.BLACK,Color.YELLOW,Color.WHITE,Color.WHITE],
 	"GODOT_COLOR":[Color("242424"),Color(0.24, 0.59, 0.83),Color.WHITE,Color.WHITE],
 }
 
@@ -842,11 +874,13 @@ func _ready() -> void:
 	Archipelago.connect("disconnected",(func():isArchipelago = false))
 	
 	checkForErrors()
-	#await get_tree().create_timer(1).timeout
-	#var result = allScanningShapes(true)
-	#for i in result:
-		#if not result[i].has("BASE_RECT"):
-			#print(i, ": ", result[i])
+	
+	await get_tree().create_timer(1).timeout
+	
+	#var actions = getActions()
+	#for pattern in shapes.keys().filter(func(e): return not actions.has(e)):
+		#if not pattern == "200_SQR":
+			#print(getPatternLogic(shapes[pattern][0], pattern))
 
 
 ## A method to get the description for the pattern [param key]
@@ -971,7 +1005,7 @@ static func visualize(pattern:Array) -> String:
 	var height = pattern.map(func(e): return e.y).max()
 	for i in range(height + 1):
 		var strip = ""
-		for x in range(length + 1):strip += "#"
+		for x in range(length + 1):strip += " "
 		for point in pattern.filter(func(e): return e.y == i):
 			var tempStrip = strip.split("")
 			tempStrip[point.x] = "%"
@@ -1037,7 +1071,6 @@ func archipelagoName() -> String:
 ## Resets the grid when you fall off
 func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_overlapping_bodies().has(playerRef)),fromDeathlink:=false) -> void:
 	if trueDeath:
-		var deathCause = deathlinkMessages.pick_random() % archipelagoName()
 		for i in playerRef.get_parent().get_node("StructureParent").get_children():
 			i.queue_free()
 		respawnPoint = Vector3(0,2,0)
@@ -1047,10 +1080,20 @@ func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_ove
 				gridRef.set_cell_item(Vector3i(x-1,0,y-1),0)
 		for i in shapes["START"][0]:
 			gridRef.set_cell_item(Vector3i(i.x-1,0,i.y-1),1)
-		if isArchipelago and not fromDeathlink and Archipelago.is_deathlink(): Archipelago.conn.send_deathlink(deathCause)
+		if not fromDeathlink and isArchipelago and Archipelago.is_deathlink():
+			sendDeathlink()
 	playerRef.position = Globals.respawnPoint
 	playerRef.velocity = Vector3(0,0,0)
 	playerRef.strength = 0.0
+
+
+## Sends the deathlink packet, accounting for amnesty
+func sendDeathlink() -> void:
+	deathlink_amnesty += 1
+	if deathlink_amnesty >= Archipelago.conn.slot_data["death_link_amnesty"]:
+		deathlink_amnesty = 0
+		var deathCause = deathlinkMessages.pick_random() % archipelagoName()
+		Archipelago.conn.send_deathlink(deathCause)
 
 
 ## Recieves the deathlink and resets the player
@@ -1134,33 +1177,60 @@ static func arrayHasAll(array:Array,all:Array) -> bool:
 
 
 ## Checks if the given [param pattern] can fit (in any transformation) inside of [param shape].
-func canPatternFit(shape:Array,pattern:Array) -> bool:
+static func canPatternFit(shape:Array,pattern:Array) -> bool:
 	if shape.is_empty(): return false
 	if pattern.is_empty(): return false
 	
 	var typedShape: Array[Vector2i] = []
 	typedShape.assign(shape)
 	shape = Shape.makeStandard(typedShape)
-	var shapeSize = Vector2i(shape.map(func(e): return e.x).max(),shape.map(func(e): return e.x).min()) + Vector2i.ONE
+	var shapeSize = Vector2i(shape.map(func(e): return e.x).max(),shape.map(func(e): return e.y).max()) + Vector2i.ONE
 	
 	for i in Shape.allTransformations(pattern, true, shapeSize):
+		#print(visualize(i))
 		if arrayHasAll(shape,i):
 			return true
 	return false
 
 
 ## Gets all the [member allToolShapes] that [param pattern] can fit into.
-func getScanningShapes(pattern:Array) -> Array:
-	return allToolShapes.keys().filter(func(e): return canPatternFit(gridRef.getShape(Vector3i.ZERO,allToolShapes[e]), pattern))
+func getScanningShapes(pattern:Array,return_early:=false) -> Array:
+	var result = []
+	for i in allToolShapes:
+		if canPatternFit(gridRef.getShape(Vector3i.ZERO,allToolShapes[i]), pattern):
+			if i == "BASE_RECT" and return_early: return ["BASE_RECT"]
+			result.append(i)
+	return result#allToolShapes.keys().filter(func(e): return canPatternFit(gridRef.getShape(Vector3i.ZERO,allToolShapes[e]), pattern))
 
 
 ## Returns all shapes that each pattern in [member shapes] can fit into.
-func allScanningShapes(noActions := false) -> Dictionary:
+func allScanningShapes(noActions := false, asText := false) -> Dictionary:
 	var result = {}
 	var actions = getActions()
 	for pattern in shapes.keys().filter(func(e): return not noActions or not actions.has(e)):
-		result[pattern] = getScanningShapes(shapes[pattern][0])
+		if asText:
+			result[pattern] = getPatternLogic(shapes[pattern][0], pattern)
+		else:
+			result[pattern] = getScanningShapes(shapes[pattern][0])
 	return result
+
+
+func getPatternLogic(pattern:Array,pattern_name := "PATTERN") -> String:
+	if pattern.is_empty(): return pattern_name + ", Never in logic"
+	var pattern_size = [pattern.map(func(e): return e.x).max(),pattern.map(func(e): return e.y).max()].max() + 1
+	var compatible_shapes = getScanningShapes(pattern,true)
+	
+	if compatible_shapes.has("BASE_RECT"):
+		return pattern_name + ", Always in logic"
+	
+	var full_box = []
+	for x in range(pattern_size):
+		for y in range(pattern_size):
+			full_box.append(Vector2i(x,y))
+	var box_compatibility = getScanningShapes(full_box)
+	compatible_shapes = compatible_shapes.filter(func(e): return not box_compatibility.has(e))
+	
+	return "item_logic.set_pattern_logic(" + pattern_name + ", " + str(pattern_size) + (")" if compatible_shapes.is_empty() else (", " + str(compatible_shapes) + ")"))
 
 
 class Shape extends Resource: ## Class for pattern format changes and manipulation

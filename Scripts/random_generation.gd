@@ -172,7 +172,7 @@ func _process(_delta: float) -> void:
 					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
 						enemy.position.y = 1
 			Globals.tools.TERRAIN:
-				heightGeneration(cells)
+				buildCells(await heightGeneration(cells),Vector3(0,0,0),false,null,true)
 			Globals.tools.PARALYZER:
 				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
 					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
@@ -726,21 +726,37 @@ static func getShape(center:Vector3i,shape) -> Array:
 			result.erase(Vector2i(center.x - floored.x, center.z + floored.y))
 		Globals.types.PLUS:
 			for x in range(-floor(shape.x/2.0),ceil(shape.x/2.0)):
-				if not result.has(Vector2i(x + center.x,center.z)):
-					result.append(Vector2i(x + center.x,center.z))
+				for y in range(-shape.w + 1, shape.w):
+					if not result.has(Vector2i(x + center.x, y + center.z)):
+						result.append(Vector2i(x + center.x, y + center.z))
 			for y in range(-floor(shape.y/2.0),ceil(shape.y/2.0)):
-				if not result.has(Vector2i(center.x,y + center.z)):
-					result.append(Vector2i(center.x,y + center.z))
+				for x in range(-shape.w + 1, shape.w):
+					if not result.has(Vector2i(x + center.x, y + center.z)):
+						result.append(Vector2i(x + center.x, y + center.z))
 		Globals.types.DIAGONAL:
-			for dist in range(shape.len):
-				result.append(Vector2i(center.x + ((dist - floor(shape.len/2.0))) * (1 if shape.tl else -1),center.z + (dist - floor(shape.len/2.0))))
+			var tl = topLeftPoint(center,Vector2i(shape.len,shape.len))
+			for x in range(shape.len):
+				for y in range(shape.len):
+					if abs(y - x) < shape.w:
+						result.append(Vector2i(x,y))
+			
+			if not shape.tl:
+				var typedResult: Array[Vector2i]
+				typedResult.assign(result)
+				result = Globals.Shape.rotatePoints(typedResult)
+			
+			result = result.map(func(e): return e + tl)
+			
+			#for dist in range(shape.len):
+				#result.append(Vector2i(center.x + ((dist - floor(shape.len/2.0))) * (1 if shape.tl else -1),center.z + (dist - floor(shape.len/2.0))))
 		Globals.types.LINE:
-			for dist in range(-floor(shape.len/2.0),ceil(shape.len/2.0)):
-				result.append(Vector2i(center.x + (0 if shape.vertical else dist), center.z + (dist if shape.vertical else 0)))
+			for row in range(-floor(shape.w/2.0),ceil(shape.w/2.0)):
+				for dist in range(-floor(shape.len/2.0),ceil(shape.len/2.0)):
+					result.append(Vector2i(center.x + (row if shape.vertical else dist), center.z + (dist if shape.vertical else row)))
 		Globals.types.TRIANGLE:
 			for x in range(-floor(shape.x/2.0),ceil(shape.x/2.0)):
 				for y in range(-floor(shape.y/2.0),ceil(shape.y/2.0)):
-					if x > y: continue
+					if shape.y * x > shape.x * y: continue
 					if not result.has(Vector2i(x + center.x,y + center.z)):
 						result.append(Vector2i(x + center.x,y + center.z))
 		Globals.types.LOOP:
@@ -754,6 +770,73 @@ static func getShape(center:Vector3i,shape) -> Array:
 		Globals.types.DIAMOND:
 			result = rectPoints(shape.len,shape.len,topLeftPoint(center,Vector2i(shape.len,shape.len)))
 			result = result.filter(func(e): return abs(e.x-center.x)+abs(e.y-center.z) <= (shape.len/2 - 1))
+		Globals.types.X:
+			for i in [true,false]:
+				result.append_array(getShape(center,{"type":Globals.types.DIAGONAL,"len":shape.len,"tl":i,"w":shape.w}))
+		Globals.types.SEMICIRCLE:
+			result = getShape(center,{"type":Globals.types.CIRCLE,"d":shape.d})
+			var logic: Callable
+			match shape.dir:
+				"n":
+					logic = func(e): return e.y <= center.z
+				"s":
+					logic = func(e): return e.y >= center.z
+				"e":
+					logic = func(e): return e.x >= center.x
+				"w":
+					logic = func(e): return e.x <= center.x
+			result = result.filter(logic)
+		Globals.types.QUADRANT:
+			result = getShape(center,{"type":Globals.types.CIRCLE,"d":shape.d})
+			var logic: Callable
+			match shape.dir:
+				"ne":
+					logic = func(e): return e.y <= center.z and e.x >= center.x
+				"se":
+					logic = func(e): return e.y >= center.z and e.x >= center.x
+				"nw":
+					logic = func(e): return e.y <= center.z and e.x <= center.x
+				"sw":
+					logic = func(e): return e.y >= center.z and e.x <= center.x
+			result = result.filter(logic)
+		Globals.types.OCTAGON:
+			var diamondShape = getShape(center,{"type":Globals.types.DIAMOND,"len":(2 * (shape.w - shape.x))})
+			var squareShape = getShape(center,{"type":Globals.types.RECT,"x":shape.w,"y":shape.w})
+			for i in squareShape:
+				if diamondShape.has(i):
+					result.append(i)
+		Globals.types.ISOSCELES:
+			var triangle = getShape(center - Vector3i(0,0,ceili(shape.x/2.0)),{"type":Globals.types.TRIANGLE,"x":shape.x/2,"y":shape.y})
+			var triangles = triangle + triangle.map(func(e): return ((e - Vector2i(center.x,center.z)) * Vector2i(-1,1)) + Vector2i(center.x,center.z) - Vector2i(ceili(shape.x/2.0),0))
+			for i in triangles:
+				var positioned = i
+				positioned.y += shape.y / 2
+				positioned.x += ceili(shape.x/4.0)
+				if not result.has(positioned):
+					result.append(positioned)
+		Globals.types.ASTERISK:
+			var x = getShape(center,{"type":Globals.types.X,"len":shape.len,"w":shape.w})
+			var plus = getShape(center,{"type":Globals.types.PLUS,"x":shape.len,"y":shape.len,"w":shape.w})
+			for i in x + plus:
+				if not result.has(i):
+					result.append(i)
+		Globals.types.RING:
+			var inside = getShape(center,{"type":Globals.types.CIRCLE,"d":shape.i})
+			for i in getShape(center,{"type":Globals.types.CIRCLE,"d":shape.o}):
+				if not inside.has(i):
+					result.append(i)
+		Globals.types.TRAPEZIOD:
+			var rect = getShape(center,{"type":Globals.types.RECT,"x":shape.t,"y":shape.h})
+			var t1 = getShape(center + Vector3i((shape.t + shape.b)/4,0,0),{"type":Globals.types.TRIANGLE,"x":(shape.b-shape.t)/2,"y":shape.h})
+			var t2 = t1.map(func(e): return Vector2i((2 * center.x) - e.x - 1,e.y))
+			for i in rect + t1 + t2:
+				if not result.has(i):
+					result.append(i)
+		Globals.types.HEXAGON:
+			var trap = getShape(center - Vector3i(0,0,shape.h/4 - 1),{"type":Globals.types.TRAPEZIOD,"b":shape.b,"t":shape.t,"h":shape.h/2})
+			for i in trap + trap.map(func(e): return Vector2i(e.x, (2 * center.z) - e.y)):
+				if not result.has(i):
+					result.append(i)
 	return result
 
 

@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfu0rp65j44tc"]
+
+[ext_resource type="Script" uid="uid://cd8j736jni2ds" path="res://Scripts/blueprint_panel.gd" id="1_mirpc"]
+
+[node name="BlueprintPanel" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -902.0
+offset_bottom = -566.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mirpc")
+
+[node name="Container" type="VBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Container"]
+layout_mode = 2
+text = "2/10 Actions Scanned"
+horizontal_alignment = 1
+
+[node name="Bar" type="ProgressBar" parent="Container"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+value = 20.0
+show_percentage = false
+
+[node name="Buttons" type="HBoxContainer" parent="Container"]
+layout_mode = 2
+
+[node name="CopyButton" type="Button" parent="Container/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy"
+
+[node name="PinButton" type="Button" parent="Container/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pin"
+
+[node name="Pattern" type="Label" parent="Container"]
+layout_mode = 2
+text = "Unlocked C_GOL"
+horizontal_alignment = 1

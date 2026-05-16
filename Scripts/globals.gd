@@ -67,6 +67,9 @@ var bounds_velocity := 100
 ## Emits once the player finishes its ready function
 signal player_ready
 
+@warning_ignore("unused_signal")
+signal update_blueprints
+
 ## A refrence to the player
 var playerRef:CharacterBody3D
 
@@ -106,11 +109,42 @@ const VARS_TO_SAVE = [
 	"currencies",
 	"respawnPoint",
 	"archipelagoLocationsFound",
+	"blueprints_achieved",
+	"blueprint_shapes_achieved",
 ]
+
+## All blueprints
+var ALL_BLUEPRINTS: Array[BluePrint] = [
+	BluePrint.new(7,func(): return len(availibleTools) - 1,"Tools","DIAMOND"),
+	BluePrint.new(30,func(): return len(actionsScanned),"Actions","NETHERITE",["DIAMOND"]),
+	BluePrint.new(10,func(): return len(availibleShapes) - 2,"Shapes","FREE_CHIPS"),
+	BluePrint.new(3,func(): return len(foundColors),"Color Actions","TOOL_COLOR",["FREE_CHIPS"]),
+	BluePrint.new(1,func(): return 1 if actionsScanned.has("STRENGTHEN_BOUNDS") else 0,"Scanned STRENGTHEN_BOUNDS","WEAKEN_BOUNDS",["TOOL_COLOR"]),
+	BluePrint.new(10,func(): return compatibilityChips,"Compatibility Chips","CHIP_PACK_5",["TOOL_COLOR"])
+	#BluePrint.new(12,func(): return len(availibleShapes) - 2,"Shapes","5_SQR",["DIAMOND","NETHERITE"]),
+	#BluePrint.new(32,func(): return len(actionsScanned),"Actions","9_SQC",["DIAMOND"])
+]
+
+## All shapes that the blueprints unlock
+var BLUEPRINT_SHAPES: Array = ALL_BLUEPRINTS.map(func(e): return e.target_pattern)
+
+## All blueprints that have their requirements met
+var blueprints_achieved: Array[BluePrint]
+
+## All shapes unlocked by achieving blueprints
+var blueprint_shapes_achieved: Array[String]
+
+## If the blueprint tree is active
+var blueprints_active: bool:
+	set(value):
+		cameraRef.setBlueprintVisibility(not value)
+		blueprints_active = value
 
 ## A list of all actions scanned, used predominantly for Archipelago stuff
 var actionsScanned = []:
 	set(value):
+		for child in Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).get_children():
+			child.queue_free()
 		for shape in value:
 			if isArchipelago: if len(actionsScanned) == int(Archipelago.conn.slot_data["actions_needed"]): gridRef.finishArchipelago()
 			var panel = preload("res://Scenes/grid_panel.tscn").instantiate()
@@ -126,6 +160,8 @@ var currencies := {}
 
 ## The reset point of the player
 var respawnPoint := Vector3(0,2,0)
+
+var bedPattern := []
 
 ## The tool that is being hovered over in the ui
 var hoveringTool := "NONE":
@@ -144,6 +180,11 @@ var hoveringAction := "NONE":
 	set(value):
 		hoveringAction = value
 		cameraRef.updateDescriptionWindows("Action",value)
+
+var hoveringOther := "NONE":
+	set(value):
+		hoveringOther = value
+		cameraRef.updateSearchWindow(value)
 
 ## The tools currently on the toolbar
 var barLayout:Array[tools] = [tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE,tools.NONE]
@@ -228,49 +269,49 @@ var toolsCompatibility = {
 	"NONE":[],
 	"VOIDER":[],
 	"ERASER":[],
-	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																																					],
-	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																																],
-	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI",																			"6/4_RECT",	],
-	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR",																																								"8_CIR",										],
-	"SHUFFLER":[	"NONE",						"5_SQR"																																																								],
-	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																																			],
-	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN",																																"11_DIA",				],
-	"MC_PICK":[		"NONE",																										"7_LINE"																																			],
-	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC",																						"10_TRI",							],
-	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"																									],
-	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",																																						],
-	"STAMPER":[		"NONE",									"6_SQR",																																																				],
-	"GRAVITATE":[	"NONE",																																							"5_TRI",													"10_TRI",							],
-	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR",																						"11_DIA",				],
-	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",																],
-	"PARALYZER":[	"NONE",																																																"7_SQC",							"11_DIA",	"6/4_RECT",	],
-	"PLATFORM":[	"NONE",																																										"50_SQR",				"7_SQC",	"8_CIR",										],
-	"PLAGUE":[		"NONE",																																	"10_SQR",																			"10_TRI",							],
-	"MAZER":[		"NONE",									"6_SQR",																						"10_SQR",							"50_SQR",																			],
+	"C_GOL":[		"NONE",		"BASE_RECT",	"5_SQR",	"6_SQR"																																																								],
+	"RAISER":[		"NONE",												"SM_DIA",	"5_PLUS",													"5_SQC"																																			],
+	"LEVELER":[		"NONE",		"BASE_RECT",	"5_SQR",																															"5_TRI",																						"6/4_RECT",	],
+	"DUSTER":[		"NONE",		"BASE_RECT",				"6_SQR",																																											"8_CIR",										],
+	"SHUFFLER":[	"NONE",						"5_SQR"																																																											],
+	"STOPPER":[		"NONE",												"SM_DIA",												"7_LINE"																																						],
+	"BULB":[		"NONE",															"5_PLUS",		"3_DIAG",	"3_DIAG_IN",																																			"11_DIA",				],
+	"MC_PICK":[		"NONE",																										"7_LINE"																																						],
+	"HOOK":[		"NONE",									"6_SQR",																			"5_SQC",																									"10_TRI",							],
+	"BASE_SW":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",											"5_DIAG"																												],
+	"PLACER":[		"NONE",																			"3_DIAG",	"3_DIAG_IN",																																									],
+	"STAMPER":[		"NONE",									"6_SQR",																																																							],
+	"GRAVITATE":[	"NONE",																																							"5_TRI",																"10_TRI",							],
+	"SUMMON":[		"NONE",						"5_SQR",																									"10_SQR",																									"11_DIA",				],
+	"TERRAIN":[		"NONE",						"5_SQR",																																		"50_SQR",	"200_SQR",																			],
+	"PARALYZER":[	"NONE",																																																			"7_SQC",							"11_DIA",	"6/4_RECT",	],
+	"PLATFORM":[	"NONE",																																										"50_SQR",							"7_SQC",	"8_CIR",										],
+	"PLAGUE":[		"NONE",																																	"10_SQR",																						"10_TRI",							],
+	"MAZER":[		"NONE",									"6_SQR",																						"10_SQR",							"50_SQR",																						],
 }
 
 const additionalCompatibilities = {
 	"NONE":[],
 	"VOIDER":[],
 	"ERASER":[],
-	"C_GOL":["10_SQR","50_SQR"],
+	"C_GOL":["10_SQR","50_SQR","13_AST"],
 	"RAISER":["11_DIA"],
 	"LEVELER":["11_DIA"],
-	"DUSTER":["7_SQC"],
-	"SHUFFLER":["7_LINE","5_DIAG"],
-	"STOPPER":["3_DIAG"],
+	"DUSTER":["7_SQC","7_PLUS"],
+	"SHUFFLER":["7_LINE","5_DIAG","11_OCTO","9_QUAD","12_LINE"],
+	"STOPPER":["3_DIAG","12_LINE","5_X"],
 	"BULB":["SM_DIA"],
-	"MC_PICK":["6_SQR","3_DIAG"],
+	"MC_PICK":["6_SQR","3_DIAG","4_LOOP","20_HEX"],
 	"HOOK":["7_SQC","10_SQR"],
-	"BASE_SW":["7_LOOP","5_PLUS"],
-	"PLACER":["BASE_RECT"],
-	"STAMPER":["6/4_RECT"],
-	"GRAVITATE":["8_CIR"],
-	"SUMMON":["10_TRI"],
-	"TERRAIN":["10_SQR"],
-	"PARALYZER":["5_PLUS"],
-	"PLATFORM":["BASE_RECT","SM_DIA"],
-	"PLAGUE":["6/4_RECT","BASE_RECT"],
+	"BASE_SW":["7_LOOP","5_PLUS","12_RING","13_AST"],
+	"PLACER":["BASE_RECT","6_TRAP","4_TRI"],
+	"STAMPER":["6/4_RECT","10_SQR","7/11_SQC","6_SEMI","3/7_RECT"],
+	"GRAVITATE":["8_CIR","6_DIAG","9_SQC"],
+	"SUMMON":["10_TRI","8/4_TRI"],
+	"TERRAIN":["10_SQR","5_DIA"],
+	"PARALYZER":["5_PLUS","20_HEX"],
+	"PLATFORM":["BASE_RECT","SM_DIA","7_X"],
+	"PLAGUE":["6/4_RECT","BASE_RECT","8_ISOS","9_SQC"],
 	"MAZER":["5_SQR"],
 }
 
@@ -370,16 +411,27 @@ const colorShapes = {
 	"NORMAL_COLOR":[Color.BLACK,Color.WHITE,Color(0.57,0.57,0.57),Color(0.04,0.04,0.04)],
 	"C_GOL_COLOR":[Color.BLACK,Color.YELLOW,Color.WHITE,Color.WHITE],
 	"GODOT_COLOR":[Color("242424"),Color(0.24, 0.59, 0.83),Color.WHITE,Color.WHITE],
+	"TOOL_COLOR":[]
 }
 
-## The amount of compatibility chips you get for every pack
-var chipPackAmounts = [
+## The base color scheme
+var currentColor := "NORMAL_COLOR"
+
+var foundColors := []
+
+const CHIPS_IN_PACKS = [
 	1,
 	2,
+	3,
+	4,
+	5,
 ]
 
+## The amount of compatibility chips you get for every pack
+var chipPackAmounts = CHIPS_IN_PACKS.duplicate()
+
 ## The exchange rates for the currencies, in however many you would get from 1 cubic
-var currencyExchangeRates:Dictionary[String,float] = { # To cubics
+var currencyExchangeRates:Dictionary[String,float] = { # From cubics
 	"CUBICS":1.0,
 	"USD":100.0,
 	"DIAMONDS":(1/75.0),
@@ -393,7 +445,6 @@ const SALESMEN: Array[String] = [
 	"CUBIC_SALESMAN",
 	"MINECRAFT_USER",
 ]
-
 
 const ALL_SHOP_ITEMS: Array[String] = [
 	"CUBIC_SALESMAN_ITEM_1",
@@ -409,7 +460,6 @@ const ALL_SHOP_ITEMS: Array[String] = [
 	"MINECRAFT_USER_ITEM_3-6",
 	"MINECRAFT_USER_ITEM_3-7",
 ]
-
 
 const UPGRADES:Array[String] = [
 	"MC_INVENTORY"
@@ -741,6 +791,96 @@ var shapes = {
 	"STRENGTHEN_BOUNDS":[
 		[Vector2i(0,0),Vector2i(0,2),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,2)]
 	],
+	"4_LOOP":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,3),Vector2i(2,0),Vector2i(2,3),Vector2i(3,0),Vector2i(3,1),Vector2i(3,2),Vector2i(3,3)]
+	],
+	"6_DIAG":[
+		loadShape({"type":types.DIAGONAL,"len":4,"tl":true,"w":2})
+	],
+	"5_DIA":[
+		[Vector2i(0,2),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,1),Vector2i(2,3),Vector2i(2,4),Vector2i(3,1),Vector2i(3,2),Vector2i(3,3),Vector2i(4,2)]
+	],
+	"7_PLUS":[
+		[Vector2i(0,1),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,1),Vector2i(3,1)]
+	],
+	"4_TRI":[
+		loadShape({"type":types.TRIANGLE,"x":4,"y":4})
+	],
+	"3/7_RECT":[
+		loadShape({"type":types.RECT,"x":3,"y":4})
+	],
+	"9_SQC":[
+		loadShape({"type":types.SQUIRCLE,"x":4,"y":4})
+	],
+	"12_LINE":[
+		loadShape({"type":types.LINE,"len":4,"vertical":true,"w":1})
+	],
+	"7/11_SQC":[
+		loadShape({"type":types.SQUIRCLE,"x":5,"y":3})
+	],
+	"8/4_TRI":[
+		loadShape({"type":types.TRIANGLE,"x":2,"y":4})
+	],
+	"7_X":[
+		loadShape({"type":types.X,"len":5,"w":2})
+	],
+	"5_X":[
+		loadShape({"type":types.X,"len":5,"w":1})
+	],
+	"6_SEMI":[
+		[Vector2i(0,1),Vector2i(1,0),Vector2i(1,1),Vector2i(2,0),Vector2i(2,1),Vector2i(3,1)]
+	],
+	"9_QUAD":[
+		[Vector2i(0,1),Vector2i(1,0),Vector2i(1,1),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3),Vector2i(3,1),Vector2i(3,2)]
+	],
+	"11_OCTO":[
+		[Vector2i(0,0),Vector2i(0,2),Vector2i(1,1),Vector2i(1,3),Vector2i(2,0),Vector2i(2,2),Vector2i(3,1),Vector2i(3,3)]
+	],
+	"8_ISOS":[
+		[Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3),Vector2i(3,2),Vector2i(3,3)]
+	],
+	"13_AST":[
+		[Vector2i(0,0),Vector2i(0,3),Vector2i(1,1),Vector2i(1,2),Vector2i(2,1),Vector2i(2,2),Vector2i(3,0),Vector2i(3,3)]
+	],
+	"12_RING":[
+		[Vector2i(0,1),Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,4),Vector2i(2,0),Vector2i(2,4),Vector2i(3,0),Vector2i(3,4),Vector2i(4,1),Vector2i(4,2),Vector2i(4,3)]
+	],
+	"6_TRAP":[
+		loadShape({"type":types.TRAPEZIOD,"b":12,"t":6,"h":6})
+	],
+	"20_HEX":[
+		[Vector2i(0,2),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3),Vector2i(1,4),Vector2i(2,1)]
+	],
+	"CHIP_PACK_3":[
+		[Vector2i(0,1),Vector2i(0,2),Vector2i(1,0),Vector2i(1,3),Vector2i(1,4),Vector2i(2,1),Vector2i(2,2),Vector2i(2,5),Vector2i(3,0),Vector2i(3,3),Vector2i(3,4),Vector2i(4,1),Vector2i(4,2)]
+	],
+	"BED":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,1),Vector2i(2,1),Vector2i(3,1),Vector2i(3,2)]
+	],
+	"FREE_CHIPS":[
+		loadPixels("res://Sprites/free_chips.png")
+	],
+	"BLUEPRINT_BOOK":[
+		loadPixels("res://Sprites/blueprint.png")
+	],
+	"TOOL_COLOR":[
+		[Vector2i(0,2),Vector2i(1,0),Vector2i(1,1),Vector2i(1,3),Vector2i(2,1),Vector2i(2,2),Vector2i(3,2)]
+	],
+	"WEAKEN_BOUNDS":[
+		[Vector2i(0,0),Vector2i(0,2),Vector2i(1,1),Vector2i(2,1),Vector2i(3,1)]
+	],
+	"CHIP_PACK_4":[
+		loadPixels("res://Sprites/chip_pack_4.png")
+	],
+	"CHIP_PACK_5":[
+		loadPixels("res://Sprites/chip_pack_5.png")
+	],
+	"TREMOR":[
+		loadPixels("res://Sprites/tremor.png")
+	],
+	"WHALE":[
+		loadPixels("res://Sprites/whale.png")
+	],
 }
 
 ## Descriptions for all tools, shapes, and actions
@@ -793,6 +933,26 @@ var descriptions = {
 	"10_TRI":{"name":"10 - Triangle","text":"Yknow that theorem isn't actually pythagoras's","type":"shape"},
 	"11_DIA":{"name":"11 - Diamond","text":"Now this is actually a diamond shape.","type":"shape"},
 	"6/4_RECT":{"name":"6 by 4 - Rectangle","text":"This is actually a rectangle","type":"shape"},
+	"4_LOOP":{"name":"4 - Loop","text":"A tiny loop","type":"shape"},
+	"6_DIAG":{"name":"6 - Diagonal","text":"Slash","type":"shape"},
+	"5_DIA":{"name":"5 - Diamond","text":"Imperfections?","type":"shape"},
+	"7_PLUS":{"name":"7 - Plus","text":"","type":"shape"},
+	"4_TRI":{"name":"4 - Triangle","text":"","type":"shape"},
+	"3/7_RECT":{"name":"3 by 7 - Rectangle","text":"","type":"shape"},
+	"9_SQC":{"name":"9 - Squircle","text":"","type":"shape"},
+	"12_LINE":{"name":"12 - Line","text":"","type":"shape"},
+	"7/11_SQC":{"name":"7 by 11 - Squircle","text":"","type":"shape"},
+	"8/4_TRI":{"name":"8 by 4 - Triangle","text":"","type":"shape"},
+	"7_X":{"name":"7 - X","text":"","type":"shape"},
+	"5_X":{"name":"5 - X","text":"","type":"shape"},
+	"6_SEMI":{"name":"6 - Semicircle","text":"","type":"shape"},
+	"9_QUAD":{"name":"9 - Quadrant","text":"","type":"shape"},
+	"11_OCTO":{"name":"11 - Octagon","text":"","type":"shape"},
+	"8_ISOS":{"name":"8 - Isosceles Triangle","text":"","type":"shape"},
+	"13_AST":{"name":"13 - Asterisk","text":"","type":"shape"},
+	"12_RING":{"name":"12 - Ring","text":"","type":"shape"},
+	"6_TRAP":{"name":"6 - Trapezoid","text":"","type":"shape"},
+	"20_HEX":{"name":"20 - Hexagon","text":"","type":"shape"},
 	
 	#"":{"name":"","text":"","type":"shape"},
 	
@@ -854,33 +1014,64 @@ var descriptions = {
 	"MAZE":{"name":"Maze","text":"Solve this","type":"action"},
 	"CHIP_PACK_1":{"name":"Chip Pack 1","text":"The first of many packs. Gives you 1 compatibility chip to upgrade your tools.","type":"action","other":["CHIP_PACK"]},
 	"CHIP_PACK_2":{"name":"Chip Pack 2","text":"Another chip pack. Gives you 2 compatibility chips to upgrade your tools.","type":"action","other":["CHIP_PACK"]},
+	"CHIP_PACK_3":{"name":"Chip Pack 3","text":"Hey look more compatibility chips. 3 to be exact.","type":"action","other":["CHIP_PACK"]},
+	"CHIP_PACK_4":{"name":"Chip Pack 4","text":"4 more chips. This is making me hungry.","type":"action"},
+	"CHIP_PACK_5":{"name":"Chip Pack 5","text":"5 more yummies","type":"action"},
 	"CUBIC_SALESMAN":{"name":"Cubic Salesman","text":"Barters with rather expensive cubes","type":"action"},
 	"MINECRAFT_USER":{"name":"Minecraft User","text":"Gimme those shiny rocks","type":"action"},
 	"STRENGTHEN_BOUNDS":{"name":"Strengthen Bounds","text":"Reinforce the walls that hold you in","type":"action"},
+	"BED":{"name":"Bed","text":"Sets your spawn, but keep it safe","type":"action"},
+	"FREE_CHIPS":{"name":"Free Chips","text":"Let em go","type":"action"},
+	"BLUEPRINT_BOOK":{"name":"Blueprint Book","text":"A whole tree of blueprints to discover!","type":"action"},
+	"TOOL_COLOR":{"name":"Tool Color Scheme","text":"This is very customizable","type":"action"},
+	"WEAKEN_BOUNDS":{"name":"Weaken Bounds","text":"Break down the walls that hold you in","type":"action"},
+	"TREMOR":{"name":"Tremor","text":"Heart skips a beat","type":"action"},
+	"WHALE":{"name":"Whale","text":"Rather loud","type":"action"},
 	
 	#"":{"name":"","text":"","type":"action"},
 }
 
 
 func _ready() -> void:
-	Archipelago.connect("connected",(func(_arg,_arg2):
-		isArchipelago = true
-		Archipelago.conn.deathlink.connect(recieveDeathlink)
-		Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,true,e)))
-		Archipelago.conn.force_scout_all()
-		Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
-		allExtraPatterns = Archipelago.conn.slot_data["needed_patterns"].map(func(e): return Shape.makeStandard(Shape.fromBooleanList(Shape.binaryOrHexToBooleanList(e)))).map(Shape.allTransformations)
-		))
+	Archipelago.connect("connected",connectScript)
 	Archipelago.connect("disconnected",(func():isArchipelago = false))
 	
-	checkForErrors()
+	checkForDescriptions()
 	
-	await get_tree().create_timer(1).timeout
-	
+	#await get_tree().create_timer(1).timeout
+	#print(getPatternLogic(shapes["CHIP_PACK_5"][0],"CHIP_PACK_5"))
 	#var actions = getActions()
 	#for pattern in shapes.keys().filter(func(e): return not actions.has(e)):
 		#if not pattern == "200_SQR":
-			#print(getPatternLogic(shapes[pattern][0], pattern))
+			#var logic: String = getPatternLogic(shapes[pattern][0], pattern)
+			#if logic != "": print(logic)
+	#var previousShapes = []
+	#var sizeRange = range(1,18)
+	#sizeRange.reverse()
+	#for i in sizeRange:
+		#var currentShapes = getScanningShapes(loadShape({"type":types.RECT,"x":i,"y":i}))
+		#currentShapes = currentShapes.filter(func(e): return not previousShapes.has(e))
+		#previousShapes.append_array(currentShapes)
+		#print(str(i) + ", " + str(currentShapes))
+	#getScanningShapes([])# for boxes
+	
+	#print(BluePrint.arrange_blueprints([
+		#BluePrint.new(1,func(): return len(actionsScanned),"Actions","C_GOL"),
+		#BluePrint.new(2,func(): return len(availibleTools),"Tools","5_SQR",["C_GOL"])
+	#]).map(func(e): return e.map(func(i): return i.target_pattern)))
+
+func connectScript(_connInfo: ConnectionInfo, _json: Dictionary) -> void:
+	isArchipelago = true
+	Archipelago.conn.deathlink.connect(recieveDeathlink)
+	Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,[],true,e)))
+	Archipelago.conn.force_scout_all()
+	Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
+	allExtraPatterns = Archipelago.conn.slot_data["needed_patterns"].map(func(e): return Shape.makeStandard(Shape.fromBooleanList(Shape.binaryOrHexToBooleanList(e)))).map(Shape.allTransformations)
+	Archipelago.remove_location.connect(func(id):
+		var item_name = gridRef.getArchipelagoLocName(id)
+		if not archipelagoLocationsFound.has(item_name):
+			archipelagoLocationsFound.append(item_name))
+	blueprints_active = false
 
 
 ## A method to get the description for the pattern [param key]
@@ -917,9 +1108,9 @@ func getDescriptionText(key:String) -> String:
 					for otherVal in descriptions[key][query]:
 						match otherVal:
 							"MC_TOOL":
-								result += "\n\nMaterial: " + Globals.mcToolLevel.capitalize()
+								result += "\n\nMaterial: " + mcToolLevel.capitalize()
 							"MC_BLOCK":
-								result += "\n\nBlocks: " + str(Globals.mcBlocks) + " / " + str(64 * mcInventoryLevel)
+								result += "\n\nBlocks: " + str(mcBlocks) + " / " + str(64 * mcInventoryLevel)
 							"CURRENCY":
 								result += "\n\nAmount: " + str(currencies[key.replace("CURRENCY_","")])
 							"CHIP_PACK":
@@ -1049,7 +1240,7 @@ func size(shape:Array) -> int:
 
 
 ## Checks for the existance of decriptions on patterns
-func checkForErrors() -> void:
+func checkForDescriptions() -> void:
 	for i in shapes:
 		if not descriptions.has(i) and not structureShapes.has(i) and not enemySpawnShapes.has(i):
 			printerr("No description for " + i)
@@ -1082,6 +1273,15 @@ func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_ove
 			gridRef.set_cell_item(Vector3i(i.x-1,0,i.y-1),1)
 		if not fromDeathlink and isArchipelago and Archipelago.is_deathlink():
 			sendDeathlink()
+	
+	if not bedPattern.is_empty() and respawnPoint != Vector3(0,2,0):
+		var result = {}
+		for i in bedPattern:
+			result[i] = (gridRef.get_cell_item(gridRef.vector2to3(i)))
+		if not gridRef.checkForShapes(gridRef.removeExtras(result),false).has("BED"):
+			respawnPoint = Vector3(0,2,0)
+			bedPattern = []
+	
 	playerRef.position = Globals.respawnPoint
 	playerRef.velocity = Vector3(0,0,0)
 	playerRef.strength = 0.0
@@ -1120,6 +1320,11 @@ func saveSlot(slot:int=currentSlot) -> void:
 	if not FileAccess.file_exists("user://Data/save"+str(slot)+".dat"): FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.WRITE)
 	
 	var file = FileAccess.open("user://Data/save"+str(slot)+".dat",FileAccess.WRITE)
+	
+	var chipAmount = compatibilityChips
+	for i in unlockedCompatibilities.values():
+		chipAmount += len(i)
+	
 	var data = {
 		"actionsScanned":actionsScanned,
 		"availibleTools":availibleTools,
@@ -1128,9 +1333,14 @@ func saveSlot(slot:int=currentSlot) -> void:
 		"mcBlocks":mcBlocks,
 		"currencies":currencies,
 		"respawnPoint":respawnPoint,
+		"bedPattern":bedPattern,
 		"archipelagoLocationsFound":archipelagoLocationsFound,
+		"compatibilityChips":chipAmount,
+		"chipPackAmounts":chipPackAmounts,
+		"blueprints_achieved":blueprints_achieved,
+		"blueprint_shapes_achieved":blueprint_shapes_achieved,
 	}
-	data = toDictionary((func(e): return get(e)),VARS_TO_SAVE)
+	#data = toDictionary((func(e): return get(e)),VARS_TO_SAVE)
 	file.store_line(JSON.stringify(data))
 	
 	cameraRef.updateSaves()
@@ -1147,6 +1357,7 @@ func loadSlot(slot:int) -> void:
 			#print(data[i])
 			set(i,data[i])
 			#print(get(i))
+	unlockedCompatibilities = {}
 	currentSlot = slot
 	cameraRef.updateSaves()
 
@@ -1216,12 +1427,12 @@ func allScanningShapes(noActions := false, asText := false) -> Dictionary:
 
 
 func getPatternLogic(pattern:Array,pattern_name := "PATTERN") -> String:
-	if pattern.is_empty(): return pattern_name + ", Never in logic"
+	if pattern.is_empty(): return ""#pattern_name + ", Never in logic"
 	var pattern_size = [pattern.map(func(e): return e.x).max(),pattern.map(func(e): return e.y).max()].max() + 1
 	var compatible_shapes = getScanningShapes(pattern,true)
 	
 	if compatible_shapes.has("BASE_RECT"):
-		return pattern_name + ", Always in logic"
+		return ""#pattern_name + ", Always in logic"
 	
 	var full_box = []
 	for x in range(pattern_size):
@@ -1230,11 +1441,28 @@ func getPatternLogic(pattern:Array,pattern_name := "PATTERN") -> String:
 	var box_compatibility = getScanningShapes(full_box)
 	compatible_shapes = compatible_shapes.filter(func(e): return not box_compatibility.has(e))
 	
-	return "item_logic.set_pattern_logic(" + pattern_name + ", " + str(pattern_size) + (")" if compatible_shapes.is_empty() else (", " + str(compatible_shapes) + ")"))
+	return "item_logic.set_pattern_logic(\"" + pattern_name + "\", " + str(pattern_size) + (")" if compatible_shapes.is_empty() else (", " + str(compatible_shapes) + ")"))
+
+
+## Returns all chips used to unlock compatibilities
+func freeCompatibilityChips() -> void:
+	for i in unlockedCompatibilities.values():
+		compatibilityChips += len(i)
+	unlockedCompatibilities = {}
+
+
+func getToolColor(tool:String) -> Color:
+	var result = Color(0.08,0.08,0.08)
+	if tool != "":
+		if Globals.tools.has(tool):
+			var library:MeshLibrary = preload("res://Sprites/MeshLibraries/OutlinerMeshLibrary.tres")
+			result = (library.get_item_mesh(Globals.tools[tool]).surface_get_material(0).albedo_color)
+			result.a = 1
+			result.v -= 0.2
+	return result
 
 
 class Shape extends Resource: ## Class for pattern format changes and manipulation
-	
 	## Data in universal format (the base that the game uses most), an array of 2d coordinates that are filled
 	var universal_format:Array[Vector2i]:
 		set(value):
@@ -1289,13 +1517,13 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			universal_format = []
 			universal_format.assign(decodeImage(value,false,Color.WHITE,value.get_image().get_pixel(0,0),Color.DARK_GRAY,1))
 		get():
-			var backgroundColor := Color(0.08,0.08,0.08)
-			if pattern_name_format != "":
-				if Globals.tools.has(pattern_name_format):
-					var library:MeshLibrary = preload("res://Sprites/MeshLibraries/OutlinerMeshLibrary.tres")
-					backgroundColor = (library.get_item_mesh(Globals.tools[pattern_name_format]).surface_get_material(0).albedo_color)
-					backgroundColor.a = 1
-					backgroundColor.v -= 0.2
+			var backgroundColor := Globals.getToolColor(pattern_name_format)
+			#if pattern_name_format != "":
+				#if Globals.tools.has(pattern_name_format):
+					#var library:MeshLibrary = preload("res://Sprites/MeshLibraries/OutlinerMeshLibrary.tres")
+					#backgroundColor = (library.get_item_mesh(Globals.tools[pattern_name_format]).surface_get_material(0).albedo_color)
+					#backgroundColor.a = 1
+					#backgroundColor.v -= 0.2
 			return getImageFromList(universal_format,false,Color.WHITE,backgroundColor,Color.DARK_GRAY,1)
 	
 	
@@ -1349,8 +1577,16 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 	
 	
 	## Converts the [param binary] to hexadecimal
-	static func binaryToHex(binary:String) -> String:
-		return "0x" + String.num_int64(binary.bin_to_int(),16)
+	static func binaryToHex(binary:String, no_prefix := false) -> String:
+		if len(binary) >= 64:
+			var start = binaryToHex(binary.left(32))
+			var end = binaryToHex(binary.right(-32), true)
+			if no_prefix:
+				start = start.replace("0x","")
+			#end.replace("0x","")
+			#if not no_prefix: print(start + end)
+			return start + end
+		return ("" if no_prefix else "0x") + String.num_int64(binary.bin_to_int(),16)
 	
 	
 	## Converts the [param string] (in either [member binary_format] or [member hexadecimal_format]) to a binary list
@@ -1358,7 +1594,22 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 		var result:Array[bool] = []
 		
 		if string.left(2) == "0x":
-			string = String.num_int64(string.hex_to_int(),2)
+			string = string.right(-2)
+			
+			if len(string) >= 16:
+				var split_string = ""
+				var chunks = []
+				for character in string.split(""):
+					if chunks.is_empty(): chunks.append([])
+					if len(chunks[-1]) < 16:
+						chunks[-1].append(character)
+					else:
+						chunks.append([])
+				for chunk in chunks:
+					split_string += String.num_int64(split_string.hex_to_int(),2)
+				string = split_string
+			else: 
+				string = String.num_int64(string.hex_to_int(),2)
 		
 		if string.left(2) == "0b":
 			string = string.right(-2)
@@ -1477,3 +1728,75 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 				result.append(shape.map(func(e): return e + Vector2i(x,y)))
 		
 		return result
+
+class BluePrint extends Resource:
+	var requirements: Array
+	
+	var need_all_requirements: bool
+	
+	var needed_amount: int
+	
+	var current_amount: Callable # -> int
+	
+	var units: String
+	
+	var target_pattern: String
+	
+	var column: int:
+		set(_value):
+			pass
+	
+	
+	func _init(needed: int, current: Callable, unit: String, pattern:String, req := [], need_all := false) -> void:
+		requirements = req
+		need_all_requirements = need_all
+		needed_amount = needed
+		current_amount = current
+		units = unit
+		target_pattern = pattern
+	
+	
+	## Orders the blueprints by their requirements, a blueprint will always be after all of its requirements
+	static func arrange_blueprints(blueprints: Array[BluePrint]) -> Array[Array]:
+		var result: Array[Array] = []
+		var blueprints_left: Array[BluePrint] = blueprints.duplicate()
+		var met_requirements: Array[String] = []
+		var index: int = 0
+		
+		result.append(blueprints.filter(func(e): return e.requirements.is_empty()))
+		for i in result[index]: 
+			blueprints_left.erase(i)
+			met_requirements.append(i.target_pattern)
+			i.column = index
+		
+		while not blueprints_left.is_empty():
+			index += 1
+			result.append([])
+			var waiting_update := []
+			for i in blueprints_left:
+				@warning_ignore("static_called_on_instance")
+				if Globals.arrayHasAll(met_requirements,i.requirements):
+					waiting_update.append(i)
+			for i in waiting_update:
+				result[index].append(i)
+				blueprints_left.erase(i)
+				met_requirements.append(i.target_pattern)
+			
+			if result[index].is_empty():
+				printerr("No logical path to more blueprints")
+				break
+		
+		return result
+	
+	
+	func has_met_requirements() -> bool:
+		if requirements.is_empty(): return true
+		var currently_achieved = Globals.blueprints_achieved.map(func(e): return e.target_pattern)
+		if need_all_requirements:
+			@warning_ignore("static_called_on_instance")
+			return Globals.arrayHasAll(currently_achieved, requirements)
+		else:
+			for i in requirements:
+				if currently_achieved.has(i):
+					return true
+		return false

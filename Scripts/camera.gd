@@ -3,7 +3,7 @@ extends Camera3D
 var availibleShapesCopy = []
 
 var tabIndex = tabs.SETUP
-enum tabs {SETUP,TOOLS,SHAPES,ACTIONS,MENU,ARCHIPELAGO,CONSOLE,MULTIPLAYER,MONEY,SAVES}
+enum tabs {SETUP,TOOLS,SHAPES,ACTIONS,MENU,ARCHIPELAGO,CONSOLE,MULTIPLAYER,MONEY,SAVES,BLUEPRINTS}
 
 var ip:String
 
@@ -28,9 +28,18 @@ func _ready() -> void:
 		i.get_child(0).get_node("HBoxContainer").get_node("Copy").pressed.connect(func(): copyShape(i.get_child(0).get_node("Label").get_meta("data")))
 		i.get_child(0).get_node("HBoxContainer").get_node("Pin").pressed.connect(func(): pinShape(i.get_child(0).get_node("Label").get_meta("data")))
 	
+	$HUD/MarginContainer/HBoxContainer/CompassLabel.visible = false
+	
+	Globals.blueprints_active = false
+	
 	updateSaves()
 	
 	updateTabs()
+	
+	call_deferred("setup_blueprints")
+	#setup_blueprints()
+	
+	Globals.update_blueprints.emit()
 
 
 func _process(_delta: float) -> void:
@@ -349,8 +358,16 @@ func updateDescriptionWindows(type:String,value:String) -> void:
 	}[type]
 	if node == null: return
 	
-	node.text = Globals.getDescriptionText(value)
-	for i in node.get_parent().get_parent().get_children().filter(func(e): return not e is PanelContainer):
+	set_full_pattern_description(value, node, node.get_parent().get_parent())
+
+
+func updateSearchWindow(value: String) -> void:
+	set_full_pattern_description(value, get_child(0).get_node("DebugTab").get_node("PatternInfo/Container/Label"), get_child(0).get_node("DebugTab").get_node("PatternInfo"))
+
+
+func set_full_pattern_description(value: String, label: Label, parent: Control) -> void:
+	label.text = Globals.getDescriptionText(value)
+	for i in parent.get_children().filter(func(e): return not e is PanelContainer):
 		i.queue_free()
 	for i in Globals.getComplexDescription(value):
 		if i is TextureRect:
@@ -359,7 +376,7 @@ func updateDescriptionWindows(type:String,value:String) -> void:
 			for button in i.get_children():
 				if button is Button:
 					button.text = button.text.split("\n")[0]
-		node.get_parent().get_parent().add_child(i)
+		parent.add_child(i)
 
 
 func _on_minimap_copy_pressed() -> void:
@@ -368,3 +385,80 @@ func _on_minimap_copy_pressed() -> void:
 
 func _on_minimap_pin_pressed() -> void:
 	pinShape($HUD/SetupTab/MinimapContainer/MinimapPanel.get_meta("data"))
+
+
+func setup_blueprints() -> void:
+	var arrangement = Globals.BluePrint.arrange_blueprints(Globals.ALL_BLUEPRINTS)
+	var pattern_to_node: Dictionary[String,PanelContainer]
+	
+	for column_contents in arrangement:
+		var box = VBoxContainer.new()
+		box.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.custom_minimum_size = Vector2(250,300)
+		for blueprint in column_contents:
+			var panel: PanelContainer = preload("res://Scenes/blueprint_panel.tscn").instantiate()
+			panel.name = blueprint.target_pattern
+			var update_amounts = (func():
+				var amount = blueprint.current_amount.call()
+				panel.get_child(0).get_node("Label").text = str(amount) + "/" + str(blueprint.needed_amount) + " " + blueprint.units
+				panel.get_child(0).get_node("Bar").value = amount
+				panel.get_child(0).get_node("Bar").max_value = blueprint.needed_amount
+				
+				var is_ap_item = Globals.isArchipelago
+				if is_ap_item: 
+					if not Archipelago.conn.slot_data.is_empty():
+						is_ap_item = Archipelago.conn.slot_data["randomize_blueprints"]
+				#if is_ap_item: is_ap_item = not Globals.getActions().has(blueprint.target_pattern)
+				if is_ap_item and panel.get_child(0).get_node("Pattern").text.left(4) != "Arch":
+					panel.get_child(0).get_node("Pattern").visible = true
+					print(Globals.BLUEPRINT_SHAPES.find(blueprint.target_pattern) + 5001)
+					Archipelago.conn.scout(Globals.BLUEPRINT_SHAPES.find(blueprint.target_pattern) + 5001, 2, 
+					func(e): ShopScreen.set_archipelago_item_name(e, panel.get_child(0).get_node("Pattern"))
+					)
+				
+				if Globals.blueprints_active:
+					@warning_ignore("static_called_on_instance")
+					if amount >= blueprint.needed_amount and not Globals.blueprints_achieved.has(blueprint) and blueprint.has_met_requirements():
+						Globals.blueprints_achieved.append(blueprint)
+						Globals.gridRef.runShape("BLUEPRINT_" + blueprint.target_pattern)
+						panel.get_child(0).get_node("Buttons/PinButton").visible = true
+						panel.get_child(0).get_node("Buttons/CopyButton").visible = true
+						panel.get_child(0).get_node("Pattern").visible = true
+						panel.modulate = Color(0.2,0.2,0.2,1)
+				)
+			
+			var typed: Array[Vector2i] = []
+			typed.assign(Globals.shapes[blueprint.target_pattern][0])
+			var shape_res = Globals.Shape.new(typed)
+			
+			update_amounts.call()
+			Globals.update_blueprints.connect(update_amounts)
+			panel.get_child(0).get_node("Buttons/PinButton").visible = false
+			panel.get_child(0).get_node("Buttons/CopyButton").visible = false
+			panel.get_child(0).get_node("Pattern").visible = false
+			panel.get_child(0).get_node("Pattern").text = "Unlocked " + blueprint.target_pattern
+			panel.get_child(0).get_node("Buttons/PinButton").pressed.connect(pinShape.bind(shape_res.binary_format))
+			panel.get_child(0).get_node("Buttons/CopyButton").pressed.connect(copyShape.bind(shape_res.hexadecimal_format))
+			
+			box.add_child(panel)
+			
+			pattern_to_node[blueprint.target_pattern] = panel
+			for i in blueprint.requirements:
+				var line = BlueprintLine.new()
+				line.origin_node = panel
+				line.target_node = pattern_to_node[i]
+				get_node("HUD/BlueprintsTab").add_child(line)
+		$HUD/BlueprintsTab/HBoxContainer.add_child(box)
+		var spacer = Control.new()
+		spacer.custom_minimum_size.x = 100
+		$HUD/BlueprintsTab/HBoxContainer.add_child(spacer)
+		#box.queue_sort()
+	
+	#$HUD/BlueprintsTab/HBoxContainer.queue_sort()
+
+func setBlueprintVisibility(disabled: bool) -> void:
+	if Globals.isArchipelago:
+		disabled = false
+	for i in range(%TabBar.tab_count):
+		if %TabBar.get_tab_title(i) == "Blueprints":
+			%TabBar.set_tab_disabled(i, disabled)

@@ -1,10 +1,10 @@
-extends Control
+class_name ShopScreen extends Control
 
 @export var shop_items: Array[ShopExchange]
 @export var shop_name: String
 @export var summoner: String
 
-signal recieved_scout
+#signal recieved_scout
 
 func setup() -> void:
 	Globals.cameraRef.get_child(0).get_node("MarginContainer").get_child(0).get_node("TabBar").current_tab = Globals.cameraRef.tabs.MONEY
@@ -33,7 +33,7 @@ func get_shop_node(exchange:ShopExchange) -> HBoxContainer:
 	var label = Label.new()
 	label.text = ((str(exchange.first_item.currency_amount) + " ") if exchange.first_item.is_currency else "") + exchange.first_item.item
 	if Globals.isArchipelago:
-		if Archipelago.conn.slot_data["randomize_salesmen"]:
+		if Archipelago.conn.slot_data["randomize_salesmen"] and not exchange.first_item.is_currency:
 			var loc_name:String
 			loc_name = summoner + "_ITEM_" + str(shop_items.find(exchange) + 1)
 			if exchange.purchase_times > 1:
@@ -52,12 +52,12 @@ func get_shop_node(exchange:ShopExchange) -> HBoxContainer:
 	return result
 
 
-func set_archipelago_item_name(info:NetworkItem,label:Label) -> void:
+static func set_archipelago_item_name(info:NetworkItem,label:Label) -> void:
 	var playerName = Archipelago.conn.get_player_name(info.dest_player_id)
 	var itemName = info.get_name()
 	var fullText = "Archipelago Item: " + playerName + "'s " + itemName
 	label.text = fullText
-	recieved_scout.emit()
+	#recieved_scout.emit()
 	#Globals.gridRef.trigger_popup(fullText, Globals.gridRef.popupTypes.ARCHIPELAGO_SEND)
 
 

@@ -12,7 +12,8 @@ const popupColors = {
 	popupTypes.ARCHIPELAGO_SEND:Color(1,0.735,0,1),
 	popupTypes.ARCHIPELAGO_GOAL:Color(0.73,0.535,0,1),
 	popupTypes.ARCHIPELAGO_DEATHLINK: Color(1.0, 1.0, 0.0, 1.0),
-	popupTypes.STATUS_EFFECT:Color(0.735,0,1,1)
+	popupTypes.STATUS_EFFECT:Color(0.735,0,1,1),
+	popupTypes.BLUEPRINT:Color(0.26, 0.46, 1, 1),
 }
 
 ## The types of popup you cen recieve
@@ -24,7 +25,8 @@ enum popupTypes {
 	ARCHIPELAGO_SEND, ## When you find an Archipelago item
 	ARCHIPELAGO_GOAL, ## When you goal in Archipelago
 	ARCHIPELAGO_DEATHLINK, ## When you recieve a deathlink
-	STATUS_EFFECT ## Unused
+	STATUS_EFFECT, ## Unused
+	BLUEPRINT,
 }
 
 ## The last pattern scanned, used for [enum Globals.tools].STAMPER
@@ -42,6 +44,12 @@ var miningBlocks := false
 ## The center point of the plane
 var planeOrigin = Vector3i.ZERO
 
+## Wether terrain is being generated
+var generatingTerrain := false
+
+var terrainThread = Thread.new()
+
+var flashBanging = false
 
 func _ready() -> void:
 	var duplicatedShapes = Globals.shapes.duplicate(true)
@@ -199,16 +207,20 @@ func _process(_delta: float) -> void:
 			result[i] = (get_cell_item(vector2to3(i)))
 		checkForShapes(removeExtras(result))
 	
-	if Input.is_action_just_pressed("mouse2"):
+	if Input.is_action_just_pressed("mouse2") and Input.is_action_pressed("plr_ctrl"):
 		for i in Globals.toolsCompatibility:
 			runShape(i)
 		for i in Globals.allToolShapes:
 			runShape(i)
 		Globals.mcToolLevel = "NETHERITE"
+		for i in Globals.chipPackAmounts:
+			Globals.compatibilityChips += i
 		if Input.is_action_pressed("plr_shift"):
+			for i in Globals.BLUEPRINT_SHAPES:
+				runShape("BLUEPRINT_" + i)
 			for i in Globals.getActions():
 				runShape(i)
-			giveCurrency("DIAMONDS",100)
+			#giveCurrency("DIAMONDS",100)
 	
 	if not miningBlocks and not pickaxeCells.is_empty():
 		updatePickaxeBlocks()
@@ -217,6 +229,7 @@ func _process(_delta: float) -> void:
 func updatePickaxeBlocks() -> void:
 	miningBlocks = true
 	var speed = 0
+	var check_for_diamonds = false
 	match Globals.mcToolLevel:
 		"WOOD":
 			speed = 1.15
@@ -224,10 +237,13 @@ func updatePickaxeBlocks() -> void:
 			speed = 0.6
 		"IRON":
 			speed = 0.4
+			check_for_diamonds = true
 		"DIAMOND":
 			speed = 0.3
+			check_for_diamonds = true
 		"NETHERITE":
 			speed = 0.25
+			check_for_diamonds = true
 		"GOLD":
 			speed = 0.2
 			Globals.mcToolLevel = "WOOD"
@@ -236,6 +252,9 @@ func updatePickaxeBlocks() -> void:
 		var i = pickaxeCells.pick_random()
 		$McPickaxe.start(speed)
 		await $McPickaxe.timeout
+		if check_for_diamonds:
+			if randi_range(1,1000) == 1:
+				moreCurrency("DIAMONDS",1)
 		Globals.mcBlocks += 1
 		set_cell_item(vector2to3(i),0)
 		pickaxeCells.erase(i)
@@ -293,18 +312,18 @@ func removeExtras(input:Dictionary) -> Dictionary:
 
 
 ## Runs [method scanShape] on each identifiable group in [param groups]. Also handles completion shape and extra patterns for archipelago.
-func checkForShapes(groups:Dictionary) -> Array:
+func checkForShapes(groups:Dictionary, scan := true) -> Array:
 	var result = []
 	var hasShape = []
 	for group in groups.values().duplicate_deep():
 		if group.is_empty(): continue
 		for shape in Globals.shapes:
 			if Globals.shapes[shape].has(group) and groups.values().has(group):
-				scanShape(groups.find_key(group),shape,group)
+				if scan: scanShape(groups.find_key(group),shape,group)
 				hasShape.append(group)
 				result.append(shape)
 		if hasShape.has(group): groups.erase(groups.find_key(group))
-		if Globals.isArchipelago:
+		if Globals.isArchipelago and scan:
 			if Archipelago.conn.slot_data["completion_shape"] != "":
 				if Globals.Shape.allTransformations(Globals.Shape.fromBooleanList(Globals.Shape.binaryOrHexToBooleanList(Archipelago.conn.slot_data["completion_shape"]))).has(group): tryFinish(true)
 			
@@ -316,7 +335,7 @@ func checkForShapes(groups:Dictionary) -> Array:
 	if not groups.values().is_empty():
 		for i in groups.values():
 			result.append(i)
-		printerr(groups.values())
+			printerr(i)
 	return result
 
 
@@ -332,7 +351,7 @@ static func vector2to3(vector,yPos=0):
 func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
 	group = group.map(func(e): return vector2to3(e + pos,0))
 	await lightShape(group,0,false)
-	runShape(shape,pos)
+	runShape(shape,pos,group)
 	await get_tree().create_timer(0.2).timeout
 	await lightShape(group,-1,false)
 
@@ -347,8 +366,13 @@ func lightShape(cells,value:int,wait:=true) -> void:
 
 #INFO very important
 ## Gives you a tool or shape or runs an action 
-func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=false,archipelagoInfo:NetworkItem=NetworkItem.new()):
+func runShape(shape:String, center:Vector2i=Vector2i.ZERO, group := [], calledFromArchipelago:=false, archipelagoInfo:NetworkItem=NetworkItem.new()):
 	print(shape)
+	
+	if Globals.BLUEPRINT_SHAPES.has(shape):
+		if not Globals.blueprint_shapes_achieved.has(shape):
+			trigger_popup("No Blueprint for: " + shape, popupTypes.BLUEPRINT)
+			return
 	
 	if Globals.isArchipelago and not Globals.startedArchipelago and not calledFromArchipelago:
 		Globals.startedArchipelago = true
@@ -389,10 +413,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 		
 		match shape:
 			"RANDOM_GENERATION":
-				var cells = await heightGeneration(getShape(Vector3i.ZERO,"200_SQR"))
-				buildCells(cells,Vector3(0,0,0),false,null,true)
-				if Globals.isMultiplayer:
-					rpc("buildCells",cells,Vector3(0,0,0),false,null,true)
+				buildGeneration()
 			"START":
 				startCells()
 			_:
@@ -437,8 +458,14 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 			if i.summoner == shape:
 				i.setup()
 				break
+	elif shape.contains("BLUEPRINT_") and not shape == "BLUEPRINT_BOOK":
+		if not Globals.isArchipelago or calledFromArchipelago:
+			Globals.blueprint_shapes_achieved.append(shape.right(-10))
+			trigger_popup("Blueprint Unlocked: " + shape.right(-10), popupTypes.BLUEPRINT)
+		else:
+			sendArchipelagoItem(Globals.BLUEPRINT_SHAPES.find(shape.right(-10)) + 5001, shape)
 	else:
-		if not Globals.actionsScanned.has(shape) and not (shape == "RANDOM_ACTION" or shape == "RANDOM_ENEMY"):
+		if not Globals.actionsScanned.has(shape) and not ["RANDOM_ACTION", "RANDOM_ENEMY", "COMPATIBILITY_CHIP", "FLASHBANG_TRAP"].has(shape):
 			add_action(shape)
 			trigger_popup("New Action Triggered: " + shape,popupTypes.ACTION)
 		else:
@@ -466,6 +493,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 					i.visible = true
 			"RESPAWN":
 				Globals.respawnPoint = Globals.playerRef.position
+				Globals.bedPattern = []
 			"W":
 				Globals.playerRef.velocity.y += 20
 			"L":
@@ -486,6 +514,8 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 					set_cell_item(vector2to3(i),1)
 				
 				set_cell_item(Vector3i(chosenCell.x,0,chosenCell.y),0)
+				
+				Globals.cameraRef.get_node("HUD/MarginContainer/HBoxContainer/CompassLabel").visible = true
 			"SENDER":
 				Globals.playerRef.savedVelocity = - ((Globals.playerRef.position - (Globals.respawnPoint)).normalized() * 20)
 			"UNSENDER":
@@ -554,7 +584,7 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 				while true:
 					var action = Globals.shapes.keys().pick_random()
 					if not (Globals.tools.keys().has(shape) or Globals.allToolShapes.has(shape)):
-						runShape(action,Vector2i.ZERO,true)
+						runShape(action,Vector2i.ZERO,[],true)
 						break
 			"RANDOM_ENEMY":
 				var pos = map_to_local(local_to_map(Globals.playerRef.position))
@@ -575,6 +605,44 @@ func runShape(shape:String,center:Vector2i=Vector2i.ZERO,calledFromArchipelago:=
 				Globals.bounds_velocity += 20
 				await get_tree().create_timer(90).timeout
 				Globals.bounds_velocity -= 20
+			"BED":
+				Globals.playerRef.sitting = not Globals.playerRef.sitting
+				Globals.respawnPoint = Globals.playerRef.position
+				Globals.bedPattern = group.map(func(e): return Vector2i(e.x,e.z-4) + center)
+			"FREE_CHIPS":
+				Globals.freeCompatibilityChips()
+			"BLUEPRINT_BOOK":
+				if Globals.isArchipelago and not calledFromArchipelago:
+					sendArchipelagoItem(5000, "BLUEPRINT_BOOK")
+				else:
+					Globals.blueprints_active = true
+			"FLASHBANG_TRAP":
+				if not flashBanging:
+					flashBanging = true
+					var oldColor = Globals.currentColor
+					setColor("TOOL_COLOR", Globals.tools.PLATFORM, true)
+					await get_tree().create_timer(20).timeout
+					setColor(oldColor)
+					flashBanging = false
+			"WEAKEN_BOUNDS":
+				Globals.bounds_velocity -= 20
+				await get_tree().create_timer(90).timeout
+				Globals.bounds_velocity += 20
+			"TREMOR":
+				Globals.playerRef.strength -= 20
+				multiplyAttribute("speed",["/",20],10)
+				multiplyAttribute("gravity",["*",20],10)
+				if not flashBanging:
+					flashBanging = true
+					var oldColor = Globals.currentColor
+					setColor("TOOL_COLOR", Globals.tools.PLATFORM, true)
+					await get_tree().create_timer(20).timeout
+					setColor(oldColor)
+					flashBanging = false
+			"WHALE":
+				play_sound("whale")
+	
+	Globals.update_blueprints.emit()
 
 
 ## Logs an action
@@ -650,8 +718,8 @@ func makeMaze(width:int,center:Vector3i) -> void:
 			triedCells = null
 
 
-## Gives you a popup with [param text] and colored by the [param type]
-func trigger_popup(text:String,type:popupTypes) -> void:
+## Gives you a popup with [param text] and colored by the [param type] (can be overriden with [param override_color])
+func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANSPARENT) -> void:
 	var amountSame = 1
 	for i in Globals.cameraRef.get_child(0).get_node("PopupBox").get_children():
 		var panelText = i.get_child(0).text
@@ -676,12 +744,15 @@ func trigger_popup(text:String,type:popupTypes) -> void:
 	label.text = text
 	var panel = PanelContainer.new()
 	panel.modulate = popupColors[type]
+	if override_color != Color.TRANSPARENT:
+		panel.modulate = override_color
 	panel.add_child(label)
 	panel.name = text
 	Globals.cameraRef.get_child(0).get_node("PopupBox").add_child(panel)
 	
 	Globals.allPopups.append(text)
-	print_rich("[color="+popupColors[type].to_html(false)+"]"+text+"[/color]")
+	
+	print_rich("[color=" + panel.modulate.to_html(false) + "]" + text + "[/color]")
 	
 	await get_tree().create_timer(popupTime).timeout
 	if is_instance_valid(panel):
@@ -703,9 +774,15 @@ static func getAllConnections(map:AStar2D,notInclude:Array,input:Dictionary,coor
 
 
 ## Sets the color scheme of the gridmap from [param colorName]
-func setColor(colorName:String) -> void:
+func setColor(colorName: String, overridenTool := Globals.currentTool, calledFromArchipelago := false) -> void:
+	Globals.currentColor = colorName
+	if not Globals.foundColors.has(colorName) and not calledFromArchipelago:
+		Globals.foundColors.append(colorName)
+	var colorList: Array = Globals.colorShapes[colorName]
+	if colorName == "TOOL_COLOR": 
+		colorList = [Globals.getToolColor(Globals.tools.find_key(overridenTool)), Color.WHITE, Color.WHITE, Color.WHITE]
 	for meshIndex:int in Array(mesh_library.get_item_list()):
-		mesh_library.get_item_mesh(meshIndex).material.albedo_color = Globals.colorShapes[colorName][meshIndex]
+		mesh_library.get_item_mesh(meshIndex).material.albedo_color = colorList[meshIndex]
 
 
 ## Gets all the cells from [param shape]'s data
@@ -719,11 +796,18 @@ static func getShape(center:Vector3i,shape) -> Array:
 			result = fullPointsForRect(shape,center)
 		Globals.types.SQUIRCLE:
 			result = fullPointsForRect(shape,center)
-			result.erase(Vector2i(topLeftPoint(center,Vector2i(shape.x,shape.y))))
-			var floored = Vector2i(floori(shape.x/2),floori(shape.y/2))
-			result.erase(Vector2i(center.x + floored.x, center.z - floored.y))
-			result.erase(Vector2i(center.x + floored.x, center.z + floored.y))
-			result.erase(Vector2i(center.x - floored.x, center.z + floored.y))
+			#result.erase(Vector2i(topLeftPoint(center,Vector2i(shape.x,shape.y))))
+			#var ceiling = Vector2i(ceili((shape.x - 1)/2),ceili((shape.y - 1)/2))
+			#result.erase(Vector2i(center.x + ceiling.x, center.z - ceiling.y))
+			#result.erase(Vector2i(center.x + ceiling.x, center.z + ceiling.y))
+			#result.erase(Vector2i(center.x - ceiling.x, center.z + ceiling.y))
+			var mins = Vector2i(result.map(func(e): return e.x).min(), result.map(func(e): return e.y).min())
+			var maxes = Vector2i(result.map(func(e): return e.x).max(), result.map(func(e): return e.y).max())
+			
+			result.erase(Vector2i(mins.x,mins.y))
+			result.erase(Vector2i(maxes.x,mins.y))
+			result.erase(Vector2i(maxes.x,maxes.y))
+			result.erase(Vector2i(mins.x,maxes.y))
 		Globals.types.PLUS:
 			for x in range(-floor(shape.x/2.0),ceil(shape.x/2.0)):
 				for y in range(-shape.w + 1, shape.w):
@@ -743,7 +827,7 @@ static func getShape(center:Vector3i,shape) -> Array:
 			if not shape.tl:
 				var typedResult: Array[Vector2i]
 				typedResult.assign(result)
-				result = Globals.Shape.rotatePoints(typedResult)
+				result = preload("res://Scripts/globals.gd").Shape.rotatePoints(typedResult)
 			
 			result = result.map(func(e): return e + tl)
 			
@@ -771,8 +855,12 @@ static func getShape(center:Vector3i,shape) -> Array:
 			result = rectPoints(shape.len,shape.len,topLeftPoint(center,Vector2i(shape.len,shape.len)))
 			result = result.filter(func(e): return abs(e.x-center.x)+abs(e.y-center.z) <= (shape.len/2 - 1))
 		Globals.types.X:
+			var all = []
 			for i in [true,false]:
-				result.append_array(getShape(center,{"type":Globals.types.DIAGONAL,"len":shape.len,"tl":i,"w":shape.w}))
+				all.append_array(getShape(center,{"type":Globals.types.DIAGONAL,"len":shape.len,"tl":i,"w":shape.w}))
+			for i in all:
+				if not result.has(i):
+					result.append(i)
 		Globals.types.SEMICIRCLE:
 			result = getShape(center,{"type":Globals.types.CIRCLE,"d":shape.d})
 			var logic: Callable
@@ -921,8 +1009,21 @@ static func mode(array:Array) -> Variant:
 	return result.find_key(result.values().max())
 
 
+## Builds the random generation
+func buildGeneration() -> void:
+	if not generatingTerrain:
+		generatingTerrain = true
+		#terrainThread.start(heightGeneration.bind(getShape(Vector3i.ZERO,"200_SQR")))
+		#var cells = await terrainThread.wait_to_finish()
+		var cells = await heightGeneration(getShape(Vector3i.ZERO,"200_SQR"))
+		buildCells(cells,Vector3(0,0,0),false,null,true)
+		if Globals.isMultiplayer:
+			rpc("buildCells",cells,Vector3(0,0,0),false,null,true)
+		generatingTerrain = false
+
+
 ## Randomly generates terrain
-func heightGeneration(shapeCells:Array) -> Array:
+func heightGeneration(shapeCells:Array, wait := true) -> Array:
 	var cells = []
 	var cellsToYVals = {}
 	
@@ -997,7 +1098,7 @@ func heightGeneration(shapeCells:Array) -> Array:
 		
 		nextCell = pickNextCell(currentCell,leftCells)
 		
-		if len(leftCells) % 20 == 0:
+		if len(leftCells) % 20 == 0 and wait:
 			await get_tree().process_frame
 	
 	leftCells = cellsToYVals.keys().duplicate(true)
@@ -1025,7 +1126,7 @@ func heightGeneration(shapeCells:Array) -> Array:
 		
 		leftCells.erase(currentCell)
 		
-		if len(leftCells) % 10 == 0:
+		if len(leftCells) % 10 == 0 and wait:
 			await get_tree().process_frame
 	
 	for i in cellsToYVals:
@@ -1150,12 +1251,43 @@ func giveCurrency(type:String,amount:float) -> void:
 		Globals.cameraRef.get_child(0).get_node("MoneyTab").get_node("CurrencyContainer").add_child(panel)
 
 
-## Sends the notification that you found the location
+## Sends the notification that you found the location to the ap server
 func sendArchipelagoItem(id:int,shape:String) -> void:
 	if not Globals.archipelagoLocationsFound.has(shape):
-		Globals.archipelagoLocationsFound.append(shape)
+		#print("Outgoing location: ", id)
 		Archipelago.collect_location(id)
 		Archipelago.conn.scout(id,0,archipelagoPopup)
+
+
+## Sends an archipelago item by the [param id]
+func sendItemByID(id: int) -> void:
+	sendArchipelagoItem(id, getArchipelagoLocName(id))
+
+
+## Gets the name of the archipelago location at the [param id]
+func getArchipelagoLocName(id: int) -> String:
+	if id >= 5000:
+		if id == 5000:
+			return "BLUEPRINT_BOOK"
+		return "BLUEPRINT_" + Globals.BLUEPRINT_SHAPES[id - 5001]
+	elif id >= 4000:
+		return Globals.ALL_SHOP_ITEMS[id - 4000]
+	elif id >= 3000:
+		var pack: int
+		var index_in_pack = id - 3000 + 1
+		for i in range(len(Globals.CHIPS_IN_PACKS)):
+			if index_in_pack <= Globals.CHIPS_IN_PACKS[i]:
+				pack = i + 1
+			else:
+				index_in_pack -= Globals.CHIPS_IN_PACKS[i]
+		return "CHIP_PACK_" + str(pack) + "-" + str(index_in_pack)
+	elif id >= 2000:
+		return ["RED_PILL","TRI_ENEMY","ZOOM_ENEMY","SMALL_BIRD"][id - 2000]
+	elif id >= 1000:
+		return Globals.allToolShapes.keys()[id - 1000]
+	elif id >= 0:
+		return Globals.toolsCompatibility.keys()[id]
+	return ""
 
 
 ## Gives you a popup when you recieve an item from Archipelago
@@ -1190,6 +1322,27 @@ func finishArchipelago() -> void:
 		Globals.finished_archipelago = true
 
 
+## Makes a sound player
+func make_sound_player(bus: StringName = &"Master", temporary := false) -> AudioStreamPlayer:
+	var channel: AudioStreamPlayer = AudioStreamPlayer.new()
+	channel.autoplay = true
+	channel.bus = bus
+	if temporary: 
+		channel.finished.connect(channel.queue_free)
+	Globals.playerRef.add_child(channel)
+	return channel
+
+
+## Plays a sound player
+func play_sound(sound_name: String, vol: float = 1.0) -> void:
+	var player: AudioStreamPlayer = make_sound_player(&"Master", true)
+	await player.tree_entered
+	player.stream = load("res://Sounds/" + sound_name + ".mp3")
+	player.volume_linear = vol
+	player.play()
+
+
 func _on_bulb_timer_timeout() -> void:
-	for cell in bulbCells:
+	for cell in bulbCells.duplicate(true):
 		set_cell_item(cell,bulbCells[cell])
+		bulbCells.erase(cell)

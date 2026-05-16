@@ -10,8 +10,9 @@ config_version=5
 
 [application]
 
-config/name="pixelDraw"
-config/version="1.0.0"
+config/name="PixelDraw"
+config/version="1.3.0"
+config/tags=PackedStringArray("current")
 run/main_scene="res://Scenes/main.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.5", "GL Compatibility")

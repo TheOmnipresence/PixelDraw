@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://b6xwkcre57k6h"]
+[gd_scene load_steps=34 format=3 uid="uid://b6xwkcre57k6h"]
 
 [ext_resource type="Script" uid="uid://c7tdfafjs15ad" path="res://Scripts/camera.gd" id="1_qxdsw"]
 [ext_resource type="PackedScene" uid="uid://wjyhyg46r80y" path="res://Scenes/bar_panel.tscn" id="2_fxq6n"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://cg3mkk8gg42s4" path="res://Scripts/console_tab.gd" id="3_jvsei"]
 [ext_resource type="Script" uid="uid://bx064qpt4ldgu" path="res://Scripts/shop_exchange.gd" id="4_u72ve"]
 [ext_resource type="Script" uid="uid://hdsm61lfwx8k" path="res://Scripts/shop_item.gd" id="5_37r0i"]
+[ext_resource type="PackedScene" uid="uid://ck0rajqw7aano" path="res://Scenes/pattern_info_panel.tscn" id="7_37r0i"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_fxq6n"]
 font_size = 21
@@ -264,7 +265,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 current_tab = 0
-tab_count = 10
+tab_count = 11
 tab_0/title = "Setup"
 tab_1/title = "Tools"
 tab_2/title = "Shapes"
@@ -275,6 +276,11 @@ tab_6/title = "Console"
 tab_7/title = "Multiplayer"
 tab_8/title = "Money"
 tab_9/title = "Saves"
+tab_10/title = "Blueprints"
+
+[node name="Seperator" type="Control" parent="HUD/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(185, 0)
+layout_mode = 2
 
 [node name="CompassLabel" type="Label" parent="HUD/MarginContainer/HBoxContainer"]
 layout_mode = 2
@@ -1009,6 +1015,81 @@ theme_override_constants/margin_top = 45
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 alignment = 1
+
+[node name="BlueprintsTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/BlueprintsTab"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 34.0
+offset_bottom = -67.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="DebugTab" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="PatternFinder" type="VBoxContainer" parent="HUD/DebugTab"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_top = 50.0
+offset_right = 300.0
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="HUD/DebugTab/PatternFinder"]
+layout_mode = 2
+text = "Pattern Finder"
+horizontal_alignment = 1
+
+[node name="SearchBar" type="LineEdit" parent="HUD/DebugTab/PatternFinder"]
+layout_mode = 2
+placeholder_text = "Type here..."
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/DebugTab/PatternFinder"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+vertical_scroll_mode = 2
+
+[node name="Items" type="VBoxContainer" parent="HUD/DebugTab/PatternFinder/ScrollContainer"]
+layout_mode = 2
+
+[node name="PatternInfoPanel" parent="HUD/DebugTab/PatternFinder/ScrollContainer/Items" instance=ExtResource("7_37r0i")]
+layout_mode = 2
+
+[node name="PatternInfo" type="PanelContainer" parent="HUD/DebugTab"]
+layout_mode = 1
+offset_left = 304.0
+offset_top = 50.0
+offset_right = 344.0
+offset_bottom = 90.0
+
+[node name="Container" type="VBoxContainer" parent="HUD/DebugTab/PatternInfo"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HUD/DebugTab/PatternInfo/Container"]
+layout_mode = 2
+horizontal_alignment = 1
 
 [connection signal="tab_changed" from="HUD/MarginContainer/HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Clockwise" to="." method="_on_clockwise_pressed"]

@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://ck0rajqw7aano"]
+
+[ext_resource type="Script" uid="uid://cfxoxfcb3nwxb" path="res://Scripts/pattern_info_panel.gd" id="1_y2wbj"]
+
+[node name="PatternInfoPanel" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_y2wbj")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="Name" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "NAME:"
+
+[node name="Pin" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+text = "Pin"
+
+[node name="Copy" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+text = "Copy"
+
+[node name="Info" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+text = "Info"
+
+[connection signal="pressed" from="HBoxContainer/Pin" to="." method="_on_pin_pressed"]
+[connection signal="pressed" from="HBoxContainer/Copy" to="." method="_on_copy_pressed"]
+[connection signal="pressed" from="HBoxContainer/Info" to="." method="_on_info_pressed"]

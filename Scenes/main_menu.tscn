@@ -1,26 +1,8 @@
 [gd_scene format=3 uid="uid://dlne1ae8guagv"]
 
 [ext_resource type="Script" uid="uid://dysp5po2pffmo" path="res://Scripts/main_menu.gd" id="1_1ehe0"]
-[ext_resource type="FontFile" uid="uid://r4mpi8ijm1x5" path="res://Sprites/font.png" id="1_48xlc"]
 [ext_resource type="Texture2D" uid="uid://g4mfhgcts1n0" path="res://Sprites/big_logo16by9.png" id="2_1ehe0"]
-[ext_resource type="Texture2D" uid="uid://b56og13col7dd" path="res://Sprites/start_button_normal.png" id="2_48xlc"]
-[ext_resource type="Texture2D" uid="uid://b8fgd4vffh6wg" path="res://Sprites/start_button_pressed.png" id="4_n45e2"]
-[ext_resource type="Texture2D" uid="uid://no7oih6ecayq" path="res://Sprites/quit_button_normal.png" id="5_opfnp"]
-[ext_resource type="Texture2D" uid="uid://dradx2dsb1hoo" path="res://Sprites/quit_button_pressed.png" id="6_cp0ys"]
-[ext_resource type="Texture2D" uid="uid://bdsybqhtrfcor" path="res://Sprites/discord_button_normal.png" id="7_yhxw7"]
-[ext_resource type="Texture2D" uid="uid://8r56552w4okb" path="res://Sprites/discord_button_pressed.png" id="8_trj04"]
-
-[sub_resource type="Gradient" id="Gradient_trj04"]
-offsets = PackedFloat32Array(0)
-colors = PackedColorArray(0, 0.61960787, 1, 0.5019608)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_q256p"]
-gradient = SubResource("Gradient_trj04")
-width = 9
-
-[sub_resource type="LabelSettings" id="LabelSettings_q256p"]
-font = ExtResource("1_48xlc")
-font_size = 36
+[ext_resource type="PackedScene" uid="uid://dya2ftwsjgwpi" path="res://Scenes/pixeldraw_button.tscn" id="10_16hvj"]
 
 [node name="MainMenu" type="Control" unique_id=1371704252]
 layout_mode = 3
@@ -43,7 +25,7 @@ grow_vertical = 2
 texture = ExtResource("2_1ehe0")
 stretch_mode = 4
 
-[node name="StartButton" type="TextureButton" parent="." unique_id=1908269569]
+[node name="StartButton" parent="." unique_id=1532108950 instance=ExtResource("10_16hvj")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -51,16 +33,14 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -99.0
-offset_top = 63.0
+offset_top = 54.0
 offset_right = 90.0
-offset_bottom = 117.0
+offset_bottom = 108.0
 grow_horizontal = 2
 grow_vertical = 2
-texture_normal = ExtResource("2_48xlc")
-texture_pressed = ExtResource("4_n45e2")
-stretch_mode = 4
+text = "Start"
 
-[node name="QuitButton" type="TextureButton" parent="." unique_id=330438243]
+[node name="QuitButton" parent="." unique_id=1529954120 instance=ExtResource("10_16hvj")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -68,16 +48,14 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -81.0
-offset_top = 108.0
+offset_top = 99.0
 offset_right = 72.0
-offset_bottom = 162.0
+offset_bottom = 153.0
 grow_horizontal = 2
 grow_vertical = 2
-texture_normal = ExtResource("5_opfnp")
-texture_pressed = ExtResource("6_cp0ys")
-stretch_mode = 4
+text = "Quit"
 
-[node name="DiscordButton" type="TextureButton" parent="." unique_id=1026437424]
+[node name="DiscordButton" parent="." unique_id=1928380956 instance=ExtResource("10_16hvj")]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -86,48 +64,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -261.0
 offset_top = -54.0
+offset_right = 0.0
+offset_bottom = 0.0
 grow_horizontal = 0
 grow_vertical = 0
-texture_normal = ExtResource("7_yhxw7")
-texture_pressed = ExtResource("8_trj04")
-stretch_mode = 4
+text = "Discord"
 
-[node name="VersionButton" type="TextureButton" parent="." unique_id=341504488]
-z_index = 20
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -54.0
-offset_right = 40.0
-grow_vertical = 0
-texture_pressed = SubResource("GradientTexture1D_q256p")
-stretch_mode = 0
-
-[node name="VersionLabel" type="Label" parent="." unique_id=2088153208]
-z_index = 1
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 9.0
-offset_top = -45.0
-offset_right = 477.0
-offset_bottom = -9.0
-grow_vertical = 0
-text = "Version 1.3.0"
-label_settings = SubResource("LabelSettings_q256p")
-
-[node name="VersionBackground" type="ColorRect" parent="." unique_id=1168658743]
+[node name="VersionButton" parent="." unique_id=81436494 instance=ExtResource("10_16hvj")]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_top = -54.0
 offset_right = 477.0
+offset_bottom = 0.0
 grow_vertical = 0
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
+text = "Version 1.3.1"
 
 [connection signal="pressed" from="StartButton" to="." method="start"]
 [connection signal="pressed" from="QuitButton" to="." method="quit"]

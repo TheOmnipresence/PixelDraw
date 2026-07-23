@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://dya2ftwsjgwpi"]
+
+[ext_resource type="Script" uid="uid://dsoqovyhcntv" path="res://Scripts/pixeldraw_button.gd" id="1_3gpvf"]
+[ext_resource type="FontFile" uid="uid://r4mpi8ijm1x5" path="res://Sprites/font.png" id="1_5q05q"]
+
+[sub_resource type="Gradient" id="Gradient_trj04"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0, 0.61960787, 1, 0.5019608)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_3gpvf"]
+gradient = SubResource("Gradient_trj04")
+width = 9
+
+[sub_resource type="LabelSettings" id="LabelSettings_krlnv"]
+font = ExtResource("1_5q05q")
+font_size = 36
+
+[node name="PixeldrawButton" type="TextureButton" unique_id=1532108950]
+z_index = 20
+offset_right = 9.0
+offset_bottom = 54.0
+texture_pressed = SubResource("GradientTexture1D_3gpvf")
+stretch_mode = 0
+script = ExtResource("1_3gpvf")
+
+[node name="Label" type="Label" parent="." unique_id=1474378563]
+z_index = -19
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 9.0
+offset_top = -45.0
+offset_right = 32.0
+offset_bottom = -9.0
+grow_vertical = 0
+label_settings = SubResource("LabelSettings_krlnv")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1373234966]
+z_index = -20
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -54.0
+offset_right = 9.0
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)

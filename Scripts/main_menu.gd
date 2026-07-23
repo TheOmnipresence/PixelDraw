@@ -7,15 +7,8 @@ var devlog_link := "https://interestedsc2.itch.io/pixel-draw/devlog"
 func _ready() -> void:
 	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	
-	for i in get_children().filter(func(e): return e is TextureButton):
-		var og_index = i.z_index
-		i.button_down.connect(func(): i.z_index = og_index + 1)
-		i.button_up.connect(func(): i.z_index = og_index)
-	
 	var version: String = ProjectSettings.get_setting("application/config/version")
-	$VersionLabel.text = get_version_prefix(version) + " " + version
-	$VersionBackground.size.x = 9 * (1 + (len($VersionLabel.text) * 4))
-	$VersionButton.size.x = $VersionBackground.size.x
+	$VersionButton.text = get_version_prefix(version) + " " + version
 	
 	#var requester = HTTPRequest.new()
 	#add_child(requester)

@@ -1,5 +1,6 @@
 Checklist for release:
 	Update logic cache
+	Uncomment requester
 	Set project version
 	Set ap version
 	Run apworld through gen and host

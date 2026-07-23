@@ -1,0 +1,22 @@
+[gd_resource type="Theme" format=3 uid="uid://bka306ht7ejt0"]
+
+[ext_resource type="FontFile" uid="uid://r4mpi8ijm1x5" path="res://Sprites/font.png" id="1_lme76"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_48xlc"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ehe0"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+
+[resource]
+default_font = ExtResource("1_lme76")
+Button/styles/hover = SubResource("StyleBoxFlat_48xlc")
+Button/styles/normal = SubResource("StyleBoxFlat_1ehe0")

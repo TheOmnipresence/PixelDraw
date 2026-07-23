@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://du8hq4i6oq33p"]
+
+[ext_resource type="Script" uid="uid://cmnjbvxexgu81" path="res://Scripts/fade_in.gd" id="1_2g6td"]
+[ext_resource type="SpriteFrames" uid="uid://bw332wcpnntrs" path="res://Sprites/fade_in_omni.tres" id="2_fuj3q"]
+
+[node name="FadeIn" type="Control" unique_id=316924687]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2g6td")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1767388756]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Omnipresence" type="AnimatedSprite2D" parent="." unique_id=761977240]
+texture_filter = 1
+position = Vector2(576, 324)
+scale = Vector2(5, 5)
+sprite_frames = ExtResource("2_fuj3q")
+frame_progress = 1.0
+metadata/played = false
+
+[node name="Timer" type="Timer" parent="." unique_id=1597493332]
+process_callback = 0
+one_shot = true

@@ -12,9 +12,10 @@ config_version=5
 
 config/name="PixelDraw"
 config/version="1.3.0"
+config/tags=PackedStringArray("omnipresence_studio")
 run/main_scene="res://Scenes/main.tscn"
 config/use_custom_user_dir=true
-config/features=PackedStringArray("4.5", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/use_filter=false
 boot_splash/image="uid://dejtfu2ulnpmx"

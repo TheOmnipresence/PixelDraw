@@ -741,6 +741,7 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 	var label = Label.new()
 	label.label_settings = LabelSettings.new()
 	label.label_settings.font_size = 30
+	label.label_settings.font = preload("res://Sprites/font_bigger.png")
 	label.text = text
 	var panel = PanelContainer.new()
 	panel.modulate = popupColors[type]

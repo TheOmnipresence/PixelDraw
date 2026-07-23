@@ -1,4 +1,4 @@
-[gd_resource type="MeshLibrary" load_steps=94 format=4 uid="uid://dww36yr5hltca"]
+[gd_resource type="MeshLibrary" format=4 uid="uid://dww36yr5hltca"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ahd5u"]
 resource_local_to_scene = true

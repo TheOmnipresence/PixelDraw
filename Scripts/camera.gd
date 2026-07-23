@@ -38,9 +38,13 @@ func _ready() -> void:
 		i.get_node("OutlineContainer").visible = false
 	$HUD/SetupTab/ScannerBox/PanelContainer2.get_child(-1).text = "SCANNER"
 	
-	var console:Window = preload("res://godot_ap/ui/ap_console_window.tscn").instantiate()
+	var console: Window = preload("res://godot_ap/ui/ap_console_window.tscn").instantiate()
 	console.borderless = true
 	console.size.y = 130
+	#$HUD.texture_filter = texturef
+	console.get_child(0).texture_filter = CanvasItem.TextureFilter.TEXTURE_FILTER_NEAREST
+	console.get_child(0).theme = $HUD.theme.duplicate()
+	console.get_child(0).theme.default_font = preload("res://Sprites/font_bigger.png")
 	Archipelago.load_console(console,false)
 	$HUD/ArchipelagoTab/Console/Positioner.add_child(console)
 	

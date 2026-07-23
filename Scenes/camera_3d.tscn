@@ -1,11 +1,16 @@
-[gd_scene load_steps=33 format=3 uid="uid://b6xwkcre57k6h"]
+[gd_scene format=3 uid="uid://b6xwkcre57k6h"]
 
 [ext_resource type="Script" uid="uid://c7tdfafjs15ad" path="res://Scripts/camera.gd" id="1_qxdsw"]
+[ext_resource type="FontFile" uid="uid://r4mpi8ijm1x5" path="res://Sprites/font.png" id="2_37r0i"]
 [ext_resource type="PackedScene" uid="uid://wjyhyg46r80y" path="res://Scenes/bar_panel.tscn" id="2_fxq6n"]
 [ext_resource type="PackedScene" uid="uid://cjw0swkpkxbov" path="res://Scenes/shop_screen.tscn" id="3_fxq6n"]
 [ext_resource type="Script" uid="uid://cg3mkk8gg42s4" path="res://Scripts/console_tab.gd" id="3_jvsei"]
 [ext_resource type="Script" uid="uid://bx064qpt4ldgu" path="res://Scripts/shop_exchange.gd" id="4_u72ve"]
 [ext_resource type="Script" uid="uid://hdsm61lfwx8k" path="res://Scripts/shop_item.gd" id="5_37r0i"]
+
+[sub_resource type="Theme" id="Theme_d5qrh"]
+default_font = ExtResource("2_37r0i")
+default_font_size = 10
 
 [sub_resource type="LabelSettings" id="LabelSettings_fxq6n"]
 font_size = 21
@@ -170,11 +175,12 @@ font_color = Color(0.47058824, 0.47058824, 0.47058824, 1)
 outline_size = 1
 outline_color = Color(0, 0, 0, 1)
 
-[node name="Camera3D" type="Camera3D"]
+[node name="Camera3D" type="Camera3D" unique_id=1329642419]
 process_mode = 3
 script = ExtResource("1_qxdsw")
 
-[node name="HUD" type="Control" parent="."]
+[node name="HUD" type="Control" parent="." unique_id=1863810839]
+texture_filter = 1
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -182,9 +188,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = SubResource("Theme_d5qrh")
 metadata/_edit_lock_ = true
 
-[node name="PopupBox" type="VBoxContainer" parent="HUD"]
+[node name="PopupBox" type="VBoxContainer" parent="HUD" unique_id=1972072924]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -198,7 +205,7 @@ grow_vertical = 0
 mouse_filter = 2
 alignment = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD" unique_id=67862378]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -213,37 +220,37 @@ grow_vertical = 0
 mouse_filter = 2
 alignment = 1
 
-[node name="PanelContainer" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer" parent="HUD/HBoxContainer" unique_id=60796626 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer2" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer2" parent="HUD/HBoxContainer" unique_id=1840598270 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer3" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer3" parent="HUD/HBoxContainer" unique_id=479168919 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer4" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer4" parent="HUD/HBoxContainer" unique_id=1994284581 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer5" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer5" parent="HUD/HBoxContainer" unique_id=829908947 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer6" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer6" parent="HUD/HBoxContainer" unique_id=1083695619 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer7" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer7" parent="HUD/HBoxContainer" unique_id=2113352208 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer8" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer8" parent="HUD/HBoxContainer" unique_id=1451684832 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer9" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer9" parent="HUD/HBoxContainer" unique_id=1267889367 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer10" parent="HUD/HBoxContainer" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer10" parent="HUD/HBoxContainer" unique_id=798285350 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD" unique_id=77732300]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -253,12 +260,12 @@ theme_override_constants/margin_left = 103
 theme_override_constants/margin_right = 5
 metadata/_edit_lock_ = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MarginContainer" unique_id=1642124848]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
 
-[node name="TabBar" type="TabBar" parent="HUD/MarginContainer/HBoxContainer"]
+[node name="TabBar" type="TabBar" parent="HUD/MarginContainer/HBoxContainer" unique_id=1032769093]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -278,17 +285,17 @@ tab_9/title = "Saves"
 tab_10/title = "Blueprints"
 tab_11/title = "Info"
 
-[node name="Seperator" type="Control" parent="HUD/MarginContainer/HBoxContainer"]
+[node name="Seperator" type="Control" parent="HUD/MarginContainer/HBoxContainer" unique_id=354215064]
 custom_minimum_size = Vector2(185, 0)
 layout_mode = 2
 
-[node name="CompassLabel" type="Label" parent="HUD/MarginContainer/HBoxContainer"]
+[node name="CompassLabel" type="Label" parent="HUD/MarginContainer/HBoxContainer" unique_id=339033099]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "N"
 label_settings = SubResource("LabelSettings_fxq6n")
 
-[node name="PlaytimeMenus" type="Control" parent="HUD"]
+[node name="PlaytimeMenus" type="Control" parent="HUD" unique_id=445570851]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -298,7 +305,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Salesmen" type="Control" parent="HUD/PlaytimeMenus"]
+[node name="Salesmen" type="Control" parent="HUD/PlaytimeMenus" unique_id=1972803224]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -309,21 +316,21 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Cubic" parent="HUD/PlaytimeMenus/Salesmen" instance=ExtResource("3_fxq6n")]
+[node name="Cubic" parent="HUD/PlaytimeMenus/Salesmen" unique_id=1002959254 instance=ExtResource("3_fxq6n")]
 visible = false
 layout_mode = 1
 shop_items = Array[ExtResource("4_u72ve")]([SubResource("Resource_0dl0p"), SubResource("Resource_688am"), SubResource("Resource_kt3w8"), SubResource("Resource_5ev7h")])
 shop_name = "Cubic Salesman"
 summoner = "CUBIC_SALESMAN"
 
-[node name="McUser" parent="HUD/PlaytimeMenus/Salesmen" instance=ExtResource("3_fxq6n")]
+[node name="McUser" parent="HUD/PlaytimeMenus/Salesmen" unique_id=1335418601 instance=ExtResource("3_fxq6n")]
 visible = false
 layout_mode = 1
 shop_items = Array[ExtResource("4_u72ve")]([SubResource("Resource_4jh8l"), SubResource("Resource_2w5jc"), SubResource("Resource_mlm03"), SubResource("Resource_t3i8u")])
 shop_name = "Minecraft User"
 summoner = "MINECRAFT_USER"
 
-[node name="SetupTab" type="Control" parent="HUD"]
+[node name="SetupTab" type="Control" parent="HUD" unique_id=1279728399]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -333,7 +340,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="ShapeBar" type="HBoxContainer" parent="HUD/SetupTab"]
+[node name="ShapeBar" type="HBoxContainer" parent="HUD/SetupTab" unique_id=598361933]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -349,37 +356,37 @@ grow_vertical = 0
 mouse_filter = 2
 alignment = 1
 
-[node name="PanelContainer" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer" parent="HUD/SetupTab/ShapeBar" unique_id=1770235193 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer2" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer2" parent="HUD/SetupTab/ShapeBar" unique_id=1327978831 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer3" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer3" parent="HUD/SetupTab/ShapeBar" unique_id=488623567 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer4" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer4" parent="HUD/SetupTab/ShapeBar" unique_id=806134395 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer5" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer5" parent="HUD/SetupTab/ShapeBar" unique_id=1289258986 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer6" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer6" parent="HUD/SetupTab/ShapeBar" unique_id=17625753 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer7" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer7" parent="HUD/SetupTab/ShapeBar" unique_id=757480099 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer8" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer8" parent="HUD/SetupTab/ShapeBar" unique_id=914972806 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer9" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer9" parent="HUD/SetupTab/ShapeBar" unique_id=1915484366 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer10" parent="HUD/SetupTab/ShapeBar" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer10" parent="HUD/SetupTab/ShapeBar" unique_id=918214116 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="ToolsGrid" type="GridContainer" parent="HUD/SetupTab"]
+[node name="ToolsGrid" type="GridContainer" parent="HUD/SetupTab" unique_id=414743238]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -395,7 +402,7 @@ grow_vertical = 2
 mouse_filter = 2
 columns = 5
 
-[node name="ScannerBox" type="VBoxContainer" parent="HUD/SetupTab"]
+[node name="ScannerBox" type="VBoxContainer" parent="HUD/SetupTab" unique_id=865507844]
 layout_mode = 0
 offset_left = 4.0
 offset_top = 4.0
@@ -403,13 +410,13 @@ offset_right = 94.0
 offset_bottom = 128.0
 mouse_filter = 2
 
-[node name="PanelContainer" parent="HUD/SetupTab/ScannerBox" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer" parent="HUD/SetupTab/ScannerBox" unique_id=1506839738 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="PanelContainer2" parent="HUD/SetupTab/ScannerBox" instance=ExtResource("2_fxq6n")]
+[node name="PanelContainer2" parent="HUD/SetupTab/ScannerBox" unique_id=115040689 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HUD/SetupTab"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/SetupTab" unique_id=1500159519]
 clip_contents = false
 layout_mode = 1
 anchors_preset = 11
@@ -422,13 +429,13 @@ grow_vertical = 2
 horizontal_scroll_mode = 0
 metadata/_edit_lock_ = true
 
-[node name="ShapesBox" type="GridContainer" parent="HUD/SetupTab/ScrollContainer"]
+[node name="ShapesBox" type="GridContainer" parent="HUD/SetupTab/ScrollContainer" unique_id=1005108079]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 columns = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab" unique_id=1135863511]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -437,85 +444,85 @@ theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 136
 metadata/_edit_lock_ = true
 
-[node name="PinPanel" type="PanelContainer" parent="HUD/SetupTab/MarginContainer"]
+[node name="PinPanel" type="PanelContainer" parent="HUD/SetupTab/MarginContainer" unique_id=624825028]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel" unique_id=16230192]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer" unique_id=2135766594]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MarginContainer" unique_id=556577762]
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Label" type="Label" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer" unique_id=1551037849]
 visible = false
 layout_mode = 2
 horizontal_alignment = 1
 metadata/data = ""
 
-[node name="PalletOptions" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+[node name="PalletOptions" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer" unique_id=485320186]
 layout_mode = 2
 alignment = 1
 
-[node name="Clockwise" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+[node name="Clockwise" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions" unique_id=634172254]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 text = "<"
 
-[node name="Button" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+[node name="Button" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions" unique_id=799829312]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Show"
 
-[node name="Copy" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+[node name="Copy" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions" unique_id=1194259796]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy
 "
 
-[node name="Paste" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+[node name="Paste" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions" unique_id=1231414022]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Paste
 "
 
-[node name="Counterclockwise" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions"]
+[node name="Counterclockwise" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions" unique_id=955604455]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 text = ">"
 
-[node name="MinimapOptions" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer"]
+[node name="MinimapOptions" type="HBoxContainer" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer" unique_id=749931632]
 layout_mode = 2
 alignment = 1
 
-[node name="MinimapSmaller" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions"]
+[node name="MinimapSmaller" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions" unique_id=496575645]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 text = "-"
 
-[node name="MinimapToggle" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions"]
+[node name="MinimapToggle" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions" unique_id=1378224866]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Show Minimap"
 
-[node name="MinimapBigger" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions"]
+[node name="MinimapBigger" type="Button" parent="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/MinimapOptions" unique_id=896709310]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 text = "+"
 
-[node name="MinimapContainer" type="MarginContainer" parent="HUD/SetupTab"]
+[node name="MinimapContainer" type="MarginContainer" parent="HUD/SetupTab" unique_id=219330978]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -526,40 +533,40 @@ grow_horizontal = 0
 theme_override_constants/margin_top = 100
 metadata/_edit_lock_ = true
 
-[node name="MinimapPanel" type="PanelContainer" parent="HUD/SetupTab/MinimapContainer"]
+[node name="MinimapPanel" type="PanelContainer" parent="HUD/SetupTab/MinimapContainer" unique_id=1255996923]
 layout_mode = 2
 metadata/data = ""
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel" unique_id=1808730365]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer" unique_id=1647196873]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/MarginContainer" unique_id=668392691]
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 stretch_mode = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer" unique_id=1593641671]
 layout_mode = 2
 
-[node name="MinimapCopy" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer"]
+[node name="MinimapCopy" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer" unique_id=1047490517]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy (CTRL C)"
 
-[node name="MinimapPin" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer"]
+[node name="MinimapPin" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer" unique_id=141719415]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pin (CTRL P)"
 
-[node name="ToolsTab" type="Control" parent="HUD"]
+[node name="ToolsTab" type="Control" parent="HUD" unique_id=1558072963]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -569,7 +576,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab" unique_id=549713769]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -581,49 +588,49 @@ mouse_filter = 2
 theme_override_constants/margin_top = 50
 metadata/_edit_lock_ = true
 
-[node name="ToolFindPanel" type="PanelContainer" parent="HUD/ToolsTab/MarginContainer"]
+[node name="ToolFindPanel" type="PanelContainer" parent="HUD/ToolsTab/MarginContainer" unique_id=925746029]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel" unique_id=70763681]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer" unique_id=176427623]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/MarginContainer" unique_id=1983389085]
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Label" type="Label" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer" unique_id=946554050]
 layout_mode = 2
 horizontal_alignment = 1
 metadata/data = ""
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer" unique_id=84125124]
 layout_mode = 2
 
-[node name="Copy" type="Button" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Copy" type="Button" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/HBoxContainer" unique_id=1703145361]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy
 "
 
-[node name="Pin" type="Button" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Pin" type="Button" parent="HUD/ToolsTab/MarginContainer/ToolFindPanel/VBoxContainer/HBoxContainer" unique_id=284277516]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pin
 "
 
-[node name="ChipAmount" type="Label" parent="HUD/ToolsTab"]
+[node name="ChipAmount" type="Label" parent="HUD/ToolsTab" unique_id=958160093]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -636,14 +643,14 @@ grow_horizontal = 0
 grow_vertical = 0
 text = "Compatibility Chips: 0"
 
-[node name="ShapesTab" type="Control" parent="HUD"]
+[node name="ShapesTab" type="Control" parent="HUD" unique_id=1868504412]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab" unique_id=81112657]
 layout_mode = 1
 offset_right = 40.0
 offset_bottom = 40.0
@@ -652,49 +659,49 @@ theme_override_constants/margin_left = 103
 theme_override_constants/margin_top = 50
 metadata/_edit_lock_ = true
 
-[node name="ShapeFindPanel" type="PanelContainer" parent="HUD/ShapesTab/MarginContainer"]
+[node name="ShapeFindPanel" type="PanelContainer" parent="HUD/ShapesTab/MarginContainer" unique_id=386025106]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel" unique_id=1106280950]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer" unique_id=416558727]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/MarginContainer" unique_id=30391910]
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Label" type="Label" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer" unique_id=884003]
 layout_mode = 2
 horizontal_alignment = 1
 metadata/data = ""
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer" unique_id=25805745]
 layout_mode = 2
 
-[node name="Copy" type="Button" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Copy" type="Button" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/HBoxContainer" unique_id=1031501236]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy
 "
 
-[node name="Pin" type="Button" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Pin" type="Button" parent="HUD/ShapesTab/MarginContainer/ShapeFindPanel/VBoxContainer/HBoxContainer" unique_id=685899886]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pin
 "
 
-[node name="ActionsTab" type="Control" parent="HUD"]
+[node name="ActionsTab" type="Control" parent="HUD" unique_id=67393717]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -704,7 +711,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HUD/ActionsTab"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/ActionsTab" unique_id=120249177]
 layout_mode = 1
 anchors_preset = -1
 anchor_top = 0.076000005
@@ -715,12 +722,12 @@ offset_right = -303.0
 offset_bottom = -65.0
 mouse_filter = 2
 
-[node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer"]
+[node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer" unique_id=1296706482]
 layout_mode = 2
 mouse_filter = 2
 columns = 7
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab" unique_id=1699359447]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -732,61 +739,61 @@ mouse_filter = 2
 theme_override_constants/margin_top = 50
 metadata/_edit_lock_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer" unique_id=474138978]
 layout_mode = 2
 
-[node name="ActionFindPanel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer"]
+[node name="ActionFindPanel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer" unique_id=1025147496]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel" unique_id=1253716516]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer" unique_id=1559415233]
 layout_mode = 2
 theme_override_constants/margin_left = 3
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/MarginContainer"]
+[node name="TextureRect" type="TextureRect" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/MarginContainer" unique_id=942194185]
 texture_filter = 1
 custom_minimum_size = Vector2(297, 297)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer" unique_id=1979819537]
 layout_mode = 2
 horizontal_alignment = 1
 metadata/data = ""
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer" unique_id=986207235]
 layout_mode = 2
 
-[node name="Copy" type="Button" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Copy" type="Button" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/HBoxContainer" unique_id=355664736]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Copy
 "
 
-[node name="Pin" type="Button" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/HBoxContainer"]
+[node name="Pin" type="Button" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel/VBoxContainer/HBoxContainer" unique_id=395574344]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pin
 "
 
-[node name="Panel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer"]
+[node name="Panel" type="PanelContainer" parent="HUD/ActionsTab/MarginContainer/VBoxContainer" unique_id=1130680705]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/Panel"]
+[node name="Label" type="Label" parent="HUD/ActionsTab/MarginContainer/VBoxContainer/Panel" unique_id=1414145521]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
 autowrap_mode = 3
 
-[node name="MenuTab" type="Control" parent="HUD"]
+[node name="MenuTab" type="Control" parent="HUD" unique_id=2001019819]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -796,7 +803,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="PanelContainer" type="PanelContainer" parent="HUD/MenuTab"]
+[node name="PanelContainer" type="PanelContainer" parent="HUD/MenuTab" unique_id=191058369]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -810,37 +817,37 @@ offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuTab/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuTab/PanelContainer" unique_id=1255141858]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer" unique_id=1357603982]
 layout_mode = 2
 text = "Settings"
 horizontal_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer" unique_id=1047078746]
 layout_mode = 2
 alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1541189134]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1966914548]
 layout_mode = 2
 text = "Graphics"
 horizontal_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1861936574]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" unique_id=777111380]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Window Mode:"
 
-[node name="WindowOption" type="OptionButton" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+[node name="WindowOption" type="OptionButton" parent="HUD/MenuTab/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" unique_id=505699115]
 layout_mode = 2
 size_flags_horizontal = 3
 selected = 1
@@ -850,12 +857,12 @@ popup/item_0/id = 0
 popup/item_1/text = "Windowed"
 popup/item_1/id = 1
 
-[node name="ExitButton" type="Button" parent="HUD/MenuTab/PanelContainer/VBoxContainer"]
+[node name="ExitButton" type="Button" parent="HUD/MenuTab/PanelContainer/VBoxContainer" unique_id=719011999]
 layout_mode = 2
 mouse_filter = 1
 text = "End Journey"
 
-[node name="ArchipelagoTab" type="Control" parent="HUD"]
+[node name="ArchipelagoTab" type="Control" parent="HUD" unique_id=80630681]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -865,7 +872,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Console" type="Control" parent="HUD/ArchipelagoTab"]
+[node name="Console" type="Control" parent="HUD/ArchipelagoTab" unique_id=1774510879]
 layout_mode = 1
 anchor_top = 0.069000006
 anchor_right = 1.0
@@ -876,7 +883,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Positioner" type="Control" parent="HUD/ArchipelagoTab/Console"]
+[node name="Positioner" type="Control" parent="HUD/ArchipelagoTab/Console" unique_id=1708389836]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -887,7 +894,7 @@ grow_horizontal = 0
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="ConsoleTab" type="Control" parent="HUD"]
+[node name="ConsoleTab" type="Control" parent="HUD" unique_id=41174751]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -898,7 +905,7 @@ mouse_filter = 2
 script = ExtResource("3_jvsei")
 metadata/_edit_lock_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ConsoleTab"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/ConsoleTab" unique_id=925647879]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -910,17 +917,17 @@ grow_vertical = 0
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Label" type="Label" parent="HUD/ConsoleTab/VBoxContainer"]
+[node name="Label" type="Label" parent="HUD/ConsoleTab/VBoxContainer" unique_id=960491656]
 layout_mode = 2
 label_settings = SubResource("LabelSettings_qxdsw")
 metadata/_edit_lock_ = true
 
-[node name="LineEdit" type="LineEdit" parent="HUD/ConsoleTab/VBoxContainer"]
+[node name="LineEdit" type="LineEdit" parent="HUD/ConsoleTab/VBoxContainer" unique_id=1957767219]
 z_index = 1
 layout_mode = 2
 keep_editing_on_text_submit = true
 
-[node name="MultiplayerTab" type="Control" parent="HUD"]
+[node name="MultiplayerTab" type="Control" parent="HUD" unique_id=2048812383]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -930,7 +937,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/MultiplayerTab"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/MultiplayerTab" unique_id=1050326116]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 1
 anchors_preset = 1
@@ -943,37 +950,37 @@ theme_override_constants/margin_top = 50
 theme_override_constants/margin_right = 5
 metadata/_edit_lock_ = true
 
-[node name="PanelContainer" type="PanelContainer" parent="HUD/MultiplayerTab/MarginContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="HUD/MultiplayerTab/MarginContainer" unique_id=544890795]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer" unique_id=171159524]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Host" type="Button" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer"]
+[node name="Host" type="Button" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer" unique_id=1009246294]
 layout_mode = 2
 text = "Host Game"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer" unique_id=571428728]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Join" type="Button" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="Join" type="Button" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=914489812]
 layout_mode = 2
 text = "Join with IP:"
 
-[node name="Code" type="LineEdit" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="Code" type="LineEdit" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1969042799]
 custom_minimum_size = Vector2(192, 0)
 layout_mode = 2
 
-[node name="IPLabel" type="Label" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer"]
+[node name="IPLabel" type="Label" parent="HUD/MultiplayerTab/MarginContainer/PanelContainer/VBoxContainer" unique_id=612779538]
 layout_mode = 2
 focus_mode = 2
 mouse_filter = 0
 horizontal_alignment = 1
 
-[node name="MoneyTab" type="Control" parent="HUD"]
+[node name="MoneyTab" type="Control" parent="HUD" unique_id=983578151]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -983,7 +990,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="CurrencyContainer" type="GridContainer" parent="HUD/MoneyTab"]
+[node name="CurrencyContainer" type="GridContainer" parent="HUD/MoneyTab" unique_id=535305793]
 layout_mode = 0
 offset_top = 49.0
 offset_right = 40.0
@@ -991,7 +998,7 @@ offset_bottom = 89.0
 mouse_filter = 2
 columns = 7
 
-[node name="SavesTab" type="Control" parent="HUD"]
+[node name="SavesTab" type="Control" parent="HUD" unique_id=2008624174]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1001,7 +1008,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="MarginContainer" type="MarginContainer" parent="HUD/SavesTab"]
+[node name="MarginContainer" type="MarginContainer" parent="HUD/SavesTab" unique_id=1351035150]
 layout_mode = 1
 anchors_preset = 13
 anchor_left = 0.5
@@ -1011,12 +1018,12 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_top = 45
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SavesTab/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/SavesTab/MarginContainer" unique_id=777306890]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 alignment = 1
 
-[node name="BlueprintsTab" type="Control" parent="HUD"]
+[node name="BlueprintsTab" type="Control" parent="HUD" unique_id=289031623]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1026,7 +1033,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/BlueprintsTab"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/BlueprintsTab" unique_id=1133066192]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1038,7 +1045,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="DebugTab" type="Control" parent="HUD"]
+[node name="DebugTab" type="Control" parent="HUD" unique_id=291842254]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1048,7 +1055,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="PatternFinder" type="VBoxContainer" parent="HUD/DebugTab"]
+[node name="PatternFinder" type="VBoxContainer" parent="HUD/DebugTab" unique_id=2022183194]
 custom_minimum_size = Vector2(410, 0)
 layout_mode = 1
 anchors_preset = 9
@@ -1058,20 +1065,20 @@ offset_right = 410.0
 offset_bottom = -63.0
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="HUD/DebugTab/PatternFinder"]
+[node name="Label" type="Label" parent="HUD/DebugTab/PatternFinder" unique_id=1780323719]
 layout_mode = 2
 text = "Pattern Finder"
 horizontal_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/DebugTab/PatternFinder"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/DebugTab/PatternFinder" unique_id=895016973]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="HUD/DebugTab/PatternFinder/HBoxContainer"]
+[node name="Label" type="Label" parent="HUD/DebugTab/PatternFinder/HBoxContainer" unique_id=1092831494]
 layout_mode = 2
 text = "Filter By:"
 
-[node name="TypeOption" type="OptionButton" parent="HUD/DebugTab/PatternFinder/HBoxContainer"]
+[node name="TypeOption" type="OptionButton" parent="HUD/DebugTab/PatternFinder/HBoxContainer" unique_id=1489844659]
 layout_mode = 2
 selected = 0
 item_count = 4
@@ -1084,7 +1091,7 @@ popup/item_2/id = 2
 popup/item_3/text = "Action"
 popup/item_3/id = 3
 
-[node name="DiscoveredOption" type="OptionButton" parent="HUD/DebugTab/PatternFinder/HBoxContainer"]
+[node name="DiscoveredOption" type="OptionButton" parent="HUD/DebugTab/PatternFinder/HBoxContainer" unique_id=712215400]
 layout_mode = 2
 selected = 0
 item_count = 3
@@ -1095,34 +1102,34 @@ popup/item_1/id = 1
 popup/item_2/text = "No"
 popup/item_2/id = 2
 
-[node name="SizeLine" type="LineEdit" parent="HUD/DebugTab/PatternFinder/HBoxContainer"]
+[node name="SizeLine" type="LineEdit" parent="HUD/DebugTab/PatternFinder/HBoxContainer" unique_id=189353681]
 layout_mode = 2
 placeholder_text = "Size..."
 virtual_keyboard_type = 2
 
-[node name="SearchBar" type="LineEdit" parent="HUD/DebugTab/PatternFinder"]
+[node name="SearchBar" type="LineEdit" parent="HUD/DebugTab/PatternFinder" unique_id=1609337993]
 layout_mode = 2
 placeholder_text = "Type here..."
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HUD/DebugTab/PatternFinder"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/DebugTab/PatternFinder" unique_id=1263351365]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Items" type="VBoxContainer" parent="HUD/DebugTab/PatternFinder/ScrollContainer"]
+[node name="Items" type="VBoxContainer" parent="HUD/DebugTab/PatternFinder/ScrollContainer" unique_id=624795990]
 layout_mode = 2
 
-[node name="PatternInfo" type="PanelContainer" parent="HUD/DebugTab"]
+[node name="PatternInfo" type="PanelContainer" parent="HUD/DebugTab" unique_id=687864440]
 layout_mode = 1
 offset_left = 417.0
 offset_top = 50.0
 offset_right = 617.0
 offset_bottom = 90.0
 
-[node name="Container" type="VBoxContainer" parent="HUD/DebugTab/PatternInfo"]
+[node name="Container" type="VBoxContainer" parent="HUD/DebugTab/PatternInfo" unique_id=1723086690]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HUD/DebugTab/PatternInfo/Container"]
+[node name="Label" type="Label" parent="HUD/DebugTab/PatternInfo/Container" unique_id=1981093774]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 horizontal_alignment = 1

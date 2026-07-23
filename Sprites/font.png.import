@@ -1,0 +1,25 @@
+[remap]
+
+importer="font_data_image"
+type="FontFile"
+uid="uid://r4mpi8ijm1x5"
+path="res://.godot/imported/font.png-959d772054f3e3324959adbd864c066d.fontdata"
+
+[deps]
+
+source_file="res://Sprites/font.png"
+dest_files=["res://.godot/imported/font.png-959d772054f3e3324959adbd864c066d.fontdata"]
+
+[params]
+
+character_ranges=PackedStringArray("\' \'-\'~\'")
+kerning_pairs=PackedStringArray()
+columns=95
+rows=1
+image_margin=Rect2i(0, 0, 0, 0)
+character_margin=Rect2i(0, 0, 0, 0)
+ascent=0
+descent=0
+fallbacks=[]
+compress=true
+scaling_mode=2

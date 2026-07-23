@@ -12,7 +12,6 @@ config_version=5
 
 config/name="PixelDraw"
 config/version="1.3.0"
-config/tags=PackedStringArray("current")
 run/main_scene="res://Scenes/main.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.5", "GL Compatibility")
@@ -26,6 +25,10 @@ config/icon="uid://rfngk7m3vyoo"
 Globals="*res://Scripts/globals.gd"
 Archipelago="*res://godot_ap/autoloads/archipelago.tscn"
 MultiplayerSetup="*res://Scripts/multiplayer_setup.gd"
+
+[editor]
+
+export/convert_text_resources_to_binary=false
 
 [global_group]
 

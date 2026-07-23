@@ -1,11 +1,17 @@
 class_name ShopScreen extends Control
+## Class for the shops screens, handling item exchanges
 
+## The exchanges in this shop
 @export var shop_items: Array[ShopExchange]
+
+## The name of this shop
 @export var shop_name: String
+
+## The name of the pattern that summons this salesman
 @export var summoner: String
 
-#signal recieved_scout
 
+## Opens this shop
 func setup() -> void:
 	Globals.cameraRef.get_child(0).get_node("MarginContainer").get_child(0).get_node("TabBar").current_tab = Globals.cameraRef.tabs.MONEY
 	visible = true
@@ -26,6 +32,7 @@ func setup() -> void:
 	$PanelContainer/MarginContainer/VBoxContainer.add_child(button)
 
 
+## Gets a new node representing the [param exchange]
 func get_shop_node(exchange:ShopExchange) -> HBoxContainer:
 	var result = HBoxContainer.new()
 	result.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -52,15 +59,15 @@ func get_shop_node(exchange:ShopExchange) -> HBoxContainer:
 	return result
 
 
-static func set_archipelago_item_name(info:NetworkItem,label:Label) -> void:
+## Sets an exchange's [param label] with the item from [param info]
+static func set_archipelago_item_name(info: NetworkItem, label: Label) -> void:
 	var playerName = Archipelago.conn.get_player_name(info.dest_player_id)
 	var itemName = info.get_name()
 	var fullText = "Archipelago Item: " + playerName + "'s " + itemName
 	label.text = fullText
-	#recieved_scout.emit()
-	#Globals.gridRef.trigger_popup(fullText, Globals.gridRef.popupTypes.ARCHIPELAGO_SEND)
 
 
+## Exchanges the items in [param exchange] and updates the [param node] for this exchange
 func purchase_item(exchange:ShopExchange,node:HBoxContainer) -> void:
 	if exchange.second_item.is_currency:
 		if not Globals.currencies.has(exchange.second_item.item):

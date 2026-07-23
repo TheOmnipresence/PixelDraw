@@ -1,11 +1,31 @@
 extends Camera3D
 
+
+## A copy of [member Globals.availibleShapes] for setter purposes
 var availibleShapesCopy = []
 
-var tabIndex = tabs.SETUP
-enum tabs {SETUP,TOOLS,SHAPES,ACTIONS,MENU,ARCHIPELAGO,CONSOLE,MULTIPLAYER,MONEY,SAVES,BLUEPRINTS}
+## The current tab
+var tabIndex := tabs.SETUP
 
-var ip:String
+enum tabs {
+	SETUP,
+	TOOLS,
+	SHAPES,
+	ACTIONS,
+	MENU,
+	ARCHIPELAGO,
+	CONSOLE,
+	MULTIPLAYER,
+	MONEY,
+	SAVES,
+	BLUEPRINTS,
+	INFO
+}
+
+var ip: String
+
+## The items that can be bought in a shop
+var shop_items := []
 
 
 func _enter_tree() -> void:
@@ -37,9 +57,19 @@ func _ready() -> void:
 	updateTabs()
 	
 	call_deferred("setup_blueprints")
-	#setup_blueprints()
 	
 	Globals.update_blueprints.emit()
+	
+	for salesman: ShopScreen in %Salesmen.get_children():
+		for exchange in salesman.shop_items:
+			if not exchange.first_item.is_currency:
+				if not shop_items.has(exchange.first_item):
+					shop_items.append(exchange.first_item)
+	
+	for i in Globals.shapes:
+		var info_panel = preload("res://Scenes/pattern_info_panel.tscn").instantiate()
+		info_panel.get_node("HBoxContainer/Name").text = i
+		$HUD/DebugTab/PatternFinder/ScrollContainer/Items.add_child(info_panel)
 
 
 func _process(_delta: float) -> void:
@@ -73,6 +103,21 @@ func _process(_delta: float) -> void:
 		}
 		for i in hintPanelData:
 			var hintRes = setRandomHint(hintPanelData[i])
+			
+			if Input.is_action_pressed("plr_shift"):
+				if i != $HUD/ActionsTab/MarginContainer/VBoxContainer/ActionFindPanel:
+					
+					var iteration = 0
+					
+					while not Globals.pattern_in_logic(hintRes.shape):
+						hintRes = setRandomHint(hintPanelData[i])
+						if hintRes.shape == "200_SQR": 
+							hintRes = {"image":ImageTexture.new(),"shape":"","data":""}
+						iteration += 1
+						if iteration >= 15:
+							hintRes = {"image":ImageTexture.new(),"shape":"","data":""}
+							break
+			
 			i.get_child(0).get_node("MarginContainer").get_node("TextureRect").texture = hintRes.image
 			i.get_child(0).get_node("Label").text = hintRes.shape
 			i.get_child(0).get_node("Label").visible = Globals.isArchipelago
@@ -92,7 +137,8 @@ func _process(_delta: float) -> void:
 	$HUD/MarginContainer/HBoxContainer/CompassLabel.text = {0:"N",-1:"E",-2:"S",2:"S",1:"W"}[roundi(get_parent().rotation_degrees.y/90)]
 
 
-func setRandomHint(sourceList:Array,iteration:int=0) -> Dictionary:
+## Returns a random hint dictionary from [param sourceList]
+func setRandomHint(sourceList: Array, iteration: int = 0) -> Dictionary:
 	if iteration >= 30: return {"image":ImageTexture.new(),"shape":"","data":""}
 	if not sourceList.is_empty():
 		var shape = sourceList.pick_random()
@@ -109,6 +155,7 @@ func setRandomHint(sourceList:Array,iteration:int=0) -> Dictionary:
 	return setRandomHint(sourceList,iteration + 1)
 
 
+## Updates visibility of items on the tabs
 func updateTabs() -> void:
 	var allTabs = get_child(0).get_children().filter(func(e): return str(e.name).contains("Tab") and not str(e.name) == "TabBar")
 	#allTabs = [$HUD/SetupTab,$HUD/ToolsTab,$HUD/ShapesTab,$HUD/ActionsTab,$HUD/MenuTab,$HUD/ArchipelagoTab,$HUD/ConsoleTab,$HUD/MultiplayerTab,$HUD/MoneyTab]
@@ -362,12 +409,12 @@ func updateDescriptionWindows(type:String,value:String) -> void:
 
 
 func updateSearchWindow(value: String) -> void:
-	set_full_pattern_description(value, get_child(0).get_node("DebugTab").get_node("PatternInfo/Container/Label"), get_child(0).get_node("DebugTab").get_node("PatternInfo"))
+	set_full_pattern_description(value, get_child(0).get_node("DebugTab").get_node("PatternInfo/Container/Label"), get_child(0).get_node("DebugTab").get_node("PatternInfo/Container"))
 
 
 func set_full_pattern_description(value: String, label: Label, parent: Control) -> void:
 	label.text = Globals.getDescriptionText(value)
-	for i in parent.get_children().filter(func(e): return not e is PanelContainer):
+	for i in parent.get_children().filter(func(e): return not e == label and not e is PanelContainer):
 		i.queue_free()
 	for i in Globals.getComplexDescription(value):
 		if i is TextureRect:
@@ -462,3 +509,90 @@ func setBlueprintVisibility(disabled: bool) -> void:
 	for i in range(%TabBar.tab_count):
 		if %TabBar.get_tab_title(i) == "Blueprints":
 			%TabBar.set_tab_disabled(i, disabled)
+
+
+func update_search() -> void:
+	var new_text = $HUD/DebugTab/PatternFinder/SearchBar.text
+	var pattern_size = $HUD/DebugTab/PatternFinder/HBoxContainer/SizeLine.text.to_int()
+	var type_option = $HUD/DebugTab/PatternFinder/HBoxContainer/TypeOption.selected
+	var discovered_option = $HUD/DebugTab/PatternFinder/HBoxContainer/DiscoveredOption.selected
+	
+	for i in $HUD/DebugTab/PatternFinder/ScrollContainer/Items.get_children():
+		i.visible = true
+		var current_text = i.get_node("HBoxContainer/Name").text
+		
+		if not (current_text.containsn(new_text.replace(" ","_")) or new_text == ""):
+			i.visible = false
+		
+		match type_option:
+			0:
+				pass
+			1:
+				if not Globals.tools.has(current_text):
+					i.visible = false
+			2:
+				if not Globals.toolShapes.has(current_text):
+					i.visible = false
+			3:
+				if not Globals.getActions().has(current_text):
+					i.visible = false
+		
+		match discovered_option:
+			0:
+				pass
+			1:
+				var tools_has = false
+				if Globals.tools.has(current_text):
+					tools_has = Globals.availibleTools.has(Globals.tools[current_text])
+				if not (tools_has or Globals.availibleShapes.has(current_text) or Globals.actionsScanned.has(current_text)):
+					i.visible = false
+			2:
+				var tools_has = false
+				if Globals.tools.has(current_text):
+					tools_has = Globals.availibleTools.has(Globals.tools[current_text])
+				if (tools_has or Globals.availibleShapes.has(current_text) or Globals.actionsScanned.has(current_text)):
+					i.visible = false
+		
+		if pattern_size > 0:
+			var size_text: String = $HUD/DebugTab/PatternFinder/HBoxContainer/SizeLine.text
+			var current_size = Globals.Shape.max_size(Globals.shapes[current_text][0])
+			current_size += 1
+			
+			if not size_text.get_slice(" ", 0).is_valid_int():
+				match size_text.get_slice(" ", 0):
+					"=":
+						if current_size != pattern_size:
+							i.visible = false
+					">":
+						if not current_size > pattern_size:
+							i.visible = false
+					"<":
+						if not current_size < pattern_size:
+							i.visible = false
+					">=":
+						if not current_size >= pattern_size:
+							i.visible = false
+					"<=":
+						if not current_size <= pattern_size:
+							i.visible = false
+					"!=":
+						if current_size == pattern_size:
+							i.visible = false
+			elif current_size != pattern_size:
+				i.visible = false
+
+
+func _on_search_bar_text_changed(_new_text: String) -> void:
+	update_search()
+
+
+func _on_size_line_text_changed(_new_text: String) -> void:
+	update_search()
+
+
+func _on_type_option_item_selected(_index: int) -> void:
+	update_search()
+
+
+func _on_discovered_option_item_selected(_index: int) -> void:
+	update_search()

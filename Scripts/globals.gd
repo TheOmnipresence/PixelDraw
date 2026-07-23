@@ -1,22 +1,22 @@
 extends Node
 
 ## If multiplayer is active
-var isMultiplayer = false
+var isMultiplayer := false
 
 ## If archipelago is active
-var isArchipelago = false
+var isArchipelago := false
 
 ## The archipelago locations found
-var archipelagoLocationsFound = []
+var archipelagoLocationsFound: Array[String] = []
 
 ## The needed patterns found for archipelago
-var extraPatternsFound = []
+var extraPatternsFound := []
 
 ## All the needed patterns for archipelago
-var allExtraPatterns = []
+var allExtraPatterns := []
 
 ## Set to true the first successful scan after connection to archipelago
-var startedArchipelago = false:
+var startedArchipelago := false:
 	set(value):
 		if not (value and startedArchipelago):
 			startedArchipelago = value
@@ -61,6 +61,10 @@ var scanned_all_extra_patterns := false
 
 var scanned_all_actions := false
 
+var logic_cache: Dictionary[String, Callable]
+
+var shapes_logic_cache: Dictionary[String, Array]
+
 var bounds_velocity := 100
 
 @warning_ignore("unused_signal")
@@ -80,7 +84,7 @@ var cameraRef:Camera3D
 var gridRef:GridMap
 
 ## If you can use commands in the command line
-var cheatsOn = false
+var cheatsOn := false
 
 ## All the popups recieved
 var allPopups:Array[String] = []
@@ -141,7 +145,7 @@ var blueprints_active: bool:
 		blueprints_active = value
 
 ## A list of all actions scanned, used predominantly for Archipelago stuff
-var actionsScanned = []:
+var actionsScanned := []:
 	set(value):
 		for child in Globals.cameraRef.get_child(0).get_node("ActionsTab").get_child(0).get_child(0).get_children():
 			child.queue_free()
@@ -262,10 +266,10 @@ enum tools {
 	PLATFORM,
 	PLAGUE,
 	MAZER,
-} # TODO: HOLE
+} # TODO: HOLE, thing that makes land like platform but biased and cant work on empty cells
 
 ## The compatible shapes for each tool
-var toolsCompatibility = {
+var toolsCompatibility: Dictionary[String,Array] = {
 	"NONE":[],
 	"VOIDER":[],
 	"ERASER":[],
@@ -316,7 +320,7 @@ const additionalCompatibilities = {
 }
 
 ## All tool compatibilities currently unlocked
-var unlockedCompatibilities = {}
+var unlockedCompatibilities := {}
 
 ## The amount of compatibility chips
 var compatibilityChips := 0:
@@ -419,7 +423,7 @@ var currentColor := "NORMAL_COLOR"
 
 var foundColors := []
 
-const CHIPS_IN_PACKS = [
+const CHIPS_IN_PACKS: Array[int] = [
 	1,
 	2,
 	3,
@@ -428,7 +432,7 @@ const CHIPS_IN_PACKS = [
 ]
 
 ## The amount of compatibility chips you get for every pack
-var chipPackAmounts = CHIPS_IN_PACKS.duplicate()
+var chipPackAmounts: Array[int] = CHIPS_IN_PACKS.duplicate()
 
 ## The exchange rates for the currencies, in however many you would get from 1 cubic
 var currencyExchangeRates:Dictionary[String,float] = { # From cubics
@@ -466,7 +470,7 @@ const UPGRADES:Array[String] = [
 ]
 
 ## All patterns
-var shapes = {
+var shapes: Dictionary[String,Array] = {
 	"NONE":[
 		[]
 	],
@@ -884,8 +888,9 @@ var shapes = {
 }
 
 ## Descriptions for all tools, shapes, and actions
-var descriptions = {
+var descriptions: Dictionary[String,Dictionary] = {
 	"NONE":{"name":"Nothing","text":"Really. Nothing."},
+	
 	# Tools
 	"VOIDER":{"name":"Voider","text":"Calls the void to the tiles","type":"tool"},
 	"ERASER":{"name":"Eraser","text":"Erases the void from the tiles","type":"tool"},
@@ -1033,33 +1038,17 @@ var descriptions = {
 
 
 func _ready() -> void:
-	Archipelago.connect("connected",connectScript)
-	Archipelago.connect("disconnected",(func():isArchipelago = false))
+	Archipelago.connect("connected", connectScript)
+	Archipelago.connect("disconnected", (func():isArchipelago = false))
 	
 	checkForDescriptions()
 	
-	#await get_tree().create_timer(1).timeout
-	#print(getPatternLogic(shapes["CHIP_PACK_5"][0],"CHIP_PACK_5"))
-	#var actions = getActions()
-	#for pattern in shapes.keys().filter(func(e): return not actions.has(e)):
-		#if not pattern == "200_SQR":
-			#var logic: String = getPatternLogic(shapes[pattern][0], pattern)
-			#if logic != "": print(logic)
-	#var previousShapes = []
-	#var sizeRange = range(1,18)
-	#sizeRange.reverse()
-	#for i in sizeRange:
-		#var currentShapes = getScanningShapes(loadShape({"type":types.RECT,"x":i,"y":i}))
-		#currentShapes = currentShapes.filter(func(e): return not previousShapes.has(e))
-		#previousShapes.append_array(currentShapes)
-		#print(str(i) + ", " + str(currentShapes))
-	#getScanningShapes([])# for boxes
-	
-	#print(BluePrint.arrange_blueprints([
-		#BluePrint.new(1,func(): return len(actionsScanned),"Actions","C_GOL"),
-		#BluePrint.new(2,func(): return len(availibleTools),"Tools","5_SQR",["C_GOL"])
-	#]).map(func(e): return e.map(func(i): return i.target_pattern)))
+	var cache_result = load_data("logic_cache", true)
+	if cache_result != {}:
+		shapes_logic_cache.assign(cache_result["cache"])
 
+
+## The method that runs on [signal AP.connected]
 func connectScript(_connInfo: ConnectionInfo, _json: Dictionary) -> void:
 	isArchipelago = true
 	Archipelago.conn.deathlink.connect(recieveDeathlink)
@@ -1072,6 +1061,91 @@ func connectScript(_connInfo: ConnectionInfo, _json: Dictionary) -> void:
 		if not archipelagoLocationsFound.has(item_name):
 			archipelagoLocationsFound.append(item_name))
 	blueprints_active = false
+
+
+## Returns true if the pattern is in logic
+func pattern_in_logic(pattern: String) -> bool:
+	if ["", "200_SQR"].has(pattern): return false
+	if shapes[pattern][0] == []: return false
+	
+	var scanning_shapes: Array
+	if shapes_logic_cache.has(pattern):
+		scanning_shapes = shapes_logic_cache[pattern]
+	else:
+		scanning_shapes = getScanningShapes(shapes[pattern][0], true, false)
+		shapes_logic_cache[pattern] = scanning_shapes
+		#save_data("logic_cache", {"version": ProjectSettings.get_setting("application/config/version"), "cache": shapes_logic_cache})
+	
+	var logic: Callable
+	if logic_cache.has(pattern):
+		logic = logic_cache[pattern]
+	else:
+		logic = func(): return has_any_shape(scanning_shapes) and (manipulators() or scanning_shapes.has("BASE_RECT"))
+		logic_cache[pattern] = logic
+	
+	return logic.call()
+
+
+## Returns true if the player has any shape in [param shape_list]
+func has_any_shape(shape_list: Array) -> bool:
+	if shape_list.has("BASE_RECT"): return true
+	for i in shape_list: 
+		if availibleShapes.has(i):
+			return true
+	return false
+
+
+## Returns true if the player can manipulate cells
+func manipulators(disregard_chips := false) -> bool:
+	var tools_logic = {}
+	for tool in ["SHUFFLER", "PLATFORM", "MC_PICK", "PLACER", "STAMPER", "C_GOL", "DUSTER", "PLAGUE"]:
+		tools_logic[tool] = can_use_tool(tool, disregard_chips)
+
+	return (
+		tools_logic["SHUFFLER"].call() or tools_logic["PLATFORM"].call() or
+		(tools_logic["MC_PICK"].call() and tools_logic["PLACER"].call()) or
+		(tools_logic["STAMPER"].call() and (
+			(tools_logic["C_GOL"].call() and tools_logic["DUSTER"].call()) or
+			tools_logic["MC_PICK"].call() or
+			tools_logic["PLAGUE"].call()
+		))
+	)
+
+
+## Returns a lambda of the logic required to use this [param tool]
+func can_use_tool(tool: String, disregard_chips := false) -> Callable:
+	var result: Array[String] = []
+	for toolshape in toolsCompatibility[tool]:
+		match toolshape:
+			"NONE":
+				pass
+			"BASE_RECT":
+				return func(): return availibleTools.has(tools[tool])
+			_:
+				if toolshape != "200_SQR" and toolshape != "50_SQR": result.append(toolshape)
+	
+	if result.is_empty():
+		return func(): return false
+	elif not disregard_chips:
+		return func (): return (has_any_shape(result) or get_additional_compatibilities_logic(tool)) and availibleTools.has(tools[tool])
+	else:
+		return func(): return has_any_shape(result) and availibleTools.has(tools[tool])
+
+
+## Gets compatibility logic for the [param tool]
+func get_additional_compatibilities_logic(tool: String) -> bool:
+	for shapeIndex in range(len(additionalCompatibilities[tool])):
+		match additionalCompatibilities[tool][shapeIndex]:
+			"NONE":
+				pass
+			"BASE_RECT":
+				if compatibilityChips >= shapeIndex:
+					return true
+			_:
+				if Globals.availibleShapes.has(additionalCompatibilities[tool][shapeIndex]):
+					if compatibilityChips >= shapeIndex:
+						return true
+	return false
 
 
 ## A method to get the description for the pattern [param key]
@@ -1339,6 +1413,7 @@ func saveSlot(slot:int=currentSlot) -> void:
 		"chipPackAmounts":chipPackAmounts,
 		"blueprints_achieved":blueprints_achieved,
 		"blueprint_shapes_achieved":blueprint_shapes_achieved,
+		"version":ProjectSettings.get_setting("application/config/version"),
 	}
 	#data = toDictionary((func(e): return get(e)),VARS_TO_SAVE)
 	file.store_line(JSON.stringify(data))
@@ -1357,9 +1432,44 @@ func loadSlot(slot:int) -> void:
 			#print(data[i])
 			set(i,data[i])
 			#print(get(i))
+		elif i == "version":
+			if ProjectSettings.get_setting("application/config/version") != i:
+				shapes_logic_cache = {}
 	unlockedCompatibilities = {}
 	currentSlot = slot
 	cameraRef.updateSaves()
+
+
+func save_data(file_name: String, data: Dictionary) -> void:
+	var compressed = JSON.stringify(data)
+	
+	if not DirAccess.dir_exists_absolute("user://Data/"): DirAccess.make_dir_absolute("user://Data/")
+	if not FileAccess.file_exists("user://Data/" + file_name + ".dat"): FileAccess.open("user://Data/" + file_name + ".dat",FileAccess.WRITE)
+	
+	var file = FileAccess.open("user://Data/" + file_name + ".dat",FileAccess.WRITE)
+	
+	file.store_line(compressed)
+
+
+func load_data(file_name: String, from_res := false) -> Dictionary:
+	if not DirAccess.dir_exists_absolute("user://Data/"): DirAccess.make_dir_absolute("user://Data/")
+	if not FileAccess.file_exists("user://Data/" + file_name + ".dat") or from_res: 
+		var write_file = FileAccess.open("user://Data/" + file_name + ".dat",FileAccess.WRITE)
+		write_file.store_line("{}")
+		if FileAccess.file_exists("res://Data/" + file_name + ".dat"):
+			var read_file = FileAccess.open("res://Data/" + file_name + ".dat",FileAccess.READ)
+			var read_data = JSON.parse_string(read_file.get_as_text())
+			if not read_data is Dictionary:
+				read_data = {}
+			save_data(file_name, read_data)
+			return read_data
+		return {}
+	
+	var file = FileAccess.open("user://Data/" + file_name + ".dat",FileAccess.READ)
+	var data = JSON.parse_string(file.get_as_text())
+	if not data is Dictionary:
+		data = {}
+	return data
 
 
 ## Converts the [param list] to a [Dictionary] using the [param function] on each key
@@ -1405,10 +1515,15 @@ static func canPatternFit(shape:Array,pattern:Array) -> bool:
 
 
 ## Gets all the [member allToolShapes] that [param pattern] can fit into.
-func getScanningShapes(pattern:Array,return_early:=false) -> Array:
+func getScanningShapes(pattern:Array, return_early := false, exclude_big := false) -> Array:
 	var result = []
-	for i in allToolShapes:
-		if canPatternFit(gridRef.getShape(Vector3i.ZERO,allToolShapes[i]), pattern):
+	var modified_shapes = allToolShapes.duplicate_deep()
+	if exclude_big:
+		modified_shapes.erase("200_SQR")
+		modified_shapes.erase("50_SQR")
+	
+	for i in modified_shapes:
+		if canPatternFit(gridRef.getShape(Vector3i.ZERO,modified_shapes[i]), pattern):
 			if i == "BASE_RECT" and return_early: return ["BASE_RECT"]
 			result.append(i)
 	return result#allToolShapes.keys().filter(func(e): return canPatternFit(gridRef.getShape(Vector3i.ZERO,allToolShapes[e]), pattern))
@@ -1426,7 +1541,8 @@ func allScanningShapes(noActions := false, asText := false) -> Dictionary:
 	return result
 
 
-func getPatternLogic(pattern:Array,pattern_name := "PATTERN") -> String:
+## Gets a string of logic for this [param pattern]
+func getPatternLogic(pattern: Array, pattern_name := "PATTERN") -> String:
 	if pattern.is_empty(): return ""#pattern_name + ", Never in logic"
 	var pattern_size = [pattern.map(func(e): return e.x).max(),pattern.map(func(e): return e.y).max()].max() + 1
 	var compatible_shapes = getScanningShapes(pattern,true)
@@ -1451,6 +1567,7 @@ func freeCompatibilityChips() -> void:
 	unlockedCompatibilities = {}
 
 
+## Gets the color for this [param tool]
 func getToolColor(tool:String) -> Color:
 	var result = Color(0.08,0.08,0.08)
 	if tool != "":
@@ -1464,13 +1581,13 @@ func getToolColor(tool:String) -> Color:
 
 class Shape extends Resource: ## Class for pattern format changes and manipulation
 	## Data in universal format (the base that the game uses most), an array of 2d coordinates that are filled
-	var universal_format:Array[Vector2i]:
+	var universal_format: Array[Vector2i]:
 		set(value):
 			pattern_name_format = ""
 			universal_format = value
 	
 	## Data as a binary string, going from top to bottom then left to right
-	var binary_format:String:
+	var binary_format: String:
 		set(value):
 			universal_format = []
 			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
@@ -1478,7 +1595,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			return shapeToBinary(universal_format)
 	
 	## Data as a hexadecimal string (starting with 0x) and is a compressed version of [member binary_format]
-	var hexadecimal_format:String:
+	var hexadecimal_format: String:
 		set(value):
 			universal_format = []
 			universal_format.assign(fromBooleanList(binaryOrHexToBooleanList(value)))
@@ -1486,7 +1603,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			return binaryToHex(shapeToBinary(universal_format))
 	
 	## Data as an image
-	var image_format:ImageTexture:
+	var image_format: ImageTexture:
 		set(value):
 			universal_format = []
 			universal_format.assign(decodeImage(value))
@@ -1494,7 +1611,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			return getImageFromList(universal_format)
 	
 	## Data as the pattern name in [member Globals.shapes]
-	var pattern_name_format:String:
+	var pattern_name_format: String:
 		set(value):
 			if value != "":
 				universal_format = []
@@ -1512,7 +1629,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			return pattern_name_format
 	
 	## Data as an icon image
-	var icon_format:ImageTexture:
+	var icon_format: ImageTexture:
 		set(value):
 			universal_format = []
 			universal_format.assign(decodeImage(value,false,Color.WHITE,value.get_image().get_pixel(0,0),Color.DARK_GRAY,1))
@@ -1527,7 +1644,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			return getImageFromList(universal_format,false,Color.WHITE,backgroundColor,Color.DARK_GRAY,1)
 	
 	
-	func _init(value:Array[Vector2i]) -> void:
+	func _init(value: Array[Vector2i] = []) -> void:
 		universal_format = value
 	
 	
@@ -1617,8 +1734,6 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 		if Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
 			for i in string.split(""):
 				result.append(i == "1")
-		#else:
-			#string.to_utf8_buffer()
 		
 		return result
 	
@@ -1713,6 +1828,8 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 		
 		return possibleShapes
 	
+	
+	## All positioning of the [param shape] in a rectangle with dimensions [param maxes]
 	static func allTranslations(shape: Array, maxes: Vector2i) -> Array[Array]:
 		if maxes == Vector2i.ZERO: return [shape]
 		if shape.is_empty(): return [[]]
@@ -1720,7 +1837,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 		var result: Array[Array] = []
 		var typedShape: Array[Vector2i] = []
 		typedShape.assign(shape)
-		#shape = makeStandard(typedShape)
+		
 		var shapeSize = Vector2i(shape.map(func(e): return e.x).max(),shape.map(func(e): return e.x).min()) + Vector2i.ONE
 		
 		for x in range(maxes.x - shapeSize.x):
@@ -1728,20 +1845,36 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 				result.append(shape.map(func(e): return e + Vector2i(x,y)))
 		
 		return result
+	
+	
+	## The side length of a square that could hold the [param pattern] perfectly
+	static func max_size(pattern: Array) -> int:
+		if pattern.is_empty(): return 0
+		pattern = makeStandard(pattern)
+		return [pattern.map(func(e): return e.x).max(), pattern.map(func(e): return e.y).max()].max()
 
 class BluePrint extends Resource:
+	## Class to handle blueprints
+	
+	## List of previous blueprint's [member target_pattern] that are required to access this blueprint
 	var requirements: Array
 	
+	## If all requirements are needed for access to this blueprint
 	var need_all_requirements: bool
 	
+	## The amount of [member units] needed for achievement of this blueprint
 	var needed_amount: int
 	
+	## A function that returns the current amount of [member units]
 	var current_amount: Callable # -> int
 	
+	## The units of the things needed for achievement of this
 	var units: String
 	
+	## The blueprint pattern that this unlocks
 	var target_pattern: String
 	
+	## The column that this shows up in in the ui
 	var column: int:
 		set(_value):
 			pass
@@ -1789,6 +1922,7 @@ class BluePrint extends Resource:
 		return result
 	
 	
+	## Returns true if this blueprint has met its requirements
 	func has_met_requirements() -> bool:
 		if requirements.is_empty(): return true
 		var currently_achieved = Globals.blueprints_achieved.map(func(e): return e.target_pattern)

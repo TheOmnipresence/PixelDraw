@@ -1291,7 +1291,7 @@ func getArchipelagoLocName(id: int) -> String:
 
 
 ## Gives you a popup when you recieve an item from Archipelago
-func archipelagoPopup(info:NetworkItem) -> void:
+func archipelagoPopup(info: NetworkItem) -> void:
 	var playerName = Archipelago.conn.get_player_name(info.dest_player_id)
 	var itemName = info.get_name()
 	trigger_popup("Archipelago Item: " + playerName + "'s " + itemName, popupTypes.ARCHIPELAGO_SEND)

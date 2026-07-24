@@ -52,24 +52,6 @@ var terrainThread = Thread.new()
 var flashBanging = false
 
 func _ready() -> void:
-	var duplicatedShapes = Globals.shapes.duplicate(true)
-	
-	for i in duplicatedShapes:
-		for possibleShape in duplicatedShapes[i]:
-			#Rotations
-			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.y,e.x))))
-			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
-			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(e.y,-e.x))))
-	
-	duplicatedShapes = Globals.shapes.duplicate(true)
-	
-	for i in duplicatedShapes:
-		for possibleShape in duplicatedShapes[i]:
-			#Reflections
-			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,e.y))))
-			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(e.x,-e.y))))
-			Globals.shapes[i].append(makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
-	
 	Globals.gridRef = self
 
 
@@ -312,7 +294,7 @@ func removeExtras(input:Dictionary) -> Dictionary:
 
 
 ## Runs [method scanShape] on each identifiable group in [param groups]. Also handles completion shape and extra patterns for archipelago.
-func checkForShapes(groups:Dictionary, scan := true) -> Array:
+func checkForShapes(groups: Dictionary, scan := true) -> Array:
 	var result = []
 	var hasShape = []
 	for group in groups.values().duplicate_deep():
@@ -332,10 +314,9 @@ func checkForShapes(groups:Dictionary, scan := true) -> Array:
 					Globals.extraPatternsFound.append(Globals.allExtraPatterns.find(pattern))
 					tryFinish()
 	
-	if not groups.values().is_empty():
-		for i in groups.values():
-			result.append(i)
-			printerr(i)
+	for i in groups.values():
+		result.append(i)
+		printerr(i)
 	return result
 
 
@@ -366,7 +347,7 @@ func lightShape(cells,value:int,wait:=true) -> void:
 
 #INFO very important
 ## Gives you a tool or shape or runs an action 
-func runShape(shape:String, center:Vector2i=Vector2i.ZERO, group := [], calledFromArchipelago:=false, archipelagoInfo:NetworkItem=NetworkItem.new()):
+func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArchipelago := false, archipelagoInfo := NetworkItem.new()):
 	print(shape)
 	
 	if Globals.BLUEPRINT_SHAPES.has(shape):

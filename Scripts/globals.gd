@@ -1044,8 +1044,26 @@ func _ready() -> void:
 	checkForDescriptions()
 	
 	var cache_result = load_data("logic_cache", true)
-	if cache_result != {}:
+	if not cache_result.is_empty():
 		shapes_logic_cache.assign(cache_result["cache"])
+	
+	var duplicatedShapes = shapes.duplicate(true)
+	
+	for i in duplicatedShapes:
+		for possibleShape in duplicatedShapes[i]:
+			#Rotations
+			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(-e.y,e.x))))
+			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
+			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(e.y,-e.x))))
+	
+	duplicatedShapes = Globals.shapes.duplicate(true)
+	
+	for i in duplicatedShapes:
+		for possibleShape in duplicatedShapes[i]:
+			#Reflections
+			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,e.y))))
+			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(e.x,-e.y))))
+			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
 
 
 ## The method that runs on [signal AP.connected]
@@ -1853,6 +1871,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 		pattern = makeStandard(pattern)
 		return [pattern.map(func(e): return e.x).max(), pattern.map(func(e): return e.y).max()].max()
 
+
 class BluePrint extends Resource:
 	## Class to handle blueprints
 	
@@ -1934,3 +1953,143 @@ class BluePrint extends Resource:
 				if currently_achieved.has(i):
 					return true
 		return false
+
+
+class DuplicateMap extends Resource:
+	
+	
+	var generation_script: Script
+	
+	var lastScanned: Array
+	
+	var base_shape: String = "BASE_RECT"
+	
+	var cells: Array[Array]
+	#var blueprint_shapes_achieved: Array
+	#
+	#var availibleTools: Array
+	#
+	#var toolShapes: Dictionary[Globals.tools, String]
+	#
+	#var availibleShapes: Array
+	
+	signal popup_triggered(message: String, color: Color)
+	
+	
+	func _init() -> void:
+		generation_script = preload("res://Scripts/random_generation.gd")
+	
+	
+	func scan_at_pos(pos: Vector2i) -> void:
+		var result = {}
+		for i in generation_script.getShape(Vector3i(pos.x,0,pos.y),base_shape):
+			result[i] = get_cell(i)
+		checkForShapes(removeExtras(result))
+	
+	
+	func get_cell(pos: Vector2i) -> int:
+		return cells[pos.x][pos.y]
+	
+	
+	func removeExtras(input: Dictionary) -> Dictionary:
+		lastScanned = []
+		var map := AStar2D.new()
+		for coords in input:
+			if input[coords] == 1:
+				map.add_point(input.keys().find(coords),coords)
+		for coords in input:
+			if input[coords] == 1:
+				lastScanned.append(coords)
+				for i in generation_script.getShape(Vector3(coords.x,0,coords.y),{"type":Globals.types.RECT,"x":3,"y":3}):
+					if i == coords: continue
+					if not input.has(i): continue
+					if input[i] == 0: continue
+					if map.has_point(input.keys().find(coords)) and map.has_point(input.keys().find(i)):
+						map.connect_points(input.keys().find(coords),input.keys().find(i))
+		
+		lastScanned = Shape.makeStandard(lastScanned)
+		
+		var groups = {}
+		for i in input:
+			if input[i] == 0: continue
+			var connections = generation_script.getAllConnections(map,[],input,i)
+			var add = true
+			for group in groups.values():
+				if generation_script.sorted(group) == generation_script.sorted(connections):
+					add = false
+			if add and not connections.is_empty(): 
+				groups[Vector2i(connections.map(func(e): return e.x).min(),connections.map(func(e): return e.y).min()) + Vector2i(1,1)] = (Shape.makeStandard(generation_script.sorted(connections)))
+		
+		return groups
+	
+	
+	func checkForShapes(groups: Dictionary, scan := true) -> Array:
+		var result = []
+		var hasShape = []
+		for group in groups.values().duplicate_deep():
+			if group.is_empty(): continue
+			for shape in Globals.shapes:
+				if Globals.shapes[shape].has(group) and groups.values().has(group):
+					if scan: 
+						scanShape(groups.find_key(group),shape,group)
+					hasShape.append(group)
+					result.append(shape)
+			if hasShape.has(group): 
+				groups.erase(groups.find_key(group))
+		
+		for i in groups.values():
+			result.append(i)
+			printerr(i)
+		return result
+	
+	
+	func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
+		group = group.map(func(e): return generation_script.vector2to3(e + pos,0))
+		runShape(shape,pos,group)
+	
+	
+	func runShape(shape: String, _center := Vector2i.ZERO, _group := [], _calledFromArchipelago := false) -> void:
+		
+		#if Globals.BLUEPRINT_SHAPES.has(shape):
+			#if not blueprint_shapes_achieved.has(shape):
+				#trigger_popup("No Blueprint for: " + shape, generation_script.popupTypes.BLUEPRINT)
+				#return
+		#
+		#if Globals.tools.keys().has(shape):
+			#if not availibleTools.has(Globals.tools.keys().find(shape) as Globals.tools):
+				#availibleTools.append(Globals.tools.keys().find(shape) as Globals.tools)
+				#toolShapes[(Globals.tools.keys().find(shape) as Globals.tools)] = "NONE"
+				#
+				#trigger_popup("New Tool: " + shape, generation_script.popupTypes.TOOL)
+		#elif Globals.allToolShapes.has(shape):
+			#if not availibleShapes.has(shape):
+				#availibleShapes.append(shape)
+				#trigger_popup("New Shape: " + shape, generation_script.popupTypes.SHAPE)
+		#
+		#var is_action := true
+		#
+		#match shape:
+			#var x when x.left(10) == "CHIP_PACK_":
+				#pass
+			#"COMPATIBILITY_CHIP":
+				#pass
+			#"CREEPER":
+				#pass
+			#
+			#
+			#_:
+				#is_action = false
+		#
+		#if is_action:
+			#pass
+		
+		if Globals.tools.keys().has(shape):
+			trigger_popup("New Tool: " + shape, generation_script.popupTypes.TOOL)
+		elif Globals.allToolShapes.has(shape):
+			trigger_popup("New Shape: " + shape, generation_script.popupTypes.SHAPE)
+		elif Globals.getActions().has(shape):
+			trigger_popup("Action Triggered: " + shape, generation_script.popupTypes.ACTION)
+	
+	
+	func trigger_popup(message: String, type):
+		popup_triggered.emit(message, generation_script.popupColors[type])

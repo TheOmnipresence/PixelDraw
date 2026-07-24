@@ -14,6 +14,36 @@ func _ready() -> void:
 	#add_child(requester)
 	#requester.request_completed.connect(set_devlog_link)
 	#requester.request("https://interestedsc2.itch.io/pixel-draw/devlog.rss")
+	
+	#clear_from_pos(Vector2i(0, 0))
+
+
+func clear_from_pos(pos: Vector2i) -> void:
+	var list: Array[Vector2i] = [pos]
+	var passed: Array[Vector2i] = []
+	
+	#for x in range(128):
+		#for y in range(72):
+			#var color_rect = ColorRect.new()
+			#color_rect.color = Color.BLACK
+			#color_rect.name = str(Vector2i(x, y))
+			#color_rect.position = Vector2i(x, y) * 9
+			#$Control.add_child(color_rect)
+	
+	while not list.is_empty():
+		await get_tree().process_frame
+		var new_list = []
+		for i in list:
+			#$Control.get_node(str(i)).queue_free()
+			passed.append(i)
+			for offset in [Vector2i.UP, Vector2i.DOWN, Vector2i.RIGHT, Vector2i.LEFT]:
+				var new_pos = i + offset
+				if not passed.has(new_pos) and new_pos.x >= 0 and new_pos.y >= 0:
+					new_list.append(new_pos)
+		list = []
+		list.assign(new_list)
+	
+	$TextureRect.visible = false
 
 
 func set_devlog_link(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:

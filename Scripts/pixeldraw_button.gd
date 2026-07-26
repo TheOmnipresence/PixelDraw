@@ -8,6 +8,11 @@ class_name PixeldrawButton extends TextureButton
 		$Label.text = text
 		update_size()
 
+@export var pixel_size: int = 9:
+	set(value):
+		pixel_size = value
+		update_size()
+
 
 func _ready() -> void:
 	var og_index = z_index
@@ -19,5 +24,6 @@ func _ready() -> void:
 
 
 func update_size() -> void:
-	size.x = 9 * (1 + (len(text) * 4))
-	$Background.size.x = size.x
+	size.x = pixel_size * (1 + (len(text) * 4))
+	size.y = pixel_size * 6
+	$Background.size = size

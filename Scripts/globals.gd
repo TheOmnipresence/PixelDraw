@@ -897,6 +897,9 @@ var shapes: Dictionary[String,Array] = {
 	"BIG_L":[
 		[Vector2i(0,0), Vector2i(0,1), Vector2i(0,2), Vector2i(0,3), Vector2i(1,3), Vector2i(2,3), Vector2i(3,3)]
 	],
+	"ZOG":[
+		[Vector2i(0,0),Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(3,1),Vector2i(3,2)]
+	],
 }
 
 ## Descriptions for all tools, shapes, and actions
@@ -1046,6 +1049,7 @@ var descriptions: Dictionary[String,Dictionary] = {
 	"WHALE":{"name":"Whale","text":"Rather loud","type":"action"},
 	"BIG_W":{"name":"Big W","text":"A big W. Launches you higher into the air.","type":"action"},
 	"BIG_L":{"name":"Big L","text":"Not a W. Sends you more down.","type":"action"},
+	"ZOG":{"name":"Zog","text":"Charging. Multiplies your speed.","type":"action"},
 	
 	#"":{"name":"","text":"","type":"action"},
 }

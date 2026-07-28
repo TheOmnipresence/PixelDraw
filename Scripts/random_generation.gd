@@ -490,6 +490,8 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				Globals.playerRef.velocity *= 10
 			"ZAG":
 				Globals.playerRef.velocity *= 20
+			"ZOG":
+				Globals.playerRef.velocity *= 40
 			"COMPASS":
 				var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),"BASE_RECT")
 				

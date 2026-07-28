@@ -74,6 +74,9 @@ signal player_ready
 @warning_ignore("unused_signal")
 signal update_blueprints
 
+@warning_ignore("unused_signal")
+signal letter_scanned
+
 ## A refrence to the player
 var playerRef:CharacterBody3D
 
@@ -1041,6 +1044,8 @@ func _ready() -> void:
 	Archipelago.connect("connected", connectScript)
 	Archipelago.connect("disconnected", (func():isArchipelago = false))
 	
+	load_all_symbols()
+	
 	checkForDescriptions()
 	
 	var cache_result = load_data("logic_cache", true)
@@ -1166,6 +1171,12 @@ func get_additional_compatibilities_logic(tool: String) -> bool:
 	return false
 
 
+func load_all_symbols() -> void:
+	for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""):
+		shapes["SYMBOL_" + i] = [loadSymbol(i)]
+		descriptions["SYMBOL_" + i] = {"name":"Symbol " + i,"text":"The letter " + i.to_lower(),"type":"action"}
+
+
 ## A method to get the description for the pattern [param key]
 func getDescriptionText(key:String) -> String:
 	var result = ""
@@ -1257,8 +1268,21 @@ func getComplexDescription(key:String) -> Array[Control]:
 	return result
 
 
+## A pattern loader for symbols
+static func loadSymbol(symbol: String, font_image_path := "res://Sprites/font_image.png"):
+	var index = ord(symbol) - 32
+	var offset = index * 4
+	var image = load(font_image_path).get_image()
+	var result = []
+	for x in range(3):
+		for y in range(4):
+			if image.get_pixel(x + offset, y) == Color.WHITE:
+				result.append(Vector2i(x, y))
+	return result
+
+
 ## A pattern loader, loads pixels from an image given with the path [param imagePath]
-static func loadPixels(imagePath:String):
+static func loadPixels(imagePath: String):
 	var image:Image = load(imagePath).get_image()
 	if image.is_compressed(): image.decompress()
 	var result = []
@@ -1271,7 +1295,7 @@ static func loadPixels(imagePath:String):
 
 ## A structure loader, loads cells from a gridmap scene given with the path [param scenePath]
 static func loadVoxels(scenePath:String):
-	var gridmap:GridMap = load(scenePath).instantiate()
+	var gridmap: GridMap = load(scenePath).instantiate()
 	return gridmap.get_used_cells()
 
 

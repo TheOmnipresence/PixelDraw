@@ -1121,9 +1121,9 @@ layout_mode = 2
 
 [node name="PatternInfo" type="PanelContainer" parent="HUD/DebugTab" unique_id=687864440]
 layout_mode = 1
-offset_left = 417.0
+offset_left = 428.0
 offset_top = 50.0
-offset_right = 617.0
+offset_right = 628.0
 offset_bottom = 90.0
 
 [node name="Container" type="VBoxContainer" parent="HUD/DebugTab/PatternInfo" unique_id=1723086690]

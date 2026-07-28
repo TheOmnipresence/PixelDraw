@@ -452,6 +452,8 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 		else:
 			trigger_popup("Action Triggered: " + shape,popupTypes.OTHER)
 		match shape:
+			var x when x.left(7) == "SYMBOL_":
+				Globals.letter_scanned.emit()
 			var x when x.left(10) == "CHIP_PACK_":
 				if not Globals.isArchipelago:
 					Globals.compatibilityChips += Globals.chipPackAmounts[int(x.right(-10)) - 1]

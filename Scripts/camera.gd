@@ -72,7 +72,7 @@ func _ready() -> void:
 	
 	for i in Globals.shapes:
 		var info_panel = preload("res://Scenes/pattern_info_panel.tscn").instantiate()
-		info_panel.get_node("HBoxContainer/Name").text = i
+		info_panel.shape_name = i
 		$HUD/DebugTab/PatternFinder/ScrollContainer/Items.add_child(info_panel)
 
 
@@ -523,7 +523,7 @@ func update_search() -> void:
 	
 	for i in $HUD/DebugTab/PatternFinder/ScrollContainer/Items.get_children():
 		i.visible = true
-		var current_text = i.get_node("HBoxContainer/Name").text
+		var current_text = i.shape_name
 		
 		if not (current_text.containsn(new_text.replace(" ","_")) or new_text == ""):
 			i.visible = false
@@ -535,7 +535,7 @@ func update_search() -> void:
 				if not Globals.tools.has(current_text):
 					i.visible = false
 			2:
-				if not Globals.toolShapes.has(current_text):
+				if not Globals.allToolShapes.has(current_text):
 					i.visible = false
 			3:
 				if not Globals.getActions().has(current_text):

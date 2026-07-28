@@ -891,6 +891,12 @@ var shapes: Dictionary[String,Array] = {
 	"WHALE":[
 		loadPixels("res://Sprites/whale.png")
 	],
+	"BIG_W":[
+		[Vector2i(0,0), Vector2i(0,1), Vector2i(0,2), Vector2i(1,2), Vector2i(1,3), Vector2i(2,3), Vector2i(3,3)]
+	],
+	"BIG_L":[
+		[Vector2i(0,0), Vector2i(0,1), Vector2i(0,2), Vector2i(0,3), Vector2i(1,3), Vector2i(2,3), Vector2i(3,3)]
+	],
 }
 
 ## Descriptions for all tools, shapes, and actions
@@ -970,7 +976,7 @@ var descriptions: Dictionary[String,Dictionary] = {
 	# Actions
 	"CREEPER":{"name":"Creeper","text":"","type":"action"},
 	"RESPAWN":{"name":"Respawn Point","text":"Makes a futuristic sound. Sets the point you return to.","type":"action"},
-	"W":{"name":"W","text":"A huge W. Launches you high into the air.","type":"action"},
+	"W":{"name":"W","text":"A W. Launches you high into the air.","type":"action"},
 	"L":{"name":"L","text":"Not a W. Sends you down.","type":"action"},
 	"ZIG":{"name":"Zig","text":"Shocking. Multiplies your speed.","type":"action"},
 	"ZAG":{"name":"Zag","text":"Electrifying. Multiplies your speed.","type":"action"},
@@ -1038,6 +1044,8 @@ var descriptions: Dictionary[String,Dictionary] = {
 	"WEAKEN_BOUNDS":{"name":"Weaken Bounds","text":"Break down the walls that hold you in","type":"action"},
 	"TREMOR":{"name":"Tremor","text":"Heart skips a beat","type":"action"},
 	"WHALE":{"name":"Whale","text":"Rather loud","type":"action"},
+	"BIG_W":{"name":"Big W","text":"A big W. Launches you higher into the air.","type":"action"},
+	"BIG_L":{"name":"Big L","text":"Not a W. Sends you more down.","type":"action"},
 	
 	#"":{"name":"","text":"","type":"action"},
 }

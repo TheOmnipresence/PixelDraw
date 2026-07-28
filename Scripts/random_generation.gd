@@ -482,6 +482,10 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				Globals.playerRef.velocity.y += 20
 			"L":
 				Globals.playerRef.velocity.y -= 20
+			"BIG_W":
+				Globals.playerRef.velocity.y += 40
+			"BIG_L":
+				Globals.playerRef.velocity.y -= 40
 			"ZIG":
 				Globals.playerRef.velocity *= 10
 			"ZAG":

@@ -7,7 +7,8 @@ var shape_name: String
 
 func _ready() -> void:
 	update_censor()
-	Globals.letter_scanned.connect(update_censor)
+	#Globals.letter_scanned.connect(update_censor)
+	Globals.new_action.connect(func(_action: String): update_censor())
 	var shape = Globals.Shape.new([])
 	shape.pattern_name_format = shape_name
 	bin = shape.binary_format

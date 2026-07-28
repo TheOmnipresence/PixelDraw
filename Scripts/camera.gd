@@ -567,6 +567,9 @@ func update_search() -> void:
 					"=":
 						if current_size != pattern_size:
 							i.visible = false
+					"==":
+						if current_size != pattern_size:
+							i.visible = false
 					">":
 						if not current_size > pattern_size:
 							i.visible = false

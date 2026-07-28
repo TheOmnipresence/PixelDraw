@@ -448,6 +448,7 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 	else:
 		if not Globals.actionsScanned.has(shape) and not ["RANDOM_ACTION", "RANDOM_ENEMY", "COMPATIBILITY_CHIP", "FLASHBANG_TRAP"].has(shape):
 			add_action(shape)
+			Globals.new_action.emit(shape)
 			trigger_popup("New Action Triggered: " + shape,popupTypes.ACTION)
 		else:
 			trigger_popup("Action Triggered: " + shape,popupTypes.OTHER)

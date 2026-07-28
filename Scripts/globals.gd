@@ -77,6 +77,9 @@ signal update_blueprints
 @warning_ignore("unused_signal")
 signal letter_scanned
 
+@warning_ignore("unused_signal")
+signal new_action(action: String)
+
 ## A refrence to the player
 var playerRef:CharacterBody3D
 

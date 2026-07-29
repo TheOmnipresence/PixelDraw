@@ -16,6 +16,22 @@ func _ready() -> void:
 	#requester.request("https://interestedsc2.itch.io/pixel-draw/devlog.rss")
 	
 	#clear_from_pos(Vector2i(0, 0))
+	
+	$TileMapLayer.visible = true
+	
+	var list: Array[Vector2i] = []
+	for x in range(128):
+		for y in range(72):
+			list.append(Vector2i(x, y))
+	
+	while not list.is_empty():
+		for i in range(72):
+			var random = list.pick_random()
+			list.erase(random)
+			$TileMapLayer.erase_cell(random)
+		await get_tree().process_frame
+	
+	$TileMapLayer.visible = false
 
 
 func clear_from_pos(pos: Vector2i) -> void:

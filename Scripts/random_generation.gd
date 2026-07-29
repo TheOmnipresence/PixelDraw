@@ -182,6 +182,9 @@ func _process(_delta: float) -> void:
 					set_cell_item(i,cellValues[i])
 			Globals.tools.MAZER:
 				makeMaze(roundi(Globals.allToolShapes[Globals.toolShapes[Globals.currentTool]].x / 2.0),Vector3i(roundi(Globals.playerRef.position.x - 1),0,roundi(Globals.playerRef.position.z - 1)))
+			Globals.tools.HOLE:
+				for cell in cells:
+					set_cell_item(Vector3i(cell.x, 0, cell.y), -1)
 	
 	if Input.is_action_just_released("mouse1"):
 		var result = {}

@@ -62,7 +62,7 @@ func _input(event: InputEvent) -> void:
 						Globals.unlockedCompatibilities[$Label.text] = []
 						%DescriptionLabel.text = Globals.getDescriptionText($Label.text)
 	
-	self_modulate = Color(1,1,1,1)
+	$Label.add_theme_color_override("font_color", Color.WHITE)
 	if not hovering:# and not (Input.is_action_pressed("plr_ctrl") and wasHovering):
 		if selectable:
 			if isTool: 
@@ -70,12 +70,12 @@ func _input(event: InputEvent) -> void:
 					Globals.hoveringTool = "NONE"
 				if Globals.hoveringShape != "NONE":
 					if Globals.toolsCompatibility[$Label.text].has(Globals.hoveringShape):
-						self_modulate = Color(1,0.001,0.001,1)
+						$Label.add_theme_color_override("font_color", Color(1,0,0,1))
 			else:
 				if Globals.hoveringShape == $Label.text:
 					Globals.hoveringShape = "NONE"
 				if Globals.toolsCompatibility[Globals.hoveringTool].has($Label.text):
-					self_modulate = Color(1,0.001,0.001,1)
+					$Label.add_theme_color_override("font_color", Color(1,0,0,1))
 		if wasHovering:
 			#%DescriptionLabel.text = ""
 			$Node.visible = false

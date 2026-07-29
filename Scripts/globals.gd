@@ -272,6 +272,7 @@ enum tools {
 	PLATFORM,
 	PLAGUE,
 	MAZER,
+	HOLE,
 } # TODO: HOLE, thing that makes land like platform but biased and cant work on empty cells
 
 ## The compatible shapes for each tool
@@ -298,6 +299,7 @@ var toolsCompatibility: Dictionary[String,Array] = {
 	"PLATFORM":[	"NONE",																																										"50_SQR",							"7_SQC",	"8_CIR",										],
 	"PLAGUE":[		"NONE",																																	"10_SQR",																						"10_TRI",							],
 	"MAZER":[		"NONE",									"6_SQR",																						"10_SQR",							"50_SQR",																						],
+	"HOLE":[		"NONE",																														"5_SQC",																			"7_SQC",													],
 }
 
 const additionalCompatibilities = {
@@ -323,6 +325,7 @@ const additionalCompatibilities = {
 	"PLATFORM":["BASE_RECT","SM_DIA","7_X"],
 	"PLAGUE":["6/4_RECT","BASE_RECT","8_ISOS","9_SQC"],
 	"MAZER":["5_SQR"],
+	"HOLE":["7/11_SQC"],
 }
 
 ## All tool compatibilities currently unlocked
@@ -902,7 +905,10 @@ var shapes: Dictionary[String,Array] = {
 	],
 	"ARROW":[
 		[Vector2i(0,0),Vector2i(1,1),Vector2i(1,3),Vector2i(2,2),Vector2i(2,3),Vector2i(3,1),Vector2i(3,2),Vector2i(3,3)]
-	]
+	],
+	"HOLE":[
+		[Vector2i(0,1),Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,1),Vector2i(1,3),Vector2i(1,4),Vector2i(2,0),Vector2i(2,4),Vector2i(3,0),Vector2i(3,1),Vector2i(3,3),Vector2i(3,4),Vector2i(4,1),Vector2i(4,2),Vector2i(4,3)]
+	],
 }
 
 ## Descriptions for all tools, shapes, and actions
@@ -931,6 +937,7 @@ var descriptions: Dictionary[String,Dictionary] = {
 	"PLATFORM":{"name":"Platform","text":"More land!! Yay!","type":"tool"},
 	"PLAGUE":{"name":"Plague","text":"A sickness spreads, bringing death in it's path. If some spaces around a tile are empty, it becomes empty as well.","type":"tool"},
 	"MAZER":{"name":"Mazer","text":"Solve these","type":"tool"},
+	"HOLE":{"name":"Hole","text":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHH","type":"tool"},
 	
 	#"":{"name":"","text":"","type":"tool"},
 	

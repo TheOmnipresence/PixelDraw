@@ -1084,6 +1084,12 @@ func _ready() -> void:
 			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,e.y))))
 			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(e.x,-e.y))))
 			shapes[i].append(Shape.makeStandard(possibleShape.map(func(e): return Vector2i(-e.x,-e.y))))
+	
+	for i in get_tree().current_scene.get_children(true):
+		if i is OptionButton:
+			var popup = i.get_popup()
+			if popup != null:
+				popup.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 
 
 ## The method that runs on [signal AP.connected]

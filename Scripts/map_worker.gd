@@ -22,6 +22,8 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	if $"../TileMapLayer".visible:
+		return
 	
 	if Input.is_action_pressed("mouse1"):
 		var current_pos = pos_to_cell(get_parent().get_global_mouse_position())

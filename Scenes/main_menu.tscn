@@ -120,9 +120,6 @@ alignment = 2
 [node name="Node" type="Node" parent="." unique_id=541798051]
 script = ExtResource("4_ce3w2")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=393334944]
-visible = false
-
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1112484335]
 visible = false
 z_index = 100

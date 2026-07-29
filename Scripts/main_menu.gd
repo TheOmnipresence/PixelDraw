@@ -29,7 +29,8 @@ func _ready() -> void:
 			var random = list.pick_random()
 			list.erase(random)
 			$TileMapLayer.erase_cell(random)
-		await get_tree().process_frame
+		if is_inside_tree():
+			await get_tree().process_frame
 	
 	$TileMapLayer.visible = false
 

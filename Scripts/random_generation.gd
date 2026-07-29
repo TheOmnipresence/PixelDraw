@@ -739,6 +739,7 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 		panel.modulate = override_color
 	panel.add_child(label)
 	panel.name = text
+	panel.z_index = 200
 	Globals.cameraRef.get_child(0).get_node("PopupBox").add_child(panel)
 	
 	Globals.allPopups.append(text)

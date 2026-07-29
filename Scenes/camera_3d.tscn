@@ -8,9 +8,512 @@
 [ext_resource type="Script" uid="uid://bx064qpt4ldgu" path="res://Scripts/shop_exchange.gd" id="4_u72ve"]
 [ext_resource type="Script" uid="uid://hdsm61lfwx8k" path="res://Scripts/shop_item.gd" id="5_37r0i"]
 
-[sub_resource type="Theme" id="Theme_d5qrh"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fw15l"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xm5xx"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 0.75)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pek65"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xiful"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0.30980393, 0.5019608, 1)
+corner_detail = 5
+
+[sub_resource type="DPITexture" id="DPITexture_c7lx2"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"14\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".75\" rx=\"2.333\"/><path fill=\"#1a1a1a\" d=\"m11.5 3.75-5.6 5.6-1.7-1.7-1.5 1.5 3.2 3.2 7.1-7.1z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_nboik"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"14\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".37\" rx=\"2.333\"/><path fill=\"#1a1a1a\" fill-opacity=\".5\" d=\"m11.5 3.75-5.6 5.6-1.7-1.7-1.5 1.5 3.2 3.2 7.1-7.1z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_bgxca"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"5.5\" fill=\"#1a1a1a\" stroke=\"#fff\" stroke-opacity=\".75\" stroke-width=\"3\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_fmkvg"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#fff\" fill-opacity=\".37\"/><circle cx=\"8\" cy=\"8\" r=\"4\" fill=\"#1a1a1a\" fill-opacity=\".5\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_w66fw"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#1a1a1a\" fill-opacity=\".5\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_8tnde"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#1a1a1a\" fill-opacity=\".25\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_fydix"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"14\" height=\"14\" x=\"1\" y=\"1\" fill=\"#1a1a1a\" fill-opacity=\".5\" rx=\"2.333\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_tt4b0"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"14\" height=\"14\" x=\"1\" y=\"1\" fill=\"#1a1a1a\" fill-opacity=\".25\" rx=\"2.333\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_ph50u"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".75\" rx=\"7\"/><circle cx=\"24\" cy=\"8\" r=\"5\" fill=\"#1a1a1a\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_fw15l"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".37\" rx=\"7\"/><circle cx=\"24\" cy=\"8\" r=\"5\" fill=\"#1a1a1a\" fill-opacity=\".5\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_xm5xx"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".37\" rx=\"7\"/><circle cx=\"8\" cy=\"8\" r=\"5\" fill=\"#1a1a1a\" fill-opacity=\".5\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_qkv32"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".75\" rx=\"7\"/><circle cx=\"8\" cy=\"8\" r=\"5\" fill=\"#1a1a1a\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_pek65"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><g fill-opacity=\".5\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#1a1a1a\" rx=\"7\"/><circle cx=\"8\" cy=\"8\" r=\"5\" fill=\"#fff\"/></g></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_xiful"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><g fill-opacity=\".25\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#1a1a1a\" rx=\"7\"/><circle cx=\"8\" cy=\"8\" r=\"5\" fill=\"#fff\"/></g></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_qm78i"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><g fill-opacity=\".25\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#1a1a1a\" rx=\"7\"/><circle cx=\"24\" cy=\"8\" r=\"5\" fill=\"#fff\"/></g></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_fcva6"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"16\"><g fill-opacity=\".5\"><rect width=\"30\" height=\"14\" x=\"1\" y=\"1\" fill=\"#1a1a1a\" rx=\"7\"/><circle cx=\"24\" cy=\"8\" r=\"5\" fill=\"#fff\"/></g></svg>
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ph50u"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nboik"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c7lx2"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.49803922, 0.8117647, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qkv32"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="DPITexture" id="DPITexture_iucsc"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#fff\" fill-opacity=\".75\" d=\"m1 3 2-2 5 5 5-5 2 2-5 5 5 5-2 2-5-5-5 5-2-2 5-5z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_m6ylw"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\"><path fill=\"none\" stroke=\"#b2b2b2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-opacity=\".85\" stroke-width=\"2\" d=\"m2 4 4 4 4-4\"/></svg>
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qm78i"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fydix"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 1)
+corner_detail = 1
+
+[sub_resource type="DPITexture" id="DPITexture_gurkm"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M10.168 8.754a5 5 0 1 0-1.414 1.414l4.316 4.316 1.414-1.414zM6 3a3 3 0 0 1 0 6 3 3 0 0 1 0-6z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_ettoc"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"16\"><path fill=\"none\" stroke=\"#b2b2b2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-opacity=\".45\" stroke-width=\"2\" d=\"m2.5 11 3-3-3-3\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_2jeip"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"16\"><path fill=\"none\" stroke=\"#b2b2b2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-opacity=\".45\" stroke-width=\"2\" d=\"m5.5 11-3-3 3-3\"/></svg>
+"
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_iucsc"]
+content_margin_left = 4.0
+content_margin_top = 0.0
+content_margin_right = 4.0
+content_margin_bottom = 0.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[sub_resource type="DPITexture" id="DPITexture_4c1ah"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#fff\" fill-opacity=\".75\" d=\"m1 3 2-2 5 5 5-5 2 2-5 5 5 5-2 2-5-5-5 5-2-2 5-5z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_qm7qd"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"6\" fill=\"#fefffe\" fill-opacity=\".75\"/><path fill=\"none\" stroke=\"#1a1a1a\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-opacity=\".65\" stroke-width=\"2\" d=\"m9 5-3 3 3 3\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_ucofm"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"6\" fill=\"#fefffe\"/><path fill=\"none\" stroke=\"#1a1a1a\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"m9 5-3 3 3 3\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_8rqt7"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"32\"><path fill=\"#d3d3d3\" d=\"m5 1h6v30h-6z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_s8u6w"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"6\" fill=\"#fefffe\" fill-opacity=\".75\"/><path fill=\"none\" stroke=\"#1a1a1a\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-opacity=\".65\" stroke-width=\"2\" d=\"m7 5 3 3-3 3\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_x4iy8"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"6\" fill=\"#fefffe\"/><path fill=\"none\" stroke=\"#1a1a1a\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"m7 5 3 3-3 3\"/></svg>
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fmkvg"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0.30980393, 0.5019608, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8luq5"]
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.3)
+border_width_left = 1
+border_width_right = 1
+border_color = Color(0.175, 0.175, 0.175, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j64ey"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w66fw"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0.30980393, 0.5019608, 1)
+
+[sub_resource type="DPITexture" id="DPITexture_wtvyb"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\"><circle cx=\"4\" cy=\"4\" r=\"1.5\" fill=\"#b2b2b2\" fill-opacity=\".25\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_b27ro"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\"><path fill=\"#b2b2b2\" fill-opacity=\".25\" d=\"M6 0v8h2V0zM1 0a1 1 0 0 0-.693 1.705L2.6 3.998.307 6.291A1 1 0 0 0 1.72 7.705l3-3a1 1 0 0 0 0-1.414l-3-3A1 1 0 0 0 1 0z\"/></svg>
+"
+
+[sub_resource type="ImageTexture" id="ImageTexture_ph50u"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fcva6"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8tnde"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.49803922, 0.8117647, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bgxca"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Theme" id="Theme_37r0i"]
 default_font = ExtResource("2_37r0i")
 default_font_size = 10
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
+Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
+Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 1)
+Button/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+Button/colors/icon_disabled_color = Color(1, 1, 1, 0.4)
+Button/colors/icon_focus_color = Color(1, 1, 1, 1)
+Button/colors/icon_hover_color = Color(1, 1, 1, 1)
+Button/colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/icon_normal_color = Color(1, 1, 1, 1)
+Button/colors/icon_pressed_color = Color(1, 1, 1, 1)
+Button/constants/align_to_largest_stylebox = 0
+Button/constants/h_separation = 4
+Button/constants/icon_max_width = 0
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 16
+Button/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+Button/styles/focus = SubResource("StyleBoxFlat_xm5xx")
+Button/styles/hover = SubResource("StyleBoxFlat_pek65")
+Button/styles/normal = SubResource("StyleBoxFlat_pek65")
+Button/styles/pressed = SubResource("StyleBoxFlat_xiful")
+CheckBox/colors/checkbox_checked_color = Color(1, 1, 1, 1)
+CheckBox/colors/checkbox_unchecked_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+CheckBox/colors/font_focus_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_hover_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_hover_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckBox/colors/font_outline_color = Color(0, 0, 0, 1)
+CheckBox/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckBox/constants/check_v_offset = 0
+CheckBox/constants/h_separation = 4
+CheckBox/constants/outline_size = 0
+CheckBox/font_sizes/font_size = 16
+CheckBox/icons/checked = SubResource("DPITexture_c7lx2")
+CheckBox/icons/checked_disabled = SubResource("DPITexture_nboik")
+CheckBox/icons/radio_checked = SubResource("DPITexture_bgxca")
+CheckBox/icons/radio_checked_disabled = SubResource("DPITexture_fmkvg")
+CheckBox/icons/radio_unchecked = SubResource("DPITexture_w66fw")
+CheckBox/icons/radio_unchecked_disabled = SubResource("DPITexture_8tnde")
+CheckBox/icons/unchecked = SubResource("DPITexture_fydix")
+CheckBox/icons/unchecked_disabled = SubResource("DPITexture_tt4b0")
+CheckBox/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+CheckBox/styles/focus = SubResource("StyleBoxFlat_pek65")
+CheckBox/styles/hover = SubResource("StyleBoxFlat_pek65")
+CheckBox/styles/hover_pressed = SubResource("StyleBoxFlat_xiful")
+CheckBox/styles/normal = SubResource("StyleBoxFlat_pek65")
+CheckBox/styles/pressed = SubResource("StyleBoxFlat_xiful")
+CheckButton/colors/button_checked_color = Color(1, 1, 1, 1)
+CheckButton/colors/button_unchecked_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+CheckButton/colors/font_focus_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_hover_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_hover_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckButton/colors/font_outline_color = Color(0, 0, 0, 1)
+CheckButton/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckButton/constants/check_v_offset = 0
+CheckButton/constants/h_separation = 4
+CheckButton/constants/outline_size = 0
+CheckButton/font_sizes/font_size = 16
+CheckButton/icons/checked = SubResource("DPITexture_ph50u")
+CheckButton/icons/checked_disabled = SubResource("DPITexture_fw15l")
+CheckButton/icons/checked_disabled_mirrored = SubResource("DPITexture_xm5xx")
+CheckButton/icons/checked_mirrored = SubResource("DPITexture_qkv32")
+CheckButton/icons/unchecked = SubResource("DPITexture_pek65")
+CheckButton/icons/unchecked_disabled = SubResource("DPITexture_xiful")
+CheckButton/icons/unchecked_disabled_mirrored = SubResource("DPITexture_qm78i")
+CheckButton/icons/unchecked_mirrored = SubResource("DPITexture_fcva6")
+CheckButton/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+CheckButton/styles/focus = SubResource("StyleBoxFlat_xm5xx")
+CheckButton/styles/hover = SubResource("StyleBoxFlat_pek65")
+CheckButton/styles/hover_pressed = SubResource("StyleBoxFlat_xiful")
+CheckButton/styles/normal = SubResource("StyleBoxFlat_pek65")
+CheckButton/styles/pressed = SubResource("StyleBoxFlat_xiful")
+HScrollBar/styles/grabber = SubResource("StyleBoxFlat_ph50u")
+HScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_nboik")
+HScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_c7lx2")
+HScrollBar/styles/scroll = SubResource("StyleBoxFlat_pek65")
+HScrollBar/styles/scroll_focus = SubResource("StyleBoxFlat_pek65")
+HSlider/styles/grabber_area = SubResource("StyleBoxFlat_qkv32")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_qkv32")
+HSlider/styles/slider = SubResource("StyleBoxFlat_pek65")
+LineEdit/colors/caret_color = Color(1, 1, 1, 1)
+LineEdit/colors/clear_button_color = Color(0.875, 0.875, 0.875, 1)
+LineEdit/colors/clear_button_color_pressed = Color(1, 1, 1, 1)
+LineEdit/colors/font_color = Color(1, 1, 1, 1)
+LineEdit/colors/font_outline_color = Color(0, 0, 0, 1)
+LineEdit/colors/font_placeholder_color = Color(0.875, 0.875, 0.875, 0.6)
+LineEdit/colors/font_selected_color = Color(0.49803922, 0.8117647, 1, 1)
+LineEdit/colors/font_uneditable_color = Color(0.875, 0.875, 0.875, 0.5)
+LineEdit/colors/selection_color = Color(0, 0.30980393, 0.5019608, 1)
+LineEdit/constants/caret_width = 1
+LineEdit/constants/minimum_character_width = 4
+LineEdit/constants/outline_size = 0
+LineEdit/font_sizes/font_size = 16
+LineEdit/icons/clear = SubResource("DPITexture_iucsc")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_pek65")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_pek65")
+LineEdit/styles/read_only = SubResource("StyleBoxFlat_pek65")
+OptionButton/colors/font_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+OptionButton/colors/font_focus_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_hover_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_hover_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+OptionButton/colors/font_outline_color = Color(0, 0, 0, 1)
+OptionButton/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+OptionButton/constants/arrow_margin = 4
+OptionButton/constants/h_separation = 4
+OptionButton/constants/modulate_arrow = 0
+OptionButton/constants/outline_size = 0
+OptionButton/font_sizes/font_size = 16
+OptionButton/icons/arrow = SubResource("DPITexture_m6ylw")
+OptionButton/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+OptionButton/styles/disabled_mirrored = SubResource("StyleBoxFlat_fw15l")
+OptionButton/styles/focus = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/hover = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/hover_mirrored = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/normal_mirrored = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_xiful")
+OptionButton/styles/pressed_mirrored = SubResource("StyleBoxFlat_xiful")
+Panel/styles/panel = SubResource("StyleBoxFlat_qm78i")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_fydix")
+PopupMenu/colors/font_accelerator_color = Color(0.7, 0.7, 0.7, 0.8)
+PopupMenu/colors/font_color = Color(1, 1, 1, 1)
+PopupMenu/colors/font_disabled_color = Color(0.4, 0.4, 0.4, 0.8)
+PopupMenu/colors/font_hover_color = Color(1, 1, 1, 1)
+PopupMenu/colors/font_outline_color = Color(0, 0, 0, 1)
+PopupMenu/colors/font_separator_color = Color(1, 1, 1, 1)
+PopupMenu/colors/font_separator_outline_color = Color(0, 0, 0, 1)
+PopupMenu/constants/gutter_compact = 1
+PopupMenu/constants/h_separation = 4
+PopupMenu/constants/icon_max_width = 0
+PopupMenu/constants/indent = 10
+PopupMenu/constants/item_end_padding = 2
+PopupMenu/constants/item_start_padding = 2
+PopupMenu/constants/outline_size = 0
+PopupMenu/constants/search_bar_separation = 4
+PopupMenu/constants/separator_outline_size = 0
+PopupMenu/constants/v_separation = 4
+PopupMenu/font_sizes/font_separator_size = 16
+PopupMenu/font_sizes/font_size = 16
+PopupMenu/icons/checked = SubResource("DPITexture_c7lx2")
+PopupMenu/icons/checked_disabled = SubResource("DPITexture_nboik")
+PopupMenu/icons/radio_checked = SubResource("DPITexture_bgxca")
+PopupMenu/icons/radio_checked_disabled = SubResource("DPITexture_fmkvg")
+PopupMenu/icons/radio_unchecked = SubResource("DPITexture_w66fw")
+PopupMenu/icons/radio_unchecked_disabled = SubResource("DPITexture_8tnde")
+PopupMenu/icons/search = SubResource("DPITexture_gurkm")
+PopupMenu/icons/submenu = SubResource("DPITexture_ettoc")
+PopupMenu/icons/submenu_mirrored = SubResource("DPITexture_2jeip")
+PopupMenu/icons/unchecked = SubResource("DPITexture_fydix")
+PopupMenu/icons/unchecked_disabled = SubResource("DPITexture_tt4b0")
+PopupMenu/styles/hover = SubResource("StyleBoxFlat_pek65")
+PopupMenu/styles/labeled_separator_left = SubResource("StyleBoxLine_iucsc")
+PopupMenu/styles/labeled_separator_right = SubResource("StyleBoxLine_iucsc")
+PopupMenu/styles/panel = SubResource("StyleBoxFlat_pek65")
+PopupMenu/styles/separator = SubResource("StyleBoxLine_iucsc")
+ProgressBar/colors/font_color = Color(1, 1, 1, 1)
+ProgressBar/styles/background = SubResource("StyleBoxFlat_pek65")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_qkv32")
+TabBar/colors/drop_mark_color = Color(1, 1, 1, 1)
+TabBar/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+TabBar/colors/font_hovered_color = Color(1, 1, 1, 1)
+TabBar/colors/font_outline_color = Color(0, 0, 0, 1)
+TabBar/colors/font_selected_color = Color(0.49803922, 0.8117647, 1, 1)
+TabBar/colors/font_unselected_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_disabled_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_hovered_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_selected_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_unselected_color = Color(1, 1, 1, 1)
+TabBar/constants/h_separation = 4
+TabBar/constants/hover_switch_wait_msec = 500
+TabBar/constants/icon_max_width = 0
+TabBar/constants/outline_size = 0
+TabBar/font_sizes/font_size = 16
+TabBar/icons/close = SubResource("DPITexture_4c1ah")
+TabBar/icons/decrement = SubResource("DPITexture_qm7qd")
+TabBar/icons/decrement_highlight = SubResource("DPITexture_ucofm")
+TabBar/icons/drop_mark = SubResource("DPITexture_8rqt7")
+TabBar/icons/increment = SubResource("DPITexture_s8u6w")
+TabBar/icons/increment_highlight = SubResource("DPITexture_x4iy8")
+TabBar/styles/button_highlight = SubResource("StyleBoxFlat_pek65")
+TabBar/styles/button_pressed = SubResource("StyleBoxFlat_fmkvg")
+TabBar/styles/tab_disabled = SubResource("StyleBoxFlat_8luq5")
+TabBar/styles/tab_focus = SubResource("StyleBoxFlat_j64ey")
+TabBar/styles/tab_hovered = SubResource("StyleBoxFlat_pek65")
+TabBar/styles/tab_selected = SubResource("StyleBoxFlat_w66fw")
+TabBar/styles/tab_unselected = SubResource("StyleBoxFlat_pek65")
+TextEdit/colors/background_color = Color(0, 0, 0, 0)
+TextEdit/colors/caret_background_color = Color(0, 0, 0, 1)
+TextEdit/colors/caret_color = Color(1, 1, 1, 1)
+TextEdit/colors/current_line_color = Color(0.25, 0.25, 0.26, 0.8)
+TextEdit/colors/font_color = Color(1, 1, 1, 1)
+TextEdit/colors/font_outline_color = Color(0, 0, 0, 1)
+TextEdit/colors/font_placeholder_color = Color(0.875, 0.875, 0.875, 0.6)
+TextEdit/colors/font_readonly_color = Color(0.875, 0.875, 0.875, 0.5)
+TextEdit/colors/font_selected_color = Color(0.49803922, 0.8117647, 1, 1)
+TextEdit/colors/search_result_border_color = Color(0.3, 0.3, 0.3, 0.4)
+TextEdit/colors/search_result_color = Color(0.3, 0.3, 0.3, 1)
+TextEdit/colors/selection_color = Color(0, 0.30980393, 0.5019608, 1)
+TextEdit/colors/word_highlighted_color = Color(0.5, 0.5, 0.5, 0.25)
+TextEdit/constants/caret_width = 1
+TextEdit/constants/line_spacing = 4
+TextEdit/constants/outline_size = 0
+TextEdit/constants/wrap_offset = 10
+TextEdit/font_sizes/font_size = 16
+TextEdit/icons/space = SubResource("DPITexture_wtvyb")
+TextEdit/icons/tab = SubResource("DPITexture_b27ro")
+TextEdit/styles/focus = SubResource("StyleBoxFlat_pek65")
+TextEdit/styles/normal = SubResource("StyleBoxFlat_pek65")
+TextEdit/styles/read_only = SubResource("StyleBoxFlat_pek65")
+VScrollBar/icons/decrement = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/decrement_highlight = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/decrement_pressed = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/increment = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/increment_highlight = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/increment_pressed = SubResource("ImageTexture_ph50u")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_qkv32")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_fcva6")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_8tnde")
+VScrollBar/styles/scroll = SubResource("StyleBoxFlat_pek65")
+VScrollBar/styles/scroll_focus = SubResource("StyleBoxFlat_pek65")
+VSlider/styles/grabber_area = SubResource("StyleBoxFlat_qkv32")
+VSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_qkv32")
+VSlider/styles/slider = SubResource("StyleBoxFlat_bgxca")
 
 [sub_resource type="LabelSettings" id="LabelSettings_fxq6n"]
 font_size = 21
@@ -169,6 +672,240 @@ purchase_times = -1
 shop_type = 0
 metadata/_custom_type_script = "uid://bx064qpt4ldgu"
 
+[sub_resource type="Theme" id="Theme_0dl0p"]
+default_font = ExtResource("2_37r0i")
+default_font_size = 10
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
+Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
+Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 1)
+Button/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+Button/colors/icon_disabled_color = Color(1, 1, 1, 0.4)
+Button/colors/icon_focus_color = Color(1, 1, 1, 1)
+Button/colors/icon_hover_color = Color(1, 1, 1, 1)
+Button/colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/icon_normal_color = Color(1, 1, 1, 1)
+Button/colors/icon_pressed_color = Color(1, 1, 1, 1)
+Button/constants/align_to_largest_stylebox = 0
+Button/constants/h_separation = 4
+Button/constants/icon_max_width = 0
+Button/constants/line_spacing = 4
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 16
+Button/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+Button/styles/focus = SubResource("StyleBoxFlat_xm5xx")
+Button/styles/hover = SubResource("StyleBoxFlat_pek65")
+Button/styles/normal = SubResource("StyleBoxFlat_pek65")
+Button/styles/pressed = SubResource("StyleBoxFlat_xiful")
+CheckBox/colors/checkbox_checked_color = Color(1, 1, 1, 1)
+CheckBox/colors/checkbox_unchecked_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+CheckBox/colors/font_focus_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_hover_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_hover_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckBox/colors/font_outline_color = Color(0, 0, 0, 1)
+CheckBox/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckBox/constants/check_v_offset = 0
+CheckBox/constants/h_separation = 4
+CheckBox/constants/outline_size = 0
+CheckBox/font_sizes/font_size = 16
+CheckBox/icons/checked = SubResource("DPITexture_c7lx2")
+CheckBox/icons/checked_disabled = SubResource("DPITexture_nboik")
+CheckBox/icons/radio_checked = SubResource("DPITexture_bgxca")
+CheckBox/icons/radio_checked_disabled = SubResource("DPITexture_fmkvg")
+CheckBox/icons/radio_unchecked = SubResource("DPITexture_w66fw")
+CheckBox/icons/radio_unchecked_disabled = SubResource("DPITexture_8tnde")
+CheckBox/icons/unchecked = SubResource("DPITexture_fydix")
+CheckBox/icons/unchecked_disabled = SubResource("DPITexture_tt4b0")
+CheckBox/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+CheckBox/styles/focus = SubResource("StyleBoxFlat_pek65")
+CheckBox/styles/hover = SubResource("StyleBoxFlat_pek65")
+CheckBox/styles/hover_pressed = SubResource("StyleBoxFlat_xiful")
+CheckBox/styles/normal = SubResource("StyleBoxFlat_pek65")
+CheckBox/styles/pressed = SubResource("StyleBoxFlat_xiful")
+CheckButton/colors/button_checked_color = Color(1, 1, 1, 1)
+CheckButton/colors/button_unchecked_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+CheckButton/colors/font_focus_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_hover_color = Color(1, 1, 1, 1)
+CheckButton/colors/font_hover_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckButton/colors/font_outline_color = Color(0, 0, 0, 1)
+CheckButton/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+CheckButton/constants/check_v_offset = 0
+CheckButton/constants/h_separation = 4
+CheckButton/constants/outline_size = 0
+CheckButton/font_sizes/font_size = 16
+CheckButton/icons/checked = SubResource("DPITexture_ph50u")
+CheckButton/icons/checked_disabled = SubResource("DPITexture_fw15l")
+CheckButton/icons/checked_disabled_mirrored = SubResource("DPITexture_xm5xx")
+CheckButton/icons/checked_mirrored = SubResource("DPITexture_qkv32")
+CheckButton/icons/unchecked = SubResource("DPITexture_pek65")
+CheckButton/icons/unchecked_disabled = SubResource("DPITexture_xiful")
+CheckButton/icons/unchecked_disabled_mirrored = SubResource("DPITexture_qm78i")
+CheckButton/icons/unchecked_mirrored = SubResource("DPITexture_fcva6")
+CheckButton/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+CheckButton/styles/focus = SubResource("StyleBoxFlat_xm5xx")
+CheckButton/styles/hover = SubResource("StyleBoxFlat_pek65")
+CheckButton/styles/hover_pressed = SubResource("StyleBoxFlat_xiful")
+CheckButton/styles/normal = SubResource("StyleBoxFlat_pek65")
+CheckButton/styles/pressed = SubResource("StyleBoxFlat_xiful")
+HScrollBar/styles/grabber = SubResource("StyleBoxFlat_ph50u")
+HScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_nboik")
+HScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_c7lx2")
+HScrollBar/styles/scroll = SubResource("StyleBoxFlat_pek65")
+HScrollBar/styles/scroll_focus = SubResource("StyleBoxFlat_pek65")
+HSlider/styles/grabber_area = SubResource("StyleBoxFlat_qkv32")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_qkv32")
+HSlider/styles/slider = SubResource("StyleBoxFlat_pek65")
+LineEdit/colors/caret_color = Color(1, 1, 1, 1)
+LineEdit/colors/clear_button_color = Color(0.875, 0.875, 0.875, 1)
+LineEdit/colors/clear_button_color_pressed = Color(1, 1, 1, 1)
+LineEdit/colors/font_color = Color(1, 1, 1, 1)
+LineEdit/colors/font_outline_color = Color(0, 0, 0, 1)
+LineEdit/colors/font_placeholder_color = Color(0.875, 0.875, 0.875, 0.6)
+LineEdit/colors/font_selected_color = Color(0.49803922, 0.8117647, 1, 1)
+LineEdit/colors/font_uneditable_color = Color(0.875, 0.875, 0.875, 0.5)
+LineEdit/colors/selection_color = Color(0, 0.30980393, 0.5019608, 1)
+LineEdit/constants/caret_width = 1
+LineEdit/constants/minimum_character_width = 4
+LineEdit/constants/outline_size = 0
+LineEdit/font_sizes/font_size = 16
+LineEdit/icons/clear = SubResource("DPITexture_iucsc")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_pek65")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_pek65")
+LineEdit/styles/read_only = SubResource("StyleBoxFlat_pek65")
+OptionButton/colors/font_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+OptionButton/colors/font_focus_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_hover_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_hover_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+OptionButton/colors/font_outline_color = Color(0, 0, 0, 1)
+OptionButton/colors/font_pressed_color = Color(0.49803922, 0.8117647, 1, 1)
+OptionButton/constants/arrow_margin = 4
+OptionButton/constants/h_separation = 4
+OptionButton/constants/modulate_arrow = 0
+OptionButton/constants/outline_size = 0
+OptionButton/font_sizes/font_size = 16
+OptionButton/icons/arrow = SubResource("DPITexture_m6ylw")
+OptionButton/styles/disabled = SubResource("StyleBoxFlat_fw15l")
+OptionButton/styles/disabled_mirrored = SubResource("StyleBoxFlat_fw15l")
+OptionButton/styles/focus = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/hover = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/hover_mirrored = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/normal_mirrored = SubResource("StyleBoxFlat_pek65")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_xiful")
+OptionButton/styles/pressed_mirrored = SubResource("StyleBoxFlat_xiful")
+Panel/styles/panel = SubResource("StyleBoxFlat_qm78i")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_fydix")
+PopupMenu/colors/font_accelerator_color = Color(0.7, 0.7, 0.7, 0.8)
+PopupMenu/colors/font_color = Color(1, 1, 1, 1)
+PopupMenu/colors/font_disabled_color = Color(0.4, 0.4, 0.4, 0.8)
+PopupMenu/colors/font_hover_color = Color(1, 1, 1, 1)
+PopupMenu/colors/font_outline_color = Color(0, 0, 0, 1)
+PopupMenu/colors/font_separator_color = Color(1, 1, 1, 1)
+PopupMenu/colors/font_separator_outline_color = Color(0, 0, 0, 1)
+PopupMenu/constants/gutter_compact = 1
+PopupMenu/constants/h_separation = 4
+PopupMenu/constants/icon_max_width = 0
+PopupMenu/constants/indent = 10
+PopupMenu/constants/item_end_padding = 2
+PopupMenu/constants/item_start_padding = 2
+PopupMenu/constants/outline_size = 0
+PopupMenu/constants/search_bar_separation = 4
+PopupMenu/constants/separator_outline_size = 0
+PopupMenu/constants/v_separation = 4
+PopupMenu/font_sizes/font_separator_size = 16
+PopupMenu/font_sizes/font_size = 16
+PopupMenu/icons/checked = SubResource("DPITexture_c7lx2")
+PopupMenu/icons/checked_disabled = SubResource("DPITexture_nboik")
+PopupMenu/icons/radio_checked = SubResource("DPITexture_bgxca")
+PopupMenu/icons/radio_checked_disabled = SubResource("DPITexture_fmkvg")
+PopupMenu/icons/radio_unchecked = SubResource("DPITexture_w66fw")
+PopupMenu/icons/radio_unchecked_disabled = SubResource("DPITexture_8tnde")
+PopupMenu/icons/search = SubResource("DPITexture_gurkm")
+PopupMenu/icons/submenu = SubResource("DPITexture_ettoc")
+PopupMenu/icons/submenu_mirrored = SubResource("DPITexture_2jeip")
+PopupMenu/icons/unchecked = SubResource("DPITexture_fydix")
+PopupMenu/icons/unchecked_disabled = SubResource("DPITexture_tt4b0")
+PopupMenu/styles/hover = SubResource("StyleBoxFlat_pek65")
+PopupMenu/styles/labeled_separator_left = SubResource("StyleBoxLine_iucsc")
+PopupMenu/styles/labeled_separator_right = SubResource("StyleBoxLine_iucsc")
+PopupMenu/styles/panel = SubResource("StyleBoxFlat_pek65")
+PopupMenu/styles/separator = SubResource("StyleBoxLine_iucsc")
+ProgressBar/colors/font_color = Color(1, 1, 1, 1)
+ProgressBar/styles/background = SubResource("StyleBoxFlat_pek65")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_qkv32")
+TabBar/colors/drop_mark_color = Color(1, 1, 1, 1)
+TabBar/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+TabBar/colors/font_hovered_color = Color(1, 1, 1, 1)
+TabBar/colors/font_outline_color = Color(0, 0, 0, 1)
+TabBar/colors/font_selected_color = Color(0.49803922, 0.8117647, 1, 1)
+TabBar/colors/font_unselected_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_disabled_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_hovered_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_selected_color = Color(1, 1, 1, 1)
+TabBar/colors/icon_unselected_color = Color(1, 1, 1, 1)
+TabBar/constants/h_separation = 4
+TabBar/constants/hover_switch_wait_msec = 500
+TabBar/constants/icon_max_width = 0
+TabBar/constants/outline_size = 0
+TabBar/font_sizes/font_size = 16
+TabBar/icons/close = SubResource("DPITexture_4c1ah")
+TabBar/icons/decrement = SubResource("DPITexture_qm7qd")
+TabBar/icons/decrement_highlight = SubResource("DPITexture_ucofm")
+TabBar/icons/drop_mark = SubResource("DPITexture_8rqt7")
+TabBar/icons/increment = SubResource("DPITexture_s8u6w")
+TabBar/icons/increment_highlight = SubResource("DPITexture_x4iy8")
+TabBar/styles/button_highlight = SubResource("StyleBoxFlat_pek65")
+TabBar/styles/button_pressed = SubResource("StyleBoxFlat_fmkvg")
+TabBar/styles/tab_disabled = SubResource("StyleBoxFlat_8luq5")
+TabBar/styles/tab_focus = SubResource("StyleBoxFlat_j64ey")
+TabBar/styles/tab_hovered = SubResource("StyleBoxFlat_pek65")
+TabBar/styles/tab_selected = SubResource("StyleBoxFlat_w66fw")
+TabBar/styles/tab_unselected = SubResource("StyleBoxFlat_pek65")
+TextEdit/colors/background_color = Color(0, 0, 0, 0)
+TextEdit/colors/caret_background_color = Color(0, 0, 0, 1)
+TextEdit/colors/caret_color = Color(1, 1, 1, 1)
+TextEdit/colors/current_line_color = Color(0.25, 0.25, 0.26, 0.8)
+TextEdit/colors/font_color = Color(1, 1, 1, 1)
+TextEdit/colors/font_outline_color = Color(0, 0, 0, 1)
+TextEdit/colors/font_placeholder_color = Color(0.875, 0.875, 0.875, 0.6)
+TextEdit/colors/font_readonly_color = Color(0.875, 0.875, 0.875, 0.5)
+TextEdit/colors/font_selected_color = Color(0.49803922, 0.8117647, 1, 1)
+TextEdit/colors/search_result_border_color = Color(0.3, 0.3, 0.3, 0.4)
+TextEdit/colors/search_result_color = Color(0.3, 0.3, 0.3, 1)
+TextEdit/colors/selection_color = Color(0, 0.30980393, 0.5019608, 1)
+TextEdit/colors/word_highlighted_color = Color(0.5, 0.5, 0.5, 0.25)
+TextEdit/constants/caret_width = 1
+TextEdit/constants/line_spacing = 4
+TextEdit/constants/outline_size = 0
+TextEdit/constants/wrap_offset = 10
+TextEdit/font_sizes/font_size = 16
+TextEdit/icons/space = SubResource("DPITexture_wtvyb")
+TextEdit/icons/tab = SubResource("DPITexture_b27ro")
+TextEdit/styles/focus = SubResource("StyleBoxFlat_pek65")
+TextEdit/styles/normal = SubResource("StyleBoxFlat_pek65")
+TextEdit/styles/read_only = SubResource("StyleBoxFlat_pek65")
+VScrollBar/icons/decrement = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/decrement_highlight = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/decrement_pressed = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/increment = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/increment_highlight = SubResource("ImageTexture_ph50u")
+VScrollBar/icons/increment_pressed = SubResource("ImageTexture_ph50u")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_qkv32")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_fcva6")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_8tnde")
+VScrollBar/styles/scroll = SubResource("StyleBoxFlat_pek65")
+VScrollBar/styles/scroll_focus = SubResource("StyleBoxFlat_pek65")
+VSlider/styles/grabber_area = SubResource("StyleBoxFlat_qkv32")
+VSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_qkv32")
+VSlider/styles/slider = SubResource("StyleBoxFlat_bgxca")
+
 [sub_resource type="LabelSettings" id="LabelSettings_qxdsw"]
 line_spacing = 1.0
 font_color = Color(0.47058824, 0.47058824, 0.47058824, 1)
@@ -188,7 +925,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme = SubResource("Theme_d5qrh")
+theme = SubResource("Theme_37r0i")
 metadata/_edit_lock_ = true
 
 [node name="PopupBox" type="VBoxContainer" parent="HUD" unique_id=1972072924]
@@ -199,7 +936,8 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -40.0
-offset_top = -40.0
+offset_top = -104.0
+offset_bottom = -64.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
@@ -559,12 +1297,16 @@ layout_mode = 2
 [node name="MinimapCopy" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer" unique_id=1047490517]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Copy (CTRL C)"
+theme_override_constants/line_spacing = 4
+text = "Copy 
+(CTRL C)"
 
 [node name="MinimapPin" type="Button" parent="HUD/SetupTab/MinimapContainer/MinimapPanel/VBoxContainer/HBoxContainer" unique_id=141719415]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Pin (CTRL P)"
+theme = SubResource("Theme_0dl0p")
+text = "Pin 
+(CTRL P)"
 
 [node name="ToolsTab" type="Control" parent="HUD" unique_id=1558072963]
 layout_mode = 1
@@ -721,6 +1463,7 @@ offset_top = -0.24800491
 offset_right = -303.0
 offset_bottom = -65.0
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer" unique_id=1296706482]
 layout_mode = 2
@@ -1016,6 +1759,7 @@ anchor_right = 0.5
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/margin_top = 45
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD/SavesTab/MarginContainer" unique_id=777306890]

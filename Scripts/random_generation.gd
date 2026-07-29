@@ -631,6 +631,12 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 					flashBanging = false
 			"WHALE":
 				play_sound("whale")
+			"ARROW":
+				var standard = []
+				for i in group:
+					standard.append(Vector2i(i.x,i.z))
+				standard = makeStandard(standard)
+				Globals.playerRef.velocity += 30 * [Vector3(1, 0, 1), Vector3(-1, 0, 1), Vector3(-1, 0, -1), Vector3(1, 0, -1)][Globals.shapes["ARROW"].find(standard)]
 	
 	Globals.update_blueprints.emit()
 

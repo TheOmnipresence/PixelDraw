@@ -8,7 +8,7 @@ default_font = ExtResource("1_sd2g2")
 default_font_size = 10
 
 [node name="PatternInfoPanel" type="PanelContainer" unique_id=1396314980]
-custom_minimum_size = Vector2(415, 20)
+custom_minimum_size = Vector2(540, 20)
 offset_right = 415.0
 offset_bottom = 20.0
 theme = SubResource("Theme_g3585")

@@ -71,11 +71,15 @@ func _input(event: InputEvent) -> void:
 				if Globals.hoveringShape != "NONE":
 					if Globals.toolsCompatibility[$Label.text].has(Globals.hoveringShape):
 						$Label.add_theme_color_override("font_color", Color(1,0,0,1))
+					elif Globals.additionalCompatibilities[$Label.text].has(Globals.hoveringShape):
+						$Label.add_theme_color_override("font_color", Color(1,1,0,1))
 			else:
 				if Globals.hoveringShape == $Label.text:
 					Globals.hoveringShape = "NONE"
 				if Globals.toolsCompatibility[Globals.hoveringTool].has($Label.text):
 					$Label.add_theme_color_override("font_color", Color(1,0,0,1))
+				elif Globals.additionalCompatibilities[Globals.hoveringTool].has($Label.text):
+					$Label.add_theme_color_override("font_color", Color(1,1,0,1))
 		if wasHovering:
 			#%DescriptionLabel.text = ""
 			$Node.visible = false

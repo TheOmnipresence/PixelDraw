@@ -309,7 +309,7 @@ func checkForShapes(groups: Dictionary, scan := true) -> Array:
 				result.append(shape)
 		if hasShape.has(group): groups.erase(groups.find_key(group))
 		if Globals.isArchipelago and scan:
-			if Archipelago.conn.slot_data["completion_shape"] != "":
+			if not Archipelago.conn.slot_data["completion_shape"].is_empty():
 				if Globals.Shape.allTransformations(Globals.Shape.fromBooleanList(Globals.Shape.binaryOrHexToBooleanList(Archipelago.conn.slot_data["completion_shape"]))).has(group): tryFinish(true)
 			
 			for pattern in Globals.allExtraPatterns:
@@ -443,11 +443,12 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				i.setup()
 				break
 	elif shape.contains("BLUEPRINT_") and not shape == "BLUEPRINT_BOOK":
+		var blueprint_name = shape.trim_prefix("BLUEPRINT_")
 		if not Globals.isArchipelago or calledFromArchipelago:
-			Globals.blueprint_shapes_achieved.append(shape.right(-10))
-			trigger_popup("Blueprint Unlocked: " + shape.right(-10), popupTypes.BLUEPRINT)
+			Globals.blueprint_shapes_achieved.append(blueprint_name)
+			trigger_popup("Blueprint Unlocked: " + blueprint_name, popupTypes.BLUEPRINT)
 		else:
-			sendArchipelagoItem(Globals.BLUEPRINT_SHAPES.find(shape.right(-10)) + 5001, shape)
+			sendArchipelagoItem(Globals.BLUEPRINT_SHAPES.find(blueprint_name) + 5001, shape)
 	else:
 		if not Globals.actionsScanned.has(shape) and not ["RANDOM_ACTION", "RANDOM_ENEMY", "COMPATIBILITY_CHIP", "FLASHBANG_TRAP"].has(shape):
 			add_action(shape)
@@ -456,20 +457,22 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 		else:
 			trigger_popup("Action Triggered: " + shape,popupTypes.OTHER)
 		match shape:
-			var x when x.left(7) == "SYMBOL_":
+			var x when x.begins_with("SYMBOL_"):
 				Globals.letter_scanned.emit()
-			var x when x.left(10) == "CHIP_PACK_":
+			var x when x.begins_with("CHIP_PACK_"):
+				var pack_index = int(x.trim_prefix("CHIP_PACK_")) - 1
+				
 				if not Globals.isArchipelago:
-					Globals.compatibilityChips += Globals.chipPackAmounts[int(x.right(-10)) - 1]
-					Globals.chipPackAmounts[int(x.right(-10)) - 1] = 0
+					Globals.compatibilityChips += Globals.chipPackAmounts[pack_index]
+					Globals.chipPackAmounts[pack_index] = 0
 				elif calledFromArchipelago:
 					Globals.compatibilityChips += 1
 				else:
 					var chipsBefore := 0
-					for i in Globals.chipPackAmounts.slice(0, int(x.right(-10)) - 1):
+					for i in Globals.chipPackAmounts.slice(0, pack_index):
 						chipsBefore += i
 					
-					for i in range(Globals.chipPackAmounts[int(x.right(-10)) - 1]):
+					for i in range(Globals.chipPackAmounts[pack_index]):
 						sendArchipelagoItem(i + chipsBefore + 3000, shape + "-" + str(i + 1))
 			"COMPATIBILITY_CHIP":
 				if Globals.isArchipelago and calledFromArchipelago:
@@ -723,9 +726,9 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 	for i in Globals.cameraRef.get_child(0).get_node("PopupBox").get_children():
 		var panelText = i.get_child(0).text
 		
-		if panelText == "":
+		if panelText.is_empty():
 			continue
-		elif panelText.right(2) == "x)": 
+		elif panelText.ends_with("x)"): 
 			panelText = panelText.left(panelText.rfind("(") - 1)
 			if panelText == text:
 				amountSame += int(i.get_child(0).text.replace(panelText,"").left(-2).right(-2))
@@ -790,7 +793,8 @@ func setColor(colorName: String, overridenTool := Globals.currentTool, calledFro
 static func getShape(center:Vector3i,shape) -> Array:
 	if typeof(shape) == TYPE_STRING:
 		shape = Globals.allToolShapes[shape]
-	if shape == {}: return []
+	if shape.is_empty(): return []
+	
 	var result = []
 	match shape.type:
 		Globals.types.RECT:
@@ -1310,7 +1314,7 @@ func tryFinish(fromFinishShape:=false) -> void:
 				if not Globals.scanned_all_extra_patterns and len(Archipelago.conn.slot_data["needed_patterns"]) > 0:
 					trigger_popup("Scanned All Needed Patterns", popupTypes.ARCHIPELAGO_GOAL)
 					Globals.scanned_all_extra_patterns = true
-				if (Archipelago.conn.slot_data["completion_shape"] == "" or fromFinishShape):
+				if (Archipelago.conn.slot_data["completion_shape"].is_empty() or fromFinishShape):
 					finishArchipelago() #TODO maybe add amount of extra shapes needed?
 
 

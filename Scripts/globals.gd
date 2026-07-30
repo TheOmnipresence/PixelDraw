@@ -1127,7 +1127,7 @@ func connectScript(_connInfo: ConnectionInfo, _json: Dictionary) -> void:
 ## Returns true if the pattern is in logic
 func pattern_in_logic(pattern: String) -> bool:
 	if ["", "200_SQR"].has(pattern): return false
-	if shapes[pattern][0] == []: return false
+	if shapes[pattern][0].is_empty(): return false
 	
 	var scanning_shapes: Array
 	if shapes_logic_cache.has(pattern):
@@ -1648,9 +1648,9 @@ func freeCompatibilityChips() -> void:
 
 
 ## Gets the color for this [param tool]
-func getToolColor(tool:String) -> Color:
+func getToolColor(tool: String) -> Color:
 	var result = Color(0.08,0.08,0.08)
-	if tool != "":
+	if not tool.is_empty():
 		if Globals.tools.has(tool):
 			var library:MeshLibrary = preload("res://Sprites/MeshLibraries/OutlinerMeshLibrary.tres")
 			result = (library.get_item_mesh(Globals.tools[tool]).surface_get_material(0).albedo_color)
@@ -1693,7 +1693,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 	## Data as the pattern name in [member Globals.shapes]
 	var pattern_name_format: String:
 		set(value):
-			if value != "":
+			if not value.is_empty():
 				universal_format = []
 				if Globals.shapes.has(value):
 					var typedValue : Array[Vector2i]
@@ -1701,7 +1701,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 					universal_format = makeStandard(typedValue)
 			pattern_name_format = value
 		get():
-			if pattern_name_format == "":
+			if pattern_name_format.is_empty():
 				for shape in Globals.shapes:
 					if Globals.shapes[shape].has(makeStandard(universal_format)):
 						pattern_name_format = shape
@@ -1790,8 +1790,8 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 	static func binaryOrHexToBooleanList(string:String) -> Array[bool]:
 		var result:Array[bool] = []
 		
-		if string.left(2) == "0x":
-			string = string.right(-2)
+		if string.begins_with("0x"):
+			string = string.trim_prefix("0x")
 			
 			if len(string) >= 16:
 				var split_string = ""
@@ -1808,8 +1808,7 @@ class Shape extends Resource: ## Class for pattern format changes and manipulati
 			else: 
 				string = String.num_int64(string.hex_to_int(),2)
 		
-		if string.left(2) == "0b":
-			string = string.right(-2)
+		string = string.trim_prefix("0b")
 		
 		if Array(string.split("")).filter(func(e): return e != "1" and e != "0").is_empty():
 			for i in string.split(""):

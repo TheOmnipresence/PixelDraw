@@ -279,7 +279,7 @@ enum tools {
 	PLAGUE,
 	MAZER,
 	HOLE,
-} # TODO: HOLE, thing that makes land like platform but biased and cant work on empty cells
+}
 
 ## The compatible shapes for each tool
 var toolsCompatibility: Dictionary[String,Array] = {

@@ -452,7 +452,7 @@ func setup_blueprints() -> void:
 			panel.name = blueprint.target_pattern
 			var update_amounts = (func():
 				var amount = blueprint.current_amount.call()
-				if amount == 0 and blueprint.needed_amount == 0 and blueprint.units == "":
+				if amount == 0 and blueprint.needed_amount == 0 and blueprint.units.is_empty():
 					panel.get_child(0).get_node("Label").text = "Get previous to unlock"
 				else:
 					panel.get_child(0).get_node("Label").text = str(amount) + "/" + str(blueprint.needed_amount) + " " + blueprint.units
@@ -529,7 +529,7 @@ func update_search() -> void:
 		i.visible = true
 		var current_text = i.shape_name
 		
-		if not (current_text.containsn(new_text.replace(" ","_")) or new_text == ""):
+		if not (current_text.containsn(new_text.replace(" ","_")) or new_text.is_empty()):
 			i.visible = false
 		
 		match type_option:

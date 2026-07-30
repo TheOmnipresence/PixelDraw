@@ -130,7 +130,13 @@ var ALL_BLUEPRINTS: Array[BluePrint] = [
 	BluePrint.new(10,func(): return len(availibleShapes) - 2,"Shapes","FREE_CHIPS"),
 	BluePrint.new(3,func(): return len(foundColors),"Color Actions","TOOL_COLOR",["FREE_CHIPS"]),
 	BluePrint.new(1,func(): return 1 if actionsScanned.has("STRENGTHEN_BOUNDS") else 0,"Scanned STRENGTHEN_BOUNDS","WEAKEN_BOUNDS",["TOOL_COLOR"]),
-	BluePrint.new(10,func(): return compatibilityChips,"Compatibility Chips","CHIP_PACK_5",["TOOL_COLOR"])
+	BluePrint.new(10,func(): return compatibilityChips,"Compatibility Chips","CHIP_PACK_5",["TOOL_COLOR"]),
+	BluePrint.new(5,func(): return len(actionsScanned.filter(func(e): return e.contains("SYMBOL_"))), "Symbol Actions", "SYMBOL_A", ["WEAKEN_BOUNDS"]),
+	BluePrint.new(12,func(): return len(availibleTools) - 1,"Tools","SYMBOL_O",["SYMBOL_A"]),
+	BluePrint.new(10,func(): return len(actionsScanned.filter(func(e): return e.contains("SYMBOL_"))), "Symbol Actions", "SYMBOL_E", ["SYMBOL_A"]),
+	BluePrint.new(15,func(): return len(actionsScanned.filter(func(e): return e.contains("SYMBOL_"))), "Symbol Actions", "SYMBOL_U", ["SYMBOL_E","SYMBOL_O"], true),
+	BluePrint.new(20,func(): return len(actionsScanned.filter(func(e): return e.contains("SYMBOL_"))), "Symbol Actions", "SYMBOL_Y", ["SYMBOL_O"]),
+	BluePrint.new(0,func(): return 0, "", "SYMBOL_I", ["SYMBOL_E","CHIP_PACK_5"], true),
 	#BluePrint.new(12,func(): return len(availibleShapes) - 2,"Shapes","5_SQR",["DIAMOND","NETHERITE"]),
 	#BluePrint.new(32,func(): return len(actionsScanned),"Actions","9_SQC",["DIAMOND"])
 ]
@@ -312,7 +318,7 @@ const additionalCompatibilities = {
 	"DUSTER":["7_SQC","7_PLUS"],
 	"SHUFFLER":["7_LINE","5_DIAG","11_OCTO","9_QUAD","12_LINE"],
 	"STOPPER":["3_DIAG","12_LINE","5_X"],
-	"BULB":["SM_DIA"],
+	"BULB":["SM_DIA","5_SQC"],
 	"MC_PICK":["6_SQR","3_DIAG","4_LOOP","20_HEX"],
 	"HOOK":["7_SQC","10_SQR"],
 	"BASE_SW":["7_LOOP","5_PLUS","12_RING","13_AST"],

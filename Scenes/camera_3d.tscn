@@ -1692,6 +1692,7 @@ anchor_right = 1.0
 offset_left = -176.0
 offset_bottom = 116.0
 grow_horizontal = 0
+mouse_filter = 2
 theme_override_constants/margin_top = 50
 theme_override_constants/margin_right = 5
 metadata/_edit_lock_ = true
@@ -1780,7 +1781,7 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/BlueprintsTab" unique_id=1133066192]
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/BlueprintsTab" unique_id=548671903]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1789,8 +1790,11 @@ offset_top = 34.0
 offset_bottom = -67.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/BlueprintsTab/ScrollContainer" unique_id=1133066192]
+custom_minimum_size = Vector2(1152, 547)
+layout_mode = 2
 mouse_filter = 2
-metadata/_edit_lock_ = true
 
 [node name="DebugTab" type="Control" parent="HUD" unique_id=291842254]
 layout_mode = 1

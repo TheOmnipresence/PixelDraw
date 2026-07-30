@@ -446,12 +446,16 @@ func setup_blueprints() -> void:
 		var box = VBoxContainer.new()
 		box.alignment = BoxContainer.ALIGNMENT_CENTER
 		box.custom_minimum_size = Vector2(250,300)
+		box.add_theme_constant_override("separation", 50)
 		for blueprint in column_contents:
 			var panel: PanelContainer = preload("res://Scenes/blueprint_panel.tscn").instantiate()
 			panel.name = blueprint.target_pattern
 			var update_amounts = (func():
 				var amount = blueprint.current_amount.call()
-				panel.get_child(0).get_node("Label").text = str(amount) + "/" + str(blueprint.needed_amount) + " " + blueprint.units
+				if amount == 0 and blueprint.needed_amount == 0 and blueprint.units == "":
+					panel.get_child(0).get_node("Label").text = "Get previous to unlock"
+				else:
+					panel.get_child(0).get_node("Label").text = str(amount) + "/" + str(blueprint.needed_amount) + " " + blueprint.units
 				panel.get_child(0).get_node("Bar").value = amount
 				panel.get_child(0).get_node("Bar").max_value = blueprint.needed_amount
 				
@@ -499,13 +503,13 @@ func setup_blueprints() -> void:
 				line.origin_node = panel
 				line.target_node = pattern_to_node[i]
 				get_node("HUD/BlueprintsTab").add_child(line)
-		$HUD/BlueprintsTab/HBoxContainer.add_child(box)
+		$HUD/BlueprintsTab/ScrollContainer/HBoxContainer.add_child(box)
 		var spacer = Control.new()
 		spacer.custom_minimum_size.x = 100
-		$HUD/BlueprintsTab/HBoxContainer.add_child(spacer)
+		$HUD/BlueprintsTab/ScrollContainer/HBoxContainer.add_child(spacer)
 		#box.queue_sort()
 	
-	#$HUD/BlueprintsTab/HBoxContainer.queue_sort()
+	#$HUD/BlueprintsTab/ScrollContainer/HBoxContainer.queue_sort()
 
 func setBlueprintVisibility(disabled: bool) -> void:
 	if Globals.isArchipelago:

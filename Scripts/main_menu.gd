@@ -10,10 +10,10 @@ func _ready() -> void:
 	var version: String = ProjectSettings.get_setting("application/config/version")
 	$VersionButton.text = get_version_prefix(version) + " " + version
 	
-	#var requester = HTTPRequest.new()
-	#add_child(requester)
-	#requester.request_completed.connect(set_devlog_link)
-	#requester.request("https://interestedsc2.itch.io/pixel-draw/devlog.rss")
+	var requester = HTTPRequest.new()
+	add_child(requester)
+	requester.request_completed.connect(set_devlog_link)
+	requester.request("https://interestedsc2.itch.io/pixel-draw/devlog.rss")
 	
 	#clear_from_pos(Vector2i(0, 0))
 	
@@ -80,7 +80,7 @@ func set_devlog_link(_result: int, response_code: int, _headers: PackedStringArr
 				if parser.get_node_type() == XMLParser.NODE_TEXT:
 					links.append(parser.get_node_data())
 	
-	var adjusted = $VersionLabel.text.to_lower().replace(" ", "-").replace(".","")
+	var adjusted = $VersionButton.text.to_lower().replace(" ", "-").replace(".","")
 	devlog_link = get_link_from_list(links, adjusted)
 
 

@@ -465,14 +465,12 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				if not Globals.isArchipelago:
 					Globals.compatibilityChips += Globals.chipPackAmounts[pack_index]
 					Globals.chipPackAmounts[pack_index] = 0
-				elif calledFromArchipelago:
-					Globals.compatibilityChips += 1
 				else:
 					var chipsBefore := 0
-					for i in Globals.chipPackAmounts.slice(0, pack_index):
+					for i in Globals.CHIPS_IN_PACKS.slice(0, pack_index):
 						chipsBefore += i
 					
-					for i in range(Globals.chipPackAmounts[pack_index]):
+					for i in range(Globals.CHIPS_IN_PACKS[pack_index]):
 						sendArchipelagoItem(i + chipsBefore + 3000, shape + "-" + str(i + 1))
 			"COMPATIBILITY_CHIP":
 				if Globals.isArchipelago and calledFromArchipelago:

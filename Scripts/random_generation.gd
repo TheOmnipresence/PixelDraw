@@ -758,6 +758,11 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 	
 	print_rich("[color=" + panel.modulate.to_html(false) + "]" + text + "[/color]")
 	
+	await get_tree().process_frame
+	if is_instance_valid(label):
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.custom_minimum_size.x = clamp(label.size.x, 0, 1000)
+	
 	await get_tree().create_timer(popupTime).timeout
 	if is_instance_valid(panel):
 		panel.queue_free()

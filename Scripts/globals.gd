@@ -915,6 +915,9 @@ var shapes: Dictionary[String,Array] = {
 	"HOLE":[
 		[Vector2i(0,1),Vector2i(0,2),Vector2i(0,3),Vector2i(1,0),Vector2i(1,1),Vector2i(1,3),Vector2i(1,4),Vector2i(2,0),Vector2i(2,4),Vector2i(3,0),Vector2i(3,1),Vector2i(3,3),Vector2i(3,4),Vector2i(4,1),Vector2i(4,2),Vector2i(4,3)]
 	],
+	"CURRENCY_DIAMONDS":[
+		loadPixels("res://Sprites/diamond.png")
+	],
 }
 
 ## Descriptions for all tools, shapes, and actions

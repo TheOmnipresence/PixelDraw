@@ -14,6 +14,7 @@ const popupColors = {
 	popupTypes.ARCHIPELAGO_DEATHLINK: Color(1.0, 1.0, 0.0, 1.0),
 	popupTypes.STATUS_EFFECT:Color(0.735,0,1,1),
 	popupTypes.BLUEPRINT:Color(0.26, 0.46, 1, 1),
+	popupTypes.NO_DATA:Color(0.6,0,0,1),
 }
 
 ## The types of popup you cen recieve
@@ -27,6 +28,7 @@ enum popupTypes {
 	ARCHIPELAGO_DEATHLINK, ## When you recieve a deathlink
 	STATUS_EFFECT, ## Unused
 	BLUEPRINT,
+	NO_DATA,
 }
 
 ## The last pattern scanned, used for [enum Globals.tools].STAMPER
@@ -152,21 +154,17 @@ func _process(_delta: float) -> void:
 					if lastScanned.has(makeStandard(cells)[cells.find(i)]):
 						set_cell_item(vector2to3(i),1)
 			Globals.tools.GRAVITATE:
-				cells = cells.map(func(e): return Vector3i(e.x,2,e.y))
-				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
-					if cells.has(local_to_map(enemy.position)): 
-						enemy.get_node("AntigravityTimer").start()
+				for enemy: Node3D in get_enemies(cells):
+					enemy.get_node("AntigravityTimer").start()
 				multiplyAttribute("gravity",["*",-1],5)
 			Globals.tools.SUMMON:
-				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
-					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
-						enemy.position.y = 1
+				for enemy: Node3D in get_enemies(cells):
+					enemy.position.y = 1
 			Globals.tools.TERRAIN:
 				buildCells(await heightGeneration(cells),Vector3(0,0,0),false,null,true)
 			Globals.tools.PARALYZER:
-				for enemy:Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
-					if cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
-						enemy.paralyze(3)
+				for enemy: Node3D in get_enemies(cells):
+					enemy.paralyze(3)
 			Globals.tools.PLATFORM:
 				for cell in cells:
 					set_cell_item(Vector3i(cell.x,0,cell.y),randi_range(0,1))
@@ -211,6 +209,14 @@ func _process(_delta: float) -> void:
 		updatePickaxeBlocks()
 
 
+func get_enemies(in_cells: Array[Vector2i] = []) -> Array[Node3D]:
+	var result: Array[Node3D] = []
+	for enemy: Node3D in get_parent().get_children().filter(func(e): return e.is_in_group("enemy")):
+		if in_cells.has(Vector2i(local_to_map(enemy.position).x,local_to_map(enemy.position).z)): 
+			result.append(enemy)
+	return result
+
+
 func updatePickaxeBlocks() -> void:
 	miningBlocks = true
 	var speed = 0
@@ -233,6 +239,7 @@ func updatePickaxeBlocks() -> void:
 			speed = 0.2
 			Globals.mcToolLevel = "WOOD"
 	#speed *= len(cells)
+	
 	while not pickaxeCells.is_empty():
 		var i = pickaxeCells.pick_random()
 		$McPickaxe.start(speed)
@@ -247,8 +254,8 @@ func updatePickaxeBlocks() -> void:
 
 
 ## Returns the heighest cells lower than the player at the coords of [param list]
-func heighestVisibleCells(list:Array) -> Array:
-	list = list.map(func(e): return vector2to3(e,getHeighestCell(e,roundi(Globals.playerRef.position.y -1))))
+func heighestVisibleCells(list: Array) -> Array:
+	list = list.map(func(e): return vector2to3(e,getHeighestCell(e,roundi(Globals.playerRef.position.y - 1))))
 	return list
 
 
@@ -265,7 +272,7 @@ func startCells():
 
 
 ## Finds the groups of cells from [param input]
-func removeExtras(input:Dictionary) -> Dictionary:
+func removeExtras(input: Dictionary) -> Dictionary:
 	lastScanned = []
 	var map := AStar2D.new()
 	for coords in input:
@@ -298,8 +305,8 @@ func removeExtras(input:Dictionary) -> Dictionary:
 
 ## Runs [method scanShape] on each identifiable group in [param groups]. Also handles completion shape and extra patterns for archipelago.
 func checkForShapes(groups: Dictionary, scan := true) -> Array:
-	var result = []
-	var hasShape = []
+	var result := []
+	var hasShape := []
 	for group in groups.values().duplicate_deep():
 		if group.is_empty(): continue
 		for shape in Globals.shapes:
@@ -319,30 +326,32 @@ func checkForShapes(groups: Dictionary, scan := true) -> Array:
 	
 	for i in groups.values():
 		result.append(i)
-		printerr(i)
+		#printerr(i)
+		trigger_popup("No data found for pattern '%s'" % Globals.Shape.binaryToHex(Globals.Shape.shapeToBinary(i)), popupTypes.NO_DATA)
 	return result
 
 
 ## Converts a [Vector2] to a [Vector3]
-static func vector2to3(vector,yPos=0):
+static func vector2to3(vector, yPos := 0):
 	if typeof(vector) == TYPE_VECTOR2:
-		return Vector3(vector.x,float(yPos),vector.y)
+		return Vector3(vector.x, float(yPos), vector.y)
 	else:
-		return Vector3i(vector.x,yPos,vector.y)
+		return Vector3i(vector.x, yPos, vector.y)
 
 
 ## Runs [method runShape] on a shape
-func scanShape(pos:Vector2i,shape:String,group:Array) -> void:
+func scanShape(pos: Vector2i, shape: String, group: Array) -> void:
 	group = group.map(func(e): return vector2to3(e + pos,0))
 	await lightShape(group,0,false)
-	runShape(shape,pos,group)
+	runShape(shape, pos, group)
 	await get_tree().create_timer(0.2).timeout
 	await lightShape(group,-1,false)
 
 
 ## Highlights the [param cells] on the gridmap
-func lightShape(cells,value:int,wait:=true) -> void:
-	if wait: await get_tree().create_timer(randf_range(0.3,0.9)).timeout
+func lightShape(cells: Array, value: int, wait := true) -> void:
+	if wait: 
+		await get_tree().create_timer(randf_range(0.3,0.9)).timeout
 	
 	for i in cells:
 		$"../ActivationGridMap".set_cell_item(i,value)
@@ -757,6 +766,13 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 	Globals.allPopups.append(text)
 	
 	print_rich("[color=" + panel.modulate.to_html(false) + "]" + text + "[/color]")
+	
+	get_tree().process_frame.connect(
+		(func(): 
+			if is_instance_valid(label):
+				label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				label.custom_minimum_size.x = clamp(label.size.x, 0, 1000)), 
+		ConnectFlags.CONNECT_ONE_SHOT)
 	
 	await get_tree().create_timer(popupTime).timeout
 	if is_instance_valid(panel):

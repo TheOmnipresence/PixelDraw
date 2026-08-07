@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://c7fdr4baalcs2"]
+[gd_scene format=4 uid="uid://c7fdr4baalcs2"]
 
 [ext_resource type="Script" uid="uid://c6ttmplq8lo81" path="res://Scripts/player.gd" id="1_v0iea"]
 
@@ -106,47 +106,47 @@ properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 2
 
-[node name="Player" type="CharacterBody3D"]
+[node name="Player" type="CharacterBody3D" unique_id=164293816]
 collision_layer = 3
 script = ExtResource("1_v0iea")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1390605319]
 shape = SubResource("BoxShape3D_jjgbg")
 
-[node name="BoxSprite" type="MeshInstance3D" parent="."]
+[node name="BoxSprite" type="MeshInstance3D" parent="." unique_id=2144736860]
 mesh = SubResource("BoxMesh_6bp64")
 
-[node name="CeilRay" type="RayCast3D" parent="."]
+[node name="CeilRay" type="RayCast3D" parent="." unique_id=382493443]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 target_position = Vector3(0, 0.9, 0)
 collision_mask = 8
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1074163405]
 
-[node name="OmniLight3D2" type="OmniLight3D" parent="."]
+[node name="OmniLight3D2" type="OmniLight3D" parent="." unique_id=969979435]
 light_energy = 6.0
 shadow_enabled = true
 omni_range = 12.0
 
-[node name="Node3D" type="Node3D" parent="."]
+[node name="Node3D" type="Node3D" parent="." unique_id=2112798811]
 
-[node name="SpeedParticles" type="GPUParticles3D" parent="Node3D"]
+[node name="SpeedParticles" type="GPUParticles3D" parent="Node3D" unique_id=2043766653]
 emitting = false
 amount = 100
 lifetime = 5.0
 process_material = SubResource("ParticleProcessMaterial_v0iea")
 draw_pass_1 = SubResource("ArrayMesh_cvnsp")
 
-[node name="GravityParticles" type="GPUParticles3D" parent="Node3D"]
+[node name="GravityParticles" type="GPUParticles3D" parent="Node3D" unique_id=2113154163]
 emitting = false
 amount = 10
 lifetime = 5.0
 process_material = SubResource("ParticleProcessMaterial_cvnsp")
 draw_pass_1 = SubResource("ArrayMesh_vgqql")
 
-[node name="AntigravityTimer" type="Timer" parent="."]
+[node name="AntigravityTimer" type="Timer" parent="." unique_id=1920281586]
 wait_time = 5.0
 one_shot = true
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=147218304]
 replication_config = SubResource("SceneReplicationConfig_v0iea")

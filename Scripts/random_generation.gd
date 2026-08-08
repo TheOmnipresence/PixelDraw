@@ -413,6 +413,7 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 					
 					for i in structureGrid.get_children():
 						structureGrid.remove_child(i)
+						i.owner = null
 						get_parent().get_node("StructureParent").add_child(i)
 						var pos = local_to_map(playerPos)
 						pos.y = 0
@@ -763,7 +764,12 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 	
 	await get_tree().create_timer(popupTime).timeout
 	if is_instance_valid(panel):
-		panel.queue_free()
+		label.label_settings.font_size = 15
+		label.custom_minimum_size.x = clamp(label.size.x, 0, 400)
+		panel.z_index = 0
+		Globals.cameraRef.get_child(0).get_node("PopupBox").remove_child(panel)
+		Globals.cameraRef.get_child(0).get_node("DebugTab/ScrollContainer/VBoxContainer").add_child(panel)
+		#panel.queue_free()
 
 
 ## Something

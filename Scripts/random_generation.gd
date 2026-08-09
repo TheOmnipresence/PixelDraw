@@ -422,6 +422,7 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 					
 					for i in structureGrid.get_children():
 						structureGrid.remove_child(i)
+						i.owner = null
 						get_parent().get_node("StructureParent").add_child(i)
 						var pos = local_to_map(playerPos)
 						pos.y = 0
@@ -474,14 +475,12 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				if not Globals.isArchipelago:
 					Globals.compatibilityChips += Globals.chipPackAmounts[pack_index]
 					Globals.chipPackAmounts[pack_index] = 0
-				elif calledFromArchipelago:
-					Globals.compatibilityChips += 1
 				else:
 					var chipsBefore := 0
-					for i in Globals.chipPackAmounts.slice(0, pack_index):
+					for i in Globals.CHIPS_IN_PACKS.slice(0, pack_index):
 						chipsBefore += i
 					
-					for i in range(Globals.chipPackAmounts[pack_index]):
+					for i in range(Globals.CHIPS_IN_PACKS[pack_index]):
 						sendArchipelagoItem(i + chipsBefore + 3000, shape + "-" + str(i + 1))
 			"COMPATIBILITY_CHIP":
 				if Globals.isArchipelago and calledFromArchipelago:
@@ -767,16 +766,19 @@ func trigger_popup(text: String, type: popupTypes, override_color := Color.TRANS
 	
 	print_rich("[color=" + panel.modulate.to_html(false) + "]" + text + "[/color]")
 	
-	get_tree().process_frame.connect(
-		(func(): 
-			if is_instance_valid(label):
-				label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-				label.custom_minimum_size.x = clamp(label.size.x, 0, 1000)), 
-		ConnectFlags.CONNECT_ONE_SHOT)
+	await get_tree().process_frame
+	if is_instance_valid(label):
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.custom_minimum_size.x = clamp(label.size.x, 0, 1000)
 	
 	await get_tree().create_timer(popupTime).timeout
 	if is_instance_valid(panel):
-		panel.queue_free()
+		label.label_settings.font_size = 15
+		label.custom_minimum_size.x = clamp(label.size.x, 0, 400)
+		panel.z_index = 0
+		Globals.cameraRef.get_child(0).get_node("PopupBox").remove_child(panel)
+		Globals.cameraRef.get_child(0).get_node("DebugTab/ScrollContainer/VBoxContainer").add_child(panel)
+		#panel.queue_free()
 
 
 ## Something

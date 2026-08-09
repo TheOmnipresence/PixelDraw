@@ -1886,6 +1886,23 @@ layout_mode = 2
 horizontal_alignment = 1
 autowrap_mode = 3
 
+[node name="ScrollContainer" type="ScrollContainer" parent="HUD/DebugTab" unique_id=575240571]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 752.0
+offset_top = 50.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/DebugTab/ScrollContainer" unique_id=1334875541]
+custom_minimum_size = Vector2(400, 534)
+layout_mode = 2
+alignment = 2
+
 [connection signal="tab_changed" from="HUD/MarginContainer/HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Clockwise" to="." method="_on_clockwise_pressed"]
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Button" to="." method="_on_pallet_button_pressed"]

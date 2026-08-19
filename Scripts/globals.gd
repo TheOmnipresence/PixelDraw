@@ -25,35 +25,43 @@ var startedArchipelago := false:
 
 ## The deathlink messages for archipelago
 const deathlinkMessages = [
-	"\"boop\" - %s",
-	"%s couldn't think of a pop culture refrence to put here",
-	"%s poked at the wrong guy",
-	"%s fought for Aiur",
+	#"\"boop\" - %s",
+	#"%s couldn't think of a pop culture refrence to put here",
+	#"%s poked at the wrong guy",
+	#"%s fought for Aiur",
 	"That's the wrong action, %s",
 	"Oh no, %s lost all their [insert currency here]",
-	"%s's home bed was missing or obstructed",
-	"*sad giraffe noises* - %s",
+	#"%s's home bed was missing or obstructed",
+	#"*sad giraffe noises* - %s",
 	"\"%s has been cubified, sir\"",
 	"%s broke through the shiny wall",
 	"%s's world is looking a little too pixelated",
-	"baba is not %s",
-	"%s fell off of the space platform",
-	"%s walked past elderbug",
-	"The zombies ate %s's brains",
-	"GLaDOS is dissapointed in %s",
-	"%s IS a potato",
-	"%s really wants to turn keep inventory on right now",
-	"%s needs Shakra to help for this fight (apperently)",
+	#"baba is not %s",
+	#"%s fell off of the space platform",
+	#"%s walked past elderbug",
+	#"The zombies ate %s's brains",
+	#"GLaDOS is dissapointed in %s",
+	#"%s IS a potato",
+	#"%s really wants to turn keep inventory on right now",
+	#"%s needs Shakra to help for this fight (apperently)",
 	"What's the point of this wall being here if %s is just gonna breeze right through??",
-	"%s was bonked by an apricot-flavored popsicle",
-	"\"death.fell.accident.water\" - %s",
+	#"%s was bonked by an apricot-flavored popsicle",
+	#"\"death.fell.accident.water\" - %s",
 	"%s died? Interesting... very Interesting",
 	"%s didn't think that mantis shrimps are cool",
-	"%s didn't think that would do two masks",
-	"%s overreacted",
+	#"%s didn't think that would do two masks",
+	#"%s overreacted",
 ]
 
-var deathlink_amnesty := 0
+var current_deathlink_amnesty := 0
+var current_deathlink_grace := 0
+
+var deathlink_amnesty := 1
+var deathlink_grace := 1
+
+var knockbacklink_sources: Array[String] = ["Any"]
+
+var knockbacklink_multiplier: float = 1.0
 
 var finished_archipelago := false
 
@@ -1076,8 +1084,12 @@ var descriptions: Dictionary[String,Dictionary] = {
 
 
 func _ready() -> void:
-	Archipelago.connect("connected", connectScript)
-	Archipelago.connect("disconnected", (func():isArchipelago = false))
+	Archipelago.connected.connect(connectScript)
+	Archipelago.disconnected.connect(disconnectScript)
+	Archipelago.remove_location.connect(func(id):
+		var item_name = gridRef.getArchipelagoLocName(id)
+		if not archipelagoLocationsFound.has(item_name):
+			archipelagoLocationsFound.append(item_name))
 	
 	load_all_symbols()
 	
@@ -1118,13 +1130,27 @@ func connectScript(_connInfo: ConnectionInfo, _json: Dictionary) -> void:
 	Archipelago.conn.deathlink.connect(recieveDeathlink)
 	Archipelago.conn.connect("obtained_item",(func(e):gridRef.runShape((e.get_name()),Vector2i.ZERO,[],true,e)))
 	Archipelago.conn.force_scout_all()
-	Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"],1.0))
+	Archipelago.conn.bounce.connect(detect_bounce)
+	Archipelago.set_deathlink(is_equal_approx(Archipelago.conn.slot_data["death_link"], 1.0))
+	Archipelago.set_tag("KnockbackLink", is_equal_approx(Archipelago.conn.slot_data["knockback_link"], 1.0))
+	knockbacklink_sources = []
+	knockbacklink_sources.assign(Archipelago.conn.slot_data["knockback_link_sources"])
 	allExtraPatterns = Archipelago.conn.slot_data["needed_patterns"].map(func(e): return Shape.makeStandard(Shape.fromBooleanList(Shape.binaryOrHexToBooleanList(e)))).map(Shape.allTransformations)
-	Archipelago.remove_location.connect(func(id):
-		var item_name = gridRef.getArchipelagoLocName(id)
-		if not archipelagoLocationsFound.has(item_name):
-			archipelagoLocationsFound.append(item_name))
 	blueprints_active = false
+	change_ap_links_disabled(false)
+
+
+## The method that runs on [signal AP.disconnected]
+func disconnectScript() -> void:
+	isArchipelago = false
+	change_ap_links_disabled(true)
+
+
+## Sets the Archipelago Links tab visibility
+func change_ap_links_disabled(disabled := true) -> void:
+	for i in range(cameraRef.get_node("%TabBar").tab_count):
+		if cameraRef.get_node("%TabBar").get_tab_title(i) == "AP Links":
+			cameraRef.get_node("%TabBar").set_tab_disabled(i, disabled)
 
 
 ## Returns true if the pattern is in logic
@@ -1214,8 +1240,14 @@ func get_additional_compatibilities_logic(tool: String) -> bool:
 
 func load_all_symbols() -> void:
 	for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""):
-		shapes["SYMBOL_" + i] = [loadSymbol(i)]
-		descriptions["SYMBOL_" + i] = {"name":"Symbol " + i,"text":"The letter " + i.to_lower(),"type":"action"}
+		load_one_symbol(i, "The letter " + i)
+	for i in "0123456789".split(""):
+		load_one_symbol(i, "The number " + i)
+
+
+func load_one_symbol(symbol: String, description: String) -> void:
+	shapes["SYMBOL_" + symbol] = [loadSymbol(symbol)]
+	descriptions["SYMBOL_" + symbol] = {"name": "Symbol " + symbol, "text": description, "type": "action"}
 
 
 ## A method to get the description for the pattern [param key]
@@ -1440,27 +1472,58 @@ func reset(trueDeath:bool=(not playerRef.get_parent().get_node("Bounds").get_ove
 			bedPattern = []
 	
 	playerRef.position = Globals.respawnPoint
-	playerRef.velocity = Vector3(0,0,0)
+	playerRef.velocity = Vector3.ZERO
 	playerRef.strength = 0.0
 
 
 ## Sends the deathlink packet, accounting for amnesty
 func sendDeathlink() -> void:
-	deathlink_amnesty += 1
-	if deathlink_amnesty >= Archipelago.conn.slot_data["death_link_amnesty"]:
-		deathlink_amnesty = 0
+	current_deathlink_amnesty += 1
+	if current_deathlink_amnesty >= deathlink_amnesty:
+		current_deathlink_amnesty = 0
 		var deathCause = deathlinkMessages.pick_random() % archipelagoName()
 		Archipelago.conn.send_deathlink(deathCause)
 
 
 ## Recieves the deathlink and resets the player
 func recieveDeathlink(_source:String,cause:String,_json:Dictionary) -> void:
-	reset(true,true)
-	gridRef.trigger_popup("Archipelago Deathlink: " + cause,gridRef.scanTypes.ARCHIPELAGO_DEATHLINK)
+	current_deathlink_grace += 1
+	if current_deathlink_grace >= deathlink_grace:
+		current_deathlink_grace = 0
+		reset(true, true)
+		gridRef.trigger_popup("Archipelago Deathlink: " + cause,gridRef.popupTypes.ARCHIPELAGO_DEATHLINK)
+
+
+## Reffers the bounce packet to the correct function
+func detect_bounce(json: Dictionary) -> void:
+	if json.has("tags"):
+		if json["tags"].has("KnockbackLink"):
+			recieve_knockbacklink(json["data"])
+
+
+## Sends the knockbacklink packet
+func send_knockbacklink(knockback: Vector3, cause := "%s was hit by an enemy") -> void:
+	if not Globals.isArchipelago:
+		return
+	if Archipelago.has_tag("KnockbackLink"):
+		knockback *= knockbacklink_multiplier
+		var cmd = {"data": {}}
+		cmd["data"]["source"] = Archipelago.conn.get_player_name(-1, false)
+		cmd["data"]["cause"] = cause % Archipelago.conn.get_player().get_name()
+		cmd["data"]["time"] = Time.get_unix_time_from_system()
+		cmd["data"]["value"] = {"x": knockback.x, "y": knockback.y, "z": knockback.z}
+		Archipelago.conn.send_bounce(cmd, [] as Array[String], [] as Array[String], ["KnockbackLink"] as Array[String])
+
+
+## Recieves the knockbacklink packet and gives the player knockback
+func recieve_knockbacklink(data: Dictionary) -> void:
+	if data["source"] != Archipelago.conn.get_player_name(-1, false):
+		playerRef.takeKnockback(Vector3(data["value"]["x"], data["value"]["y"], data["value"]["z"]) / knockbacklink_multiplier, data["cause"], false)
+		gridRef.trigger_popup(data["cause"], gridRef.popupTypes.STATUS_EFFECT)
 
 
 ## Returns the max size of the pattern
-func maxLength(list:Array) -> int:
+func maxLength(list: Array) -> int:
 	var result = list[0].x
 	for i in list:
 		if i.x > result: result = i.x
@@ -1576,8 +1639,17 @@ static func safeGet(dictionary:Dictionary,key,fallback,setValue:=false):
 ## Returns true if [param array] has all of the values in [param all]
 static func arrayHasAll(array:Array,all:Array) -> bool:
 	for i in all:
-		if not array.has(i): return false
+		if not array.has(i): 
+			return false
 	return true
+
+
+## Returns true if [param array] has any of the values in [param any]
+static func arrayHasAny(array: Array, any: Array) -> bool:
+	for i in any:
+		if array.has(i):
+			return true
+	return false
 
 
 ## Checks if the given [param pattern] can fit (in any transformation) inside of [param shape].

@@ -19,7 +19,8 @@ enum tabs {
 	MONEY,
 	SAVES,
 	BLUEPRINTS,
-	INFO
+	INFO,
+	AP_LINKS,
 }
 
 var ip: String
@@ -63,6 +64,8 @@ func _ready() -> void:
 	call_deferred("setup_blueprints")
 	
 	Globals.update_blueprints.emit()
+	
+	Globals.change_ap_links_disabled()
 	
 	for salesman: ShopScreen in %Salesmen.get_children():
 		for exchange in salesman.shop_items:

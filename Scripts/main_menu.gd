@@ -15,8 +15,6 @@ func _ready() -> void:
 	requester.request_completed.connect(set_devlog_link)
 	requester.request("https://interestedsc2.itch.io/pixel-draw/devlog.rss")
 	
-	#clear_from_pos(Vector2i(0, 0))
-	
 	$TileMapLayer.visible = true
 	
 	var list: Array[Vector2i] = []

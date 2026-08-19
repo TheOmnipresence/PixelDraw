@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://bx064qpt4ldgu" path="res://Scripts/shop_exchange.gd" id="4_u72ve"]
 [ext_resource type="Script" uid="uid://hdsm61lfwx8k" path="res://Scripts/shop_item.gd" id="5_37r0i"]
 [ext_resource type="FontFile" uid="uid://dnyubxu7vd0cr" path="res://Sprites/font_bigger.png" id="8_0dl0p"]
+[ext_resource type="Script" uid="uid://b65vw12g5uxcm" path="res://Scripts/links_tab.gd" id="9_4jh8l"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fw15l"]
 content_margin_left = 4.0
@@ -944,6 +945,7 @@ grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
 alignment = 2
+metadata/_edit_lock_ = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HUD" unique_id=67862378]
 layout_mode = 1
@@ -959,6 +961,7 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 alignment = 1
+metadata/_edit_lock_ = true
 
 [node name="PanelContainer" parent="HUD/HBoxContainer" unique_id=60796626 instance=ExtResource("2_fxq6n")]
 layout_mode = 2
@@ -1010,8 +1013,9 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
+theme_override_constants/tab_separation = 0
 current_tab = 0
-tab_count = 12
+tab_count = 13
 tab_0/title = "Setup"
 tab_1/title = "Tools"
 tab_2/title = "Shapes"
@@ -1024,6 +1028,7 @@ tab_8/title = "Money"
 tab_9/title = "Saves"
 tab_10/title = "Blueprints"
 tab_11/title = "Info"
+tab_12/title = "AP Links"
 
 [node name="Seperator" type="Control" parent="HUD/MarginContainer/HBoxContainer" unique_id=354215064]
 custom_minimum_size = Vector2(185, 0)
@@ -1270,7 +1275,7 @@ anchor_right = 1.0
 offset_left = -40.0
 offset_bottom = 40.0
 grow_horizontal = 0
-theme_override_constants/margin_top = 100
+theme_override_constants/margin_top = 50
 metadata/_edit_lock_ = true
 
 [node name="MinimapPanel" type="PanelContainer" parent="HUD/SetupTab/MinimapContainer" unique_id=1255996923]
@@ -1465,6 +1470,7 @@ offset_top = -0.24800491
 offset_right = -307.0
 offset_bottom = -65.0
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="ActionsGrid" type="GridContainer" parent="HUD/ActionsTab/ScrollContainer" unique_id=1296706482]
 layout_mode = 2
@@ -1790,11 +1796,13 @@ offset_top = 34.0
 offset_bottom = -67.0
 grow_horizontal = 2
 grow_vertical = 2
+metadata/_edit_lock_ = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HUD/BlueprintsTab/ScrollContainer" unique_id=1133066192]
 custom_minimum_size = Vector2(1152, 547)
 layout_mode = 2
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="DebugTab" type="Control" parent="HUD" unique_id=291842254]
 layout_mode = 1
@@ -1815,6 +1823,7 @@ offset_top = 50.0
 offset_right = 540.0
 offset_bottom = -63.0
 grow_vertical = 2
+metadata/_edit_lock_ = true
 
 [node name="Label" type="Label" parent="HUD/DebugTab/PatternFinder" unique_id=1780323719]
 layout_mode = 2
@@ -1866,9 +1875,11 @@ placeholder_text = "Type here..."
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
+metadata/_edit_lock_ = true
 
 [node name="Items" type="VBoxContainer" parent="HUD/DebugTab/PatternFinder/ScrollContainer" unique_id=624795990]
 layout_mode = 2
+metadata/_edit_lock_ = true
 
 [node name="PatternInfo" type="PanelContainer" parent="HUD/DebugTab" unique_id=687864440]
 layout_mode = 1
@@ -1897,11 +1908,147 @@ offset_top = 50.0
 offset_bottom = -64.0
 grow_horizontal = 2
 grow_vertical = 2
+metadata/_edit_lock_ = true
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD/DebugTab/ScrollContainer" unique_id=1334875541]
 custom_minimum_size = Vector2(400, 534)
 layout_mode = 2
 alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="LinksTab" type="Control" parent="HUD" unique_id=1447445745]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("9_4jh8l")
+metadata/_edit_lock_ = true
+
+[node name="KnockbackLinkPanel" type="PanelContainer" parent="HUD/LinksTab" unique_id=11125999]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 1
+offset_top = 50.0
+offset_right = 300.0
+offset_bottom = 90.0
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/LinksTab/KnockbackLinkPanel" unique_id=1689681095]
+layout_mode = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="Label" type="Label" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=908765400]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Knockback Link"
+horizontal_alignment = 1
+
+[node name="EnabledCheck" type="CheckBox" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=1416512014]
+layout_mode = 2
+text = "enabled"
+alignment = 1
+
+[node name="SliderLabel" type="Label" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=1966396876]
+layout_mode = 2
+text = "Multiplier (1.0)"
+horizontal_alignment = 1
+
+[node name="Slider" type="HSlider" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=449718820]
+layout_mode = 2
+max_value = 10.0
+step = 0.1
+value = 1.0
+tick_count = 10
+
+[node name="Sources" type="Label" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=863849600]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Sources:"
+horizontal_alignment = 1
+
+[node name="AnyCheck" type="CheckBox" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=1719815242]
+layout_mode = 2
+text = "Any"
+alignment = 1
+
+[node name="ActionsCheck" type="CheckBox" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=1064177753]
+layout_mode = 2
+text = "Actions"
+alignment = 1
+
+[node name="EnemiesCheck" type="CheckBox" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=808613363]
+layout_mode = 2
+text = "Enemies"
+alignment = 1
+
+[node name="Individual" type="Label" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=260126464]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Individual:"
+horizontal_alignment = 1
+
+[node name="SourcesHeader" type="ScrollContainer" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=857556678]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer/SourcesHeader" unique_id=1115830841]
+custom_minimum_size = Vector2(300, 250)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="AddNew" type="Button" parent="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer" unique_id=564003168]
+layout_mode = 2
+text = "Add New"
+
+[node name="DeathLinkPanel" type="PanelContainer" parent="HUD/LinksTab" unique_id=1855596721]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 50.0
+offset_bottom = 90.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/LinksTab/DeathLinkPanel" unique_id=2051190914]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="Label" type="Label" parent="HUD/LinksTab/DeathLinkPanel/VBoxContainer" unique_id=317815981]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Death Link"
+horizontal_alignment = 1
+
+[node name="DeathLinkEnabledCheck" type="CheckBox" parent="HUD/LinksTab/DeathLinkPanel/VBoxContainer" unique_id=1734476694]
+layout_mode = 2
+text = "enabled"
+alignment = 1
+
+[node name="Sources" type="Label" parent="HUD/LinksTab/DeathLinkPanel/VBoxContainer" unique_id=1042776043]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Amnesty/Grace:"
+horizontal_alignment = 1
+
+[node name="AmnestyCounter" type="SpinBox" parent="HUD/LinksTab/DeathLinkPanel/VBoxContainer" unique_id=259020232]
+layout_mode = 2
+max_value = 20.0
+value = 1.0
+alignment = 1
+prefix = "Amnesty:"
+
+[node name="GraceCounter" type="SpinBox" parent="HUD/LinksTab/DeathLinkPanel/VBoxContainer" unique_id=1916574715]
+layout_mode = 2
+max_value = 20.0
+value = 1.0
+alignment = 1
+prefix = "Grace:"
 
 [connection signal="tab_changed" from="HUD/MarginContainer/HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
 [connection signal="pressed" from="HUD/SetupTab/MarginContainer/PinPanel/VBoxContainer/PalletOptions/Clockwise" to="." method="_on_clockwise_pressed"]
@@ -1922,3 +2069,9 @@ alignment = 2
 [connection signal="item_selected" from="HUD/DebugTab/PatternFinder/HBoxContainer/DiscoveredOption" to="." method="_on_discovered_option_item_selected"]
 [connection signal="text_changed" from="HUD/DebugTab/PatternFinder/HBoxContainer/SizeLine" to="." method="_on_size_line_text_changed"]
 [connection signal="text_changed" from="HUD/DebugTab/PatternFinder/SearchBar" to="." method="_on_search_bar_text_changed"]
+[connection signal="toggled" from="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer/EnabledCheck" to="HUD/LinksTab" method="_on_enabled_check_toggled"]
+[connection signal="value_changed" from="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer/Slider" to="HUD/LinksTab" method="_on_slider_value_changed"]
+[connection signal="pressed" from="HUD/LinksTab/KnockbackLinkPanel/VBoxContainer/AddNew" to="HUD/LinksTab" method="_on_add_new_pressed"]
+[connection signal="toggled" from="HUD/LinksTab/DeathLinkPanel/VBoxContainer/DeathLinkEnabledCheck" to="HUD/LinksTab" method="_on_death_link_enabled_check_toggled"]
+[connection signal="value_changed" from="HUD/LinksTab/DeathLinkPanel/VBoxContainer/AmnestyCounter" to="HUD/LinksTab" method="_on_amnesty_counter_value_changed"]
+[connection signal="value_changed" from="HUD/LinksTab/DeathLinkPanel/VBoxContainer/GraceCounter" to="HUD/LinksTab" method="_on_grace_counter_value_changed"]

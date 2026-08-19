@@ -27,7 +27,7 @@ func censor_name(current_name: String) -> String:
 		return current_name
 	
 	var result = current_name
-	for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""):
+	for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""):
 		if not Globals.actionsScanned.has("SYMBOL_" + i):
 			result = result.replacen(i, "%")
 	

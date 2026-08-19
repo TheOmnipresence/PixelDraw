@@ -9,9 +9,14 @@ func _on_body_exited(body: Node3D) -> void:
 		if body != Globals.playerRef:
 			body.outside = true
 	else:
+		var prev_velocity = body.velocity
 		body.velocity.y += 10
 		var resultPoint = closestPoint(vector3to2(body.position),[Vector2(0,200),Vector2(200,0),Vector2(0,-200),Vector2(-200,0)])
 		body.velocity *= replaceZeros(vector2to3(abs(resultPoint)/-200))
+		if Globals.isArchipelago and body == Globals.playerRef:
+			@warning_ignore("static_called_on_instance")
+			if Globals.arrayHasAny(Globals.knockbacklink_sources, ["Any", "Bounds"]):
+				Globals.send_knockbacklink(body.velocity - prev_velocity, "%s was rebounded")
 
 func replaceZeros(vector:Vector3) -> Vector3:
 	if vector.x == 0: vector.x = 1

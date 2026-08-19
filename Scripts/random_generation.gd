@@ -161,7 +161,7 @@ func _process(_delta: float) -> void:
 				for enemy: Node3D in get_enemies(cells):
 					enemy.position.y = 1
 			Globals.tools.TERRAIN:
-				buildCells(await heightGeneration(cells),Vector3(0,0,0),false,null,true)
+				buildCells(await heightGeneration(cells), Vector3.ZERO, false, null, true)
 			Globals.tools.PARALYZER:
 				for enemy: Node3D in get_enemies(cells):
 					enemy.paralyze(3)
@@ -494,17 +494,24 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				Globals.bedPattern = []
 			"W":
 				Globals.playerRef.velocity.y += 20
+				send_knockbacklink_from_action(Vector3(0, 20, 0), "%s scanned a W", "W")
 			"L":
 				Globals.playerRef.velocity.y -= 20
+				send_knockbacklink_from_action(Vector3(0, -20, 0), "%s scanned an L", "L")
 			"BIG_W":
 				Globals.playerRef.velocity.y += 40
+				send_knockbacklink_from_action(Vector3(0, 40, 0), "%s scanned a big W", "BIG_W")
 			"BIG_L":
 				Globals.playerRef.velocity.y -= 40
+				send_knockbacklink_from_action(Vector3(0, 40, 0), "%s scanned a big L", "BIG_L")
 			"ZIG":
+				send_knockbacklink_from_action(Globals.playerRef.velocity * 9, "Zig! - %s", "ZIG")
 				Globals.playerRef.velocity *= 10
 			"ZAG":
+				send_knockbacklink_from_action(Globals.playerRef.velocity * 19, "Zag! - %s", "ZAG")
 				Globals.playerRef.velocity *= 20
 			"ZOG":
+				send_knockbacklink_from_action(Globals.playerRef.velocity * 39, "Zog! - %s", "ZOG")
 				Globals.playerRef.velocity *= 40
 			"COMPASS":
 				var cells = getShape(Vector3i(local_to_map(Globals.playerRef.position).x,0,local_to_map(Globals.playerRef.position).z),"BASE_RECT")
@@ -522,10 +529,12 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				Globals.cameraRef.get_node("HUD/MarginContainer/HBoxContainer/CompassLabel").visible = true
 			"SENDER":
 				Globals.playerRef.savedVelocity = - ((Globals.playerRef.position - (Globals.respawnPoint)).normalized() * 20)
+				send_knockbacklink_from_action(Globals.playerRef.savedVelocity, "%s has been sent", "SENDER")
 			"UNSENDER":
 				Globals.playerRef.savedVelocity = ((Globals.playerRef.position - (Globals.respawnPoint)).normalized() * 20)
+				send_knockbacklink_from_action(Globals.playerRef.savedVelocity, "%s has been unsent", "UNSENDER")
 			"GROUNDER":
-				Globals.playerRef.velocity = Vector3(0,0,0)
+				Globals.playerRef.velocity = Vector3.ZERO
 			"STONE":
 				if Globals.mcToolLevel == "WOOD":
 					Globals.mcToolLevel = "STONE"
@@ -573,6 +582,7 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				multiplyAttribute("gravity",["/",4],10)
 			"BOUNCE":
 				Globals.playerRef.velocity *= -1
+				send_knockbacklink_from_action(Globals.playerRef.velocity * 2, "%s has bounced", "BOUNCE")
 			"UNDERSIDE":
 				Globals.playerRef.position.y *= -1
 				multiplyAttribute("gravity",["*",-1],12)
@@ -650,7 +660,10 @@ func runShape(shape: String, center := Vector2i.ZERO, group := [], calledFromArc
 				for i in group:
 					standard.append(Vector2i(i.x,i.z))
 				standard = makeStandard(standard)
-				Globals.playerRef.velocity += 30 * [Vector3(1, 0, 1), Vector3(-1, 0, 1), Vector3(-1, 0, -1), Vector3(1, 0, -1)][Globals.shapes["ARROW"].find(standard)]
+				var amount = [Vector3(1, 0, 1), Vector3(-1, 0, 1), Vector3(-1, 0, -1), Vector3(1, 0, -1)][Globals.shapes["ARROW"].find(standard)]
+				amount *= 30
+				Globals.playerRef.velocity += amount
+				send_knockbacklink_from_action(amount, "%s was shot like an arrow", "ARROW")
 	
 	Globals.update_blueprints.emit()
 
@@ -1039,9 +1052,9 @@ func buildGeneration() -> void:
 		#terrainThread.start(heightGeneration.bind(getShape(Vector3i.ZERO,"200_SQR")))
 		#var cells = await terrainThread.wait_to_finish()
 		var cells = await heightGeneration(getShape(Vector3i.ZERO,"200_SQR"))
-		buildCells(cells,Vector3(0,0,0),false,null,true)
+		buildCells(cells, Vector3.ZERO, false, null, true)
 		if Globals.isMultiplayer:
-			rpc("buildCells",cells,Vector3(0,0,0),false,null,true)
+			rpc("buildCells", cells, Vector3.ZERO, false, null, true)
 		generatingTerrain = false
 
 
@@ -1363,6 +1376,14 @@ func play_sound(sound_name: String, vol: float = 1.0) -> void:
 	player.stream = load("res://Sounds/" + sound_name + ".mp3")
 	player.volume_linear = vol
 	player.play()
+
+
+## Sends a knockbacklink when called from an action
+func send_knockbacklink_from_action(knockback: Vector3, cause := "%s triggered the wrong action", action := "NONE"):
+	if Globals.isArchipelago:
+		@warning_ignore("static_called_on_instance")
+		if Globals.arrayHasAny(Globals.knockbacklink_sources, ["Any", "Actions", action]):
+			Globals.send_knockbacklink(knockback, cause)
 
 
 func _on_bulb_timer_timeout() -> void:

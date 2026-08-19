@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://db4idw7wodcov"]
+
+[ext_resource type="Script" uid="uid://bwwhdbsncy85i" path="res://Scripts/source_panel.gd" id="1_i10hs"]
+
+[node name="SourcePanel" type="PanelContainer" unique_id=494245184]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_i10hs")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1643406212]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="HBoxContainer" unique_id=1732469795]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button" type="Button" parent="HBoxContainer" unique_id=655746844]
+layout_mode = 2
+text = "x"
+
+[connection signal="pressed" from="HBoxContainer/Button" to="." method="_on_button_pressed"]

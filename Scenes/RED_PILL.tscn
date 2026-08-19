@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://lr228syaqiug"]
+[gd_scene format=3 uid="uid://lr228syaqiug"]
 
 [ext_resource type="Script" uid="uid://bu6xgtm75vdvr" path="res://Scripts/red_pill.gd" id="1_ktqm5"]
 
@@ -13,25 +13,25 @@ material = SubResource("StandardMaterial3D_qga6b")
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ktqm5"]
 radius = 0.6
 
-[node name="RED_PILL" type="CharacterBody3D" groups=["enemy"]]
+[node name="RED_PILL" type="CharacterBody3D" unique_id=1277009772 groups=["enemy"]]
 collision_layer = 17
 script = ExtResource("1_ktqm5")
 enemyName = "RED_PILL"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=632465292]
 shape = SubResource("CapsuleShape3D_qga6b")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1244693990]
 mesh = SubResource("CapsuleMesh_a37m6")
 
-[node name="Area3D" type="Area3D" parent="."]
+[node name="Area3D" type="Area3D" parent="." unique_id=1885410088]
 collision_layer = 0
 collision_mask = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=535191851]
 shape = SubResource("CapsuleShape3D_ktqm5")
 
-[node name="AntigravityTimer" type="Timer" parent="."]
+[node name="AntigravityTimer" type="Timer" parent="." unique_id=1722409919]
 wait_time = 10.0
 one_shot = true
 

@@ -1,5 +1,8 @@
 extends CharacterBody3D
 
+# Player movement accelleration is 1/15 m/s^2
+# Knockback is 40 m/s for most enemies
+
 var sitting = false
 
 var strength = 0.0
@@ -55,7 +58,7 @@ func _physics_process(delta: float) -> void:
 	if (not is_multiplayer_authority()) and Globals.isMultiplayer: return
 	
 	velocity += savedVelocity
-	savedVelocity = Vector3(0,0,0)
+	savedVelocity = Vector3.ZERO
 	
 	if round(position) != round(previousPos) and Globals.cameraRef.get_node("HUD/SetupTab/MinimapContainer").visible:
 		Globals.cameraRef.updateMinimap(Vector2i(roundi(position.x),roundi(position.z)))
@@ -92,7 +95,7 @@ func _physics_process(delta: float) -> void:
 		$OmniLight3D.visible = Globals.currentTool == Globals.tools.BULB
 	
 	if sitting:
-		velocity = Vector3(0,0,0)
+		velocity = Vector3.ZERO
 	
 	if Input.is_action_just_pressed("unstuck"):
 		position.y = Globals.maxHeight + 10
@@ -167,6 +170,13 @@ func processStatuses() -> void:
 			Globals.allStatuses.SPEED:
 				Globals.gridRef.multiplyAttribute("speed",["*",1.1],3)
 
-func takeKnockback(knockback:int) -> void:
-	savedVelocity = - ((position - (Globals.respawnPoint)).normalized() * 20 * knockback * multipliers.knockback.value)
-	savedVelocity.y *= -1
+func takeKnockback(knockback: Variant, cause := "%s was hit by an enemy", send_knockbacklink := true, move_player := true) -> void:
+	if move_player:
+		if typeof(knockback) == TYPE_INT:
+			savedVelocity = -((position - (Globals.respawnPoint)).normalized() * 20 * knockback * multipliers.knockback.value)
+			savedVelocity.y *= -1
+		elif typeof(knockback) == TYPE_VECTOR3:
+			savedVelocity = knockback
+	
+	if Globals.isArchipelago and send_knockbacklink:
+		Globals.send_knockbacklink(savedVelocity, cause)
